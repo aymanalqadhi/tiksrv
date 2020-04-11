@@ -1,7 +1,10 @@
+#include "log.h"
+
 #include <stdio.h>
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
-    printf("Hello, World!\n");
+    log_info("Hello, World!");
     return 0;
 }
