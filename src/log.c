@@ -100,7 +100,7 @@ log_log(int level, const char *file, int line, const char *fmt, ...)
     }
 
     /* Acquire lock */
-    lock();
+    /* lock(); */
 
     /* Get current time */
     time_t     t  = time(NULL);
@@ -143,5 +143,5 @@ log_log(int level, const char *file, int line, const char *fmt, ...)
     }
 
     /* Release lock */
-    unlock();
+    /* unlock(); */
 }
