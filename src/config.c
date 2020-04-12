@@ -4,10 +4,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static inline long
+parse_long(const char *str, const char *field, long min, long max)
+{
+    char *endp;
+    long  n;
+
+    endp = NULL;
+    n    = strtol(str, &endp, 10);
+
+    if (!endp || *endp) {
+        fprintf(stderr, "[!] Invalid %s value: %s\n", field, str);
+        exit(EXIT_FAILURE);
+    } else if (n < min || n > max) {
+        fprintf(stderr,
+                "[!] Value of %s has exceeded boundaries (%ld-%ld)\n",
+                field, min, max);
+        exit(EXIT_FAILURE);
+    }
+
+    return n;
+}
+
 void
 ts_config_parse_argv(struct ts_config *cfg, int argc, char **argv)
 {
-    char arg;
+    char arg, *endp;
     long parsed_value;
 
     static struct option options[] = {
@@ -40,10 +62,10 @@ ts_config_parse_argv(struct ts_config *cfg, int argc, char **argv)
                 "%s version %s\n", TS_CONFIG_APP_NAME, TS_CONFIG_APP_VERSION);
             exit(EXIT_SUCCESS);
         case 'p':
-            cfg->listen_port = atoi(optarg);
+            cfg->listen_port = parse_long(optarg, "port", 0, 0xFFFF);
             break;
         case 'b':
-            cfg->backlog = atoi(optarg);
+            cfg->backlog = parse_long(optarg, "backlog", 0, INT32_MAX);
             break;
         case 'v':
             ++cfg->log_level;

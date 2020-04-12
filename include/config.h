@@ -31,7 +31,7 @@ struct ts_config
     const char *exec_name;
 
     uint16_t listen_port;
-    uint16_t backlog;
+    uint32_t backlog;
 
     int  log_level: 3;
     int      ipv6 : 1;
