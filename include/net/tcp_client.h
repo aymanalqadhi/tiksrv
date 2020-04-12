@@ -3,6 +3,7 @@
 
 #include "error.h"
 #include "net/message.h"
+#include "net/read_context.h"
 
 #include <uthash.h>
 #include <uv.h>
@@ -16,6 +17,7 @@ struct ts_tcp_client
     uint32_t                id;
     uv_tcp_t                socket;
     struct ts_tcp_listener *listener;
+    struct ts_read_context  read_ctx;
 
     UT_hash_handle hh;
 };
