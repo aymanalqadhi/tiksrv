@@ -5,8 +5,8 @@
 #include "log/logger.h"
 #include "util/validation.h"
 
-#include <uthash.h>
-#include <uv.h>
+#include "uthash.h"
+#include "uv.h"
 
 #include <netdb.h>
 #include <netinet/in.h>

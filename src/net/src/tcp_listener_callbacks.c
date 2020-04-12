@@ -10,8 +10,8 @@
 #include "log/error.h"
 #include "log/logger.h"
 
-#include <uthash.h>
-#include <uv.h>
+#include "uthash.h"
+#include "uv.h"
 
 void
 ts_tcp_listener_stop_cb(uv_handle_t *l)

@@ -1,3 +1,15 @@
 [submodule "lib/Unity"]
 	path = lib/Unity
 	url = https://github.com/ThrowTheSwitch/Unity
+[submodule "lib/uthash"]
+	path = lib/uthash
+	url = https://github.com/troydhanson/uthash
+[submodule "src/lib/libuv"]
+	path = src/lib/libuv
+	url = https://github.com/libuv/libuv
+[submodule "src/lib/uthash"]
+	path = src/lib/uthash
+	url = https://github.com/troydhanson/uthash
+[submodule "src/lib/Unity"]
+	path = src/lib/Unity
+	url = https://github.com/ThrowTheSwitch/Unity
