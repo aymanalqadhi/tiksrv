@@ -18,12 +18,12 @@ typedef void (*log_LockFn)(void *udata, int lock);
 
 enum
 {
-    LOG_TRACE,
-    LOG_DEBUG,
-    LOG_INFO,
-    LOG_WARN,
+    LOG_FATAL,
     LOG_ERROR,
-    LOG_FATAL
+    LOG_WARN,
+    LOG_INFO,
+    LOG_DEBUG,
+    LOG_TRACE
 };
 
 #define log_trace(...) log_log(LOG_TRACE, __FILE__, __LINE__, __VA_ARGS__)
