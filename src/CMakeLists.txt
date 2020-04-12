@@ -17,6 +17,7 @@ set(CONFIG_PROJECT_NAME ${PROJECT_NAME}_config)
 set(LOG_PROJECT_NAME ${PROJECT_NAME}_log)
 set(NET_PROJECT_NAME ${PROJECT_NAME}_net)
 set(APP_PROJECT_NAME ${PROJECT_NAME}_app)
+set(TESTS_PROJECT_NAME ${PROJECT_NAME}_tests)
 set(SHARED_PROJECT_NAME ${PROJECT_NAME}_shared)
 
 add_subdirectory(main)
@@ -25,12 +26,14 @@ add_subdirectory(log)
 add_subdirectory(net)
 add_subdirectory(app)
 add_subdirectory(shared)
+add_subdirectory(tests)
+add_subdirectory(lib)
 
 # Final executable
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:${MAIN_PROJECT_NAME}>)
 
 # Dependencies
-set(EXTERNAL_DEPS uv)
+set(EXTERNAL_DEPS uv uthash)
 target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
                                       ${NET_PROJECT_NAME}
