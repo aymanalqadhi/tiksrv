@@ -1,10 +1,25 @@
+#include "app.h"
+
+#include "config.h"
+#include "error.h"
 #include "log.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int
 main(int argc, char *argv[])
 {
-    log_info("Hello, World!");
-    return 0;
+    int              rc;
+    struct ts_config config;
+
+    ts_config_parse_argv(&config, argc, argv);
+    log_set_level(config.log_level);
+
+    if ((rc = ts_app_run(&config)) != 0) {
+        log_fatal("Could not start app: %s", ts_strerror(rc));
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_FAILURE;
 }
