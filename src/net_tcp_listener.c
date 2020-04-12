@@ -63,7 +63,10 @@ tcp_listener_init(struct ts_tcp_listener *l, const struct ts_config *cfg)
     l->backlog              = cfg->backlog;
     l->is_running           = false;
     l->clients              = NULL;
-    l->disconnection_cb     = &ts_tcp_listener_disconnect_cb;
+    l->disconnect_cb        = &ts_tcp_listener_disconnect_cb;
+    l->on_connection_cb     = NULL;
+    l->on_disconnection_cb  = NULL;
+    l->on_request_cb        = NULL;
 
     return TS_ERR_SUCCESS;
 }

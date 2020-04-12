@@ -22,7 +22,6 @@ void
 ts_tcp_listener_accept_cb(uv_stream_t *l, int status)
 {
     int                     rc;
-    char                    addrbuf[INET6_ADDRSTRLEN];
     struct ts_tcp_client *  client;
     struct ts_tcp_listener *listener;
 
@@ -38,25 +37,23 @@ ts_tcp_listener_accept_cb(uv_stream_t *l, int status)
         goto cleanup;
     }
 
-    client->listener = listener;
-
-    if ((rc = ts_addr_to_string(&client->socket, addrbuf, sizeof(addrbuf))) !=
-        0) {
-        log_error("ts_addr_to_string: %s", ts_strerror(rc));
-        goto cleanup;
-    }
+    client->listener       = listener;
+    client->read_ctx.state = TS_READ_STATE_HEADER;
+    client->read_ctx.buf   = NULL;
 
     if ((rc = uv_read_start((uv_stream_t *)&client->socket,
-                            &ts_header_buffer_alloc_cb,
-                            &ts_tcp_client_header_read_cb)) < 0) {
+                            &ts_read_buffer_alloc_cb,
+                            &ts_tcp_client_read_cb)) < 0) {
         log_error("uv_read_start: %s", uv_strerror(rc));
         goto cleanup;
     }
 
     HASH_ADD_INT(listener->clients, id, client);
 
-    log_info(
-        "Got connection from: %s, and was assigned #%d", addrbuf, client->id);
+    if (client->listener->on_connection_cb) {
+        (*client->listener->on_connection_cb)(client);
+    }
+
     return;
 
 cleanup:
@@ -68,6 +65,10 @@ ts_tcp_listener_disconnect_cb(uv_stream_t *s)
 {
     struct ts_tcp_client *client = (struct ts_tcp_client *)s->data;
 
-    log_info("Connection to client #%d was closed", client->id);
+    if (client->listener->on_disconnection_cb) {
+        (*client->listener->on_disconnection_cb)(client);
+    }
+
     HASH_DEL(client->listener->clients, client);
+    ts_tcp_client_free(client);
 }

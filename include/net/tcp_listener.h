@@ -11,6 +11,10 @@
 
 typedef void (*tcp_client_disconnect_cb)(uv_stream_t *);
 
+typedef void (*tcp_client_connected_cb)(struct ts_tcp_client *);
+typedef void (*tcp_client_disconnected_cb)(struct ts_tcp_client *);
+typedef void (*tcp_client_requested_cb)(struct ts_tcp_client *);
+
 struct ts_tcp_listener
 {
     uv_tcp_t listener_handle;
@@ -18,7 +22,11 @@ struct ts_tcp_listener
     uint16_t                 port;
     uint16_t                 backlog;
     bool                     is_running;
-    tcp_client_disconnect_cb disconnection_cb;
+    tcp_client_disconnect_cb disconnect_cb;
+
+    tcp_client_connected_cb on_connection_cb;
+    tcp_client_disconnected_cb on_disconnection_cb;
+    tcp_client_requested_cb on_request_cb;
 
     struct ts_tcp_client *clients;
 };
