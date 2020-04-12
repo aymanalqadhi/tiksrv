@@ -2,11 +2,10 @@
 #define TIKSRV_LOG_LOGGER_H
 
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 
-#define LOG_USE_COLOR
-
-enum
+typedef enum
 {
     LOG_FATAL,
     LOG_ERROR,
@@ -14,7 +13,7 @@ enum
     LOG_INFO,
     LOG_DEBUG,
     LOG_TRACE
-};
+} log_level_t;
 
 #define log_trace(...) log_log(LOG_TRACE, __FILE__, __LINE__, __VA_ARGS__)
 #define log_debug(...) log_log(LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
@@ -23,16 +22,24 @@ enum
 #define log_error(...) log_log(LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
 #define log_fatal(...) log_log(LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
 
+/*!
+ * \brief Sets the logger minimum logging level
+ *
+ * \param [in] level  The new minimum logging level
+ */
 void
-log_set_udata(void *udata);
-void
-log_set_fp(FILE *fp);
-void
-log_set_level(int level);
-void
-log_set_quiet(int enable);
+log_set_level(log_level_t level);
 
+/*!
+ * \brief Logs a message to the console
+ *
+ * \param [in] level  The log message level
+ * \param [in] file   A pointer to the file name from which the logging macro
+ *                    was called
+ * \param [in] line   The line number from which to the logging macro was called
+ * \param [in] fmt    A the logging message format
+ */
 void
-log_log(int level, const char *file, int line, const char *fmt, ...);
+log_log(log_level_t level, const char *file, int line, const char *fmt, ...);
 
 #endif

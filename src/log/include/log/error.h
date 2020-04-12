@@ -29,7 +29,14 @@ typedef enum
     TS_ERR_LAST_MARKER
 } ts_error_t;
 
+/*!
+ * \brief Gets the error message of the error code specified by \see err
+ *
+ * \param [in] err  The error code which to get the error message for
+ *
+ * \return A pointer to the error message specified by \see err
+ */
 const char *
-ts_strerror(int err);
+ts_strerror(ts_error_t err);
 
 #endif
