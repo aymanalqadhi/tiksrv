@@ -20,7 +20,7 @@ static const char *error_messages[] = {
 };
 
 const char *
-ts_strerror(int err)
+ts_strerror(ts_error_t err)
 {
     if (err > TS_ERR_FIRST_MARKER && err < TS_ERR_LAST_MARKER) {
         return error_messages[err + -TS_ERR_FIRST_MARKER - 1];
