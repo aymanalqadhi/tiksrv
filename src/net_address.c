@@ -2,6 +2,7 @@
 
 #include "error.h"
 #include "log.h"
+#include "utils/validation.h"
 
 #include <uv.h>
 
@@ -16,6 +17,8 @@ ts_addr_to_string(uv_tcp_t *sock, char *buf, size_t len)
     int                     rc, addrlen;
     struct sockaddr_storage addr;
     const void *            addrptr;
+
+    CHECK_NULL_PARAMS_2(sock, buf);
 
     addrlen = sizeof(addr);
 
