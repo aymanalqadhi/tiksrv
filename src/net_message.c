@@ -28,6 +28,11 @@ ts_decode_request_header(struct ts_request_header *req,
     pos += sizeof(req->seq_number);
     memcpy((void *)&req->body_length, buf + pos, sizeof(req->body_length));
 
+    req->command     = be32toh(req->command);
+    req->flags       = be32toh(req->flags);
+    req->seq_number  = be32toh(req->seq_number);
+    req->body_length = be32toh(req->body_length);
+
     return TS_ERR_SUCCESS;
 }
 
@@ -36,7 +41,16 @@ ts_encode_response_header(const struct ts_response_header *resp,
                           void *                           buf,
                           size_t                           len)
 {
-    size_t pos = 0;
+    size_t   pos;
+    uint16_t code;
+    uint32_t flags, seq_number, body_length;
+
+    pos = 0;
+
+    code        = htobe16(resp->code);
+    flags       = htobe32(resp->flags);
+    seq_number  = htobe32(resp->seq_number);
+    body_length = htobe32(resp->body_length);
 
     CHECK_NULL_PARAMS_2(resp, buf);
 
@@ -44,13 +58,13 @@ ts_encode_response_header(const struct ts_response_header *resp,
         return TS_ERR_INDEX_OUT_OF_RANGE;
     }
 
-    memcpy(buf + pos, (void *)&resp->code, sizeof(resp->code));
-    pos += sizeof(resp->code);
-    memcpy(buf + pos, (void *)&resp->flags, sizeof(resp->flags));
-    pos += sizeof(resp->flags);
-    memcpy(buf + pos, (void *)&resp->seq_number, sizeof(resp->seq_number));
-    pos += sizeof(resp->seq_number);
-    memcpy(buf + pos, (void *)&resp->body_length, sizeof(resp->body_length));
+    memcpy(buf + pos, (void *)&code, sizeof(code));
+    pos += sizeof(code);
+    memcpy(buf + pos, (void *)&flags, sizeof(flags));
+    pos += sizeof(flags);
+    memcpy(buf + pos, (void *)&seq_number, sizeof(seq_number));
+    pos += sizeof(seq_number);
+    memcpy(buf + pos, (void *)&body_length, sizeof(body_length));
 
     return TS_ERR_SUCCESS;
 }
