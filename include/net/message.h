@@ -25,6 +25,18 @@ struct ts_response_header
     uint32_t body_length;
 };
 
+struct ts_request_message
+{
+    const struct ts_request_header *header;
+    const void *                    body;
+};
+
+struct tsp_response_message
+{
+    const struct ts_response_header *header;
+    const void *                     body;
+};
+
 ts_error_t
 ts_decode_request_header(struct ts_request_header *req,
                          const void *              buf,
