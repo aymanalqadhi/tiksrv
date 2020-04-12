@@ -2,6 +2,7 @@
 
 #include "net/address.h"
 #include "net/memory.h"
+#include "net/read_state_machine.h"
 #include "net/tcp_client.h"
 #include "net/tcp_client_callbacks.h"
 #include "net/tcp_listener.h"
@@ -15,43 +16,38 @@
 void
 ts_tcp_listener_stop_cb(uv_handle_t *l)
 {
-    log_info("Listener closed");
+    log_info("Listener stopped");
 }
 
 void
-ts_tcp_listener_accept_cb(uv_stream_t *l, int status)
+ts_tcp_listener_accepted_cb(uv_stream_t *stream, int status)
 {
     int                     rc;
     struct ts_tcp_client *  client;
     struct ts_tcp_listener *listener;
 
-    listener = (struct ts_tcp_listener *)l->data;
+    listener = (struct ts_tcp_listener *)stream->data;
 
     if ((rc = ts_tcp_client_create(&client)) != 0) {
         log_error("%s", ts_strerror(rc));
         return;
     }
 
-    if ((rc = uv_accept(l, (uv_stream_t *)&client->socket)) < 0) {
+    if ((rc = uv_accept(stream, (uv_stream_t *)&client->socket)) < 0) {
         log_error("%s", uv_strerror(rc));
         goto cleanup;
     }
 
-    client->listener       = listener;
-    client->read_ctx.state = TS_READ_STATE_HEADER;
-    client->read_ctx.buf   = NULL;
-
-    if ((rc = uv_read_start((uv_stream_t *)&client->socket,
-                            &ts_read_buffer_alloc_cb,
-                            &ts_tcp_client_read_cb)) < 0) {
-        log_error("uv_read_start: %s", uv_strerror(rc));
+    client->listener        = listener;
+    if ((rc = ts_tcp_client_start_read(client)) != 0) {
+        log_error("ts_tcp_client_start_read: %s", ts_strerror(rc));
         goto cleanup;
     }
 
     HASH_ADD_INT(listener->clients, id, client);
 
-    if (client->listener->on_connection_cb) {
-        (*client->listener->on_connection_cb)(client);
+    if (client->listener->app_cbs.on_connection_cb) {
+        (*client->listener->app_cbs.on_connection_cb)(client);
     }
 
     return;
@@ -61,12 +57,12 @@ cleanup:
 }
 
 void
-ts_tcp_listener_disconnect_cb(uv_stream_t *s)
+ts_tcp_listener_disconnected_cb(uv_stream_t *stream)
 {
-    struct ts_tcp_client *client = (struct ts_tcp_client *)s->data;
+    struct ts_tcp_client *client = (struct ts_tcp_client *)stream->data;
 
-    if (client->listener->on_disconnection_cb) {
-        (*client->listener->on_disconnection_cb)(client);
+    if (client->listener->app_cbs.on_disconnection_cb) {
+        (*client->listener->app_cbs.on_disconnection_cb)(client);
     }
 
     HASH_DEL(client->listener->clients, client);
