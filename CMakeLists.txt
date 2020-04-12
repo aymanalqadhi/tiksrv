@@ -6,7 +6,7 @@ project(tiksrv C)
 set(SOURCE_FILES src/main.c src/config.c src/error.c src/log.c src/net_address.c
                  src/net_tcp_listener.c src/net_tcp_listener_callbacks.c
                  src/net_tcp_client.c src/net_tcp_client_callbacks.c
-                 src/net_memory.c src/app.c)
+                 src/net_message.c src/net_memory.c src/app.c)
 include_directories(include)
 
 # Project Targets
