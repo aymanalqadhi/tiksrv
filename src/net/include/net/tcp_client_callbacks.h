@@ -4,10 +4,14 @@
 #include <stddef.h>
 #include <uv.h>
 
+/*!
+ * \brief A callback function to be called when the client has data ready
+ *
+ * \param [in] socket  A pointer to the client socket
+ * \param [in] nread   The read bytes count
+ * \param [in] buf     The buffer storing the read bytes
+ */
 void
-ts_tcp_client_read_cb(uv_stream_t *s, ssize_t nread, const uv_buf_t *buf);
-
-void
-ts_tcp_client_disconnect_cb(uv_handle_t *h);
+ts_tcp_client_read_cb(uv_stream_t *socket, ssize_t nread, const uv_buf_t *buf);
 
 #endif

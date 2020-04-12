@@ -20,13 +20,14 @@
 #define IPV4_LISTEN_ADDR "0.0.0.0"
 
 static inline ts_error_t
-setup_listener_address(struct ts_tcp_listener *l, const struct ts_config *cfg)
+setup_listener_address(struct ts_tcp_listener *listener,
+                       const struct ts_config *cfg)
 {
     int              rc;
     struct addrinfo *addr;
     char             port_buf[0x10];
 
-    snprintf(port_buf, sizeof(port_buf), "%u", l->port);
+    snprintf(port_buf, sizeof(port_buf), "%u", listener->port);
     if ((rc = getaddrinfo(cfg->ipv6 ? IPV6_LISTEN_ADDR : IPV4_LISTEN_ADDR,
                           port_buf,
                           NULL,
@@ -35,7 +36,7 @@ setup_listener_address(struct ts_tcp_listener *l, const struct ts_config *cfg)
         return TS_ERR_LISTENER_BIND_FAILED;
     }
 
-    if ((rc = uv_tcp_bind(&l->socket, addr->ai_addr, 0)) < 0) {
+    if ((rc = uv_tcp_bind(&listener->socket, addr->ai_addr, 0)) < 0) {
         freeaddrinfo(addr);
         log_debug("uv_tcp_bind: %s", strerror(rc));
         return TS_ERR_LISTENER_BIND_FAILED;
@@ -46,37 +47,37 @@ setup_listener_address(struct ts_tcp_listener *l, const struct ts_config *cfg)
 }
 
 static inline ts_error_t
-tcp_listener_init(struct ts_tcp_listener *l, const struct ts_config *cfg)
+tcp_listener_init(struct ts_tcp_listener *listener, const struct ts_config *cfg)
 {
     int rc;
 
-    l->port = cfg->listen_port;
+    listener->port = cfg->listen_port;
 
-    if ((rc = uv_tcp_init(uv_default_loop(), &l->socket)) < 0) {
+    if ((rc = uv_tcp_init(uv_default_loop(), &listener->socket)) < 0) {
         log_debug("uv_tcp_init: %s", uv_strerror(rc));
         return TS_ERR_SOCKET_CREATE_FAILED;
-    } else if ((rc = setup_listener_address(l, cfg)) != 0) {
+    } else if ((rc = setup_listener_address(listener, cfg)) != 0) {
         return rc;
     }
 
-    l->socket.data          = l;
-    l->backlog              = cfg->backlog;
-    l->is_running           = false;
-    l->clients              = NULL;
-    l->client_disconnect_cb = &ts_tcp_listener_disconnected_cb;
+    listener->socket.data          = listener;
+    listener->backlog              = cfg->backlog;
+    listener->is_running           = false;
+    listener->clients              = NULL;
+    listener->client_disconnect_cb = &ts_tcp_listener_disconnected_cb;
 
     return TS_ERR_SUCCESS;
 }
 
 ts_error_t
-ts_tcp_listener_create(struct ts_tcp_listener **             l,
+ts_tcp_listener_create(struct ts_tcp_listener **             outlistener,
                        struct ts_tcp_listener_app_callbacks *app_cbs,
                        const struct ts_config *              cfg)
 {
     int                     rc;
     struct ts_tcp_listener *listener;
 
-    CHECK_NULL_PARAMS_2(l, app_cbs);
+    CHECK_NULL_PARAMS_2(outlistener, app_cbs);
 
     if (!(listener = (struct ts_tcp_listener *)malloc(sizeof(*listener)))) {
         return TS_ERR_MEMORY_ALLOC_FAILED;
@@ -86,7 +87,7 @@ ts_tcp_listener_create(struct ts_tcp_listener **             l,
     }
 
     listener->app_cbs = *app_cbs;
-    *l                = listener;
+    *outlistener      = listener;
 
     return TS_ERR_SUCCESS;
 }
@@ -112,29 +113,30 @@ ts_tcp_listener_start(struct ts_tcp_listener *l)
 }
 
 ts_error_t
-ts_tcp_listener_stop(struct ts_tcp_listener *l)
+ts_tcp_listener_stop(struct ts_tcp_listener *listener)
 {
     int rc;
 
-    CHECK_NULL_PARAMS_1(l);
+    CHECK_NULL_PARAMS_1(listener);
 
-    if ((rc = uv_tcp_close_reset(&l->socket, &ts_tcp_listener_stop_cb)) < 0) {
+    if ((rc = uv_tcp_close_reset(&listener->socket, &ts_tcp_listener_stop_cb)) <
+        0) {
         log_debug("uv_tcp_close_reset: %s", uv_strerror(rc));
         return TS_ERR_LISTENER_STOP_FAILED;
     }
 
-    l->is_running = false;
+    listener->is_running = false;
     return TS_ERR_SUCCESS;
 }
 
 void
-ts_tcp_listener_free(struct ts_tcp_listener *l)
+ts_tcp_listener_free(struct ts_tcp_listener *listener)
 {
     int rc;
 
-    if (l->is_running && (rc = ts_tcp_listener_stop(l)) != 0) {
+    if (listener->is_running && (rc = ts_tcp_listener_stop(listener)) != 0) {
         log_error("Could not stop listener: %s", ts_strerror(rc));
     }
 
-    free(l);
+    free(listener);
 }
