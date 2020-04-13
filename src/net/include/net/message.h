@@ -36,8 +36,23 @@ struct ts_request_message
 struct tsp_response_message
 {
     const struct ts_response_header *header; /* The response message header */
-    const void *                    body;    /* The response message body */
+    const void *                     body;   /* The response message body */
 };
+
+/*!
+ * \brief Encodes a request message header pointed to by \see req into a
+ *        binary buffer pointed to by \see buf
+ *
+ * \param [in]  resp  A pointer to the request header to be encoded
+ * \param [out] buf   A pointer to the output buffer
+ * \param [in]  len   The length of the passed buffer
+ *
+ * \return 0 on success, or a negative value indicating error on failure
+ */
+ts_error_t
+ts_encode_request_header(const struct ts_request_header *req,
+                         void *                          buf,
+                         size_t                          len);
 
 /*!
  * \brief Decodes a buffer into a requet message header pointed to by \see req
@@ -67,5 +82,20 @@ ts_error_t
 ts_encode_response_header(const struct ts_response_header *resp,
                           void *                           buf,
                           size_t                           len);
+
+/*!
+ * \brief Decodes a buffer into a response message header pointed to by
+ *        \see resp
+ *
+ * \param [out] req  A pointer to the output response header object
+ * \param [in]  buf  A pointer to the buffer which to be decoded
+ * \param [in]  len  The length of the passed buffer
+ *
+ * \return 0 on success, or a negative value indicating error on failure
+ */
+ts_error_t
+ts_decode_response_header(struct ts_response_header *resp,
+                          const void *              buf,
+                          size_t                    len);
 
 #endif

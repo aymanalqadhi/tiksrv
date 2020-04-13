@@ -5,14 +5,27 @@
 
 #include <endian.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
+#define APPEND_TO_BUFFER(buf, item)                                            \
+    memcpy(buf, (const void *)&(item), sizeof(item));                          \
+    buf += sizeof(item);
+
+#define EXTRACT_FROM_BUFFER(buf, item)                                         \
+    memcpy((void *)&(item), buf, sizeof(item));                                \
+    buf += sizeof(item);
+
+#define BE_EXTRACT_FROM_BUFFER(buf, item, sz)\
+    EXTRACT_FROM_BUFFER(buf, item);\
+    item = be##sz##toh(item);
+
 ts_error_t
-ts_decode_request_header(struct ts_request_header *req,
-                         const void *              buf,
-                         size_t                    len)
+ts_encode_request_header(const struct ts_request_header *req,
+                         void *                          buf,
+                         size_t                          len)
 {
-    size_t pos = 0;
+    uint32_t command, flags, seq_number, body_length;
 
     CHECK_NULL_PARAMS_2(req, buf);
 
@@ -20,18 +33,34 @@ ts_decode_request_header(struct ts_request_header *req,
         return TS_ERR_INDEX_OUT_OF_RANGE;
     }
 
-    memcpy((void *)&req->command, buf + pos, sizeof(req->command));
-    pos += sizeof(req->command);
-    memcpy((void *)&req->flags, buf + pos, sizeof(req->flags));
-    pos += sizeof(req->flags);
-    memcpy((void *)&req->seq_number, buf + pos, sizeof(req->seq_number));
-    pos += sizeof(req->seq_number);
-    memcpy((void *)&req->body_length, buf + pos, sizeof(req->body_length));
+    command     = htobe32(req->command);
+    flags       = htobe32(req->flags);
+    seq_number  = htobe32(req->seq_number);
+    body_length = htobe32(req->body_length);
 
-    req->command     = be32toh(req->command);
-    req->flags       = be32toh(req->flags);
-    req->seq_number  = be32toh(req->seq_number);
-    req->body_length = be32toh(req->body_length);
+    APPEND_TO_BUFFER(buf, command);
+    APPEND_TO_BUFFER(buf, flags);
+    APPEND_TO_BUFFER(buf, seq_number);
+    APPEND_TO_BUFFER(buf, body_length);
+
+    return TS_ERR_SUCCESS;
+}
+
+ts_error_t
+ts_decode_request_header(struct ts_request_header *req,
+                         const void *              buf,
+                         size_t                    len)
+{
+    CHECK_NULL_PARAMS_2(req, buf);
+
+    if (len < TS_MESSAGE_REQUEST_HEADER_SIZE) {
+        return TS_ERR_INDEX_OUT_OF_RANGE;
+    }
+
+    BE_EXTRACT_FROM_BUFFER(buf, req->command, 32);
+    BE_EXTRACT_FROM_BUFFER(buf, req->flags, 32);
+    BE_EXTRACT_FROM_BUFFER(buf, req->seq_number, 32);
+    BE_EXTRACT_FROM_BUFFER(buf, req->body_length, 32);
 
     return TS_ERR_SUCCESS;
 }
@@ -41,16 +70,8 @@ ts_encode_response_header(const struct ts_response_header *resp,
                           void *                           buf,
                           size_t                           len)
 {
-    size_t   pos;
     uint16_t code;
     uint32_t flags, seq_number, body_length;
-
-    pos = 0;
-
-    code        = htobe16(resp->code);
-    flags       = htobe32(resp->flags);
-    seq_number  = htobe32(resp->seq_number);
-    body_length = htobe32(resp->body_length);
 
     CHECK_NULL_PARAMS_2(resp, buf);
 
@@ -58,13 +79,36 @@ ts_encode_response_header(const struct ts_response_header *resp,
         return TS_ERR_INDEX_OUT_OF_RANGE;
     }
 
-    memcpy(buf + pos, (void *)&code, sizeof(code));
-    pos += sizeof(code);
-    memcpy(buf + pos, (void *)&flags, sizeof(flags));
-    pos += sizeof(flags);
-    memcpy(buf + pos, (void *)&seq_number, sizeof(seq_number));
-    pos += sizeof(seq_number);
-    memcpy(buf + pos, (void *)&body_length, sizeof(body_length));
+    code        = htobe16(resp->code);
+    flags       = htobe32(resp->flags);
+    seq_number  = htobe32(resp->seq_number);
+    body_length = htobe32(resp->body_length);
+
+    APPEND_TO_BUFFER(buf, code);
+    APPEND_TO_BUFFER(buf, flags);
+    APPEND_TO_BUFFER(buf, seq_number);
+    APPEND_TO_BUFFER(buf, body_length);
+
+    return TS_ERR_SUCCESS;
+}
+
+ts_error_t
+ts_decode_response_header(struct ts_response_header *resp,
+                          const void *               buf,
+                          size_t                     len)
+{
+    size_t pos = 0;
+
+    CHECK_NULL_PARAMS_2(resp, buf);
+
+    if (len < TS_MESSAGE_RESPONSE_HEADER_SIZE) {
+        return TS_ERR_INDEX_OUT_OF_RANGE;
+    }
+
+    BE_EXTRACT_FROM_BUFFER(buf, resp->code, 16);
+    BE_EXTRACT_FROM_BUFFER(buf, resp->flags, 32);
+    BE_EXTRACT_FROM_BUFFER(buf, resp->seq_number, 32);
+    BE_EXTRACT_FROM_BUFFER(buf, resp->body_length, 32);
 
     return TS_ERR_SUCCESS;
 }
