@@ -6,3 +6,6 @@ target_include_directories(uthash INTERFACE uthash/include/)
 
 # libuv
 add_subdirectory(libuv)
+
+# Unity
+add_subdirectory(Unity)
