@@ -6,9 +6,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+enum ts_command_response_code
+{
+    TS_COMMAND_CODE_SUCCESS = 0,
+    TS_COMMAND_CODE_NO_SUCH_COMMAND,
+};
+
 struct ts_command_response
 {
-    uint16_t code;
     uint16_t flags;
     void *   body_buffer;
     size_t   buffer_length, buffer_capacity;
