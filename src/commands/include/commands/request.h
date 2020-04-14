@@ -79,8 +79,8 @@ ts_error_t
 ts_request_read_uint64(struct ts_command_request *req, uint64_t *valptr);
 
 /*!
- * \brief Reads a string of of size \see *len from a request object pointed to by
- *        \see req, and store the read string in a buffer pointed to by \see buf,
+ * \brief Reads a string of of size \see *len from a request object pointed to
+ * by \see req, and store the read string in a buffer pointed to by \see buf,
  *        and the read string length in \see len
  *
  * \param [in]      req  A pointer to the request object from which to read
@@ -91,7 +91,7 @@ ts_request_read_uint64(struct ts_command_request *req, uint64_t *valptr);
  */
 ts_error_t
 ts_request_read_string(struct ts_command_request *req,
-                       char *                           buf,
-                       uint32_t *                       len);
+                       char *                     buf,
+                       uint32_t *                 len);
 
 #endif
