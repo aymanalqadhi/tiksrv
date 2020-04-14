@@ -18,6 +18,7 @@ set(CONFIG_PROJECT_NAME ${PROJECT_NAME}_config)
 set(LOG_PROJECT_NAME ${PROJECT_NAME}_log)
 set(NET_PROJECT_NAME ${PROJECT_NAME}_net)
 set(APP_PROJECT_NAME ${PROJECT_NAME}_app)
+set(SERVICES_PROJECT_NAME ${PROJECT_NAME}_services)
 set(COMMANDS_PROJECT_NAME ${PROJECT_NAME}_commands)
 set(TESTS_PROJECT_NAME ${PROJECT_NAME}_tests)
 set(SHARED_PROJECT_NAME ${PROJECT_NAME}_shared)
@@ -27,6 +28,7 @@ add_subdirectory(config)
 add_subdirectory(log)
 add_subdirectory(net)
 add_subdirectory(app)
+add_subdirectory(services)
 add_subdirectory(commands)
 add_subdirectory(shared)
 add_subdirectory(tests)
@@ -41,6 +43,7 @@ target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
                                       ${NET_PROJECT_NAME}
                                       ${APP_PROJECT_NAME}
+                                      ${SERVICES_PROJECT_NAME}
                                       ${COMMANDS_PROJECT_NAME}
                                       ${SHARED_PROJECT_NAME}
                                       ${EXTERNAL_DEPS})
