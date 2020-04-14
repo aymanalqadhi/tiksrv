@@ -6,6 +6,7 @@
 #include <endian.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define APPEND_TO_BUFFER(buf, item)                                            \
@@ -16,8 +17,8 @@
     memcpy((void *)&(item), buf, sizeof(item));                                \
     buf += sizeof(item);
 
-#define BE_EXTRACT_FROM_BUFFER(buf, item, sz)\
-    EXTRACT_FROM_BUFFER(buf, item);\
+#define BE_EXTRACT_FROM_BUFFER(buf, item, sz)                                  \
+    EXTRACT_FROM_BUFFER(buf, item);                                            \
     item = be##sz##toh(item);
 
 ts_error_t
@@ -111,4 +112,41 @@ ts_decode_response_header(struct ts_response_header *resp,
     BE_EXTRACT_FROM_BUFFER(buf, resp->body_length, 32);
 
     return TS_ERR_SUCCESS;
+}
+
+ts_error_t
+ts_response_context_init(struct ts_response_context *ctx,
+                         struct ts_response_message *resp)
+{
+    int rc;
+
+    CHECK_NULL_PARAMS_2(ctx, resp);
+
+    if (!(ctx->buffers[0].base = (char *)malloc(14))) {
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    if ((rc = ts_encode_response_header(resp->header,
+                                        ctx->buffers[0].base,
+                                        TS_MESSAGE_RESPONSE_HEADER_SIZE)) !=
+        0) {
+        free(ctx->buffers[0].base);
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    ctx->buffers[0].len  = TS_MESSAGE_RESPONSE_HEADER_SIZE;
+    ctx->buffers[1].len  = resp->header->body_length;
+    ctx->buffers[1].base = (char *)resp->body;
+
+    return TS_ERR_SUCCESS;
+}
+
+void
+ts_response_context_free(struct ts_response_context *ctx)
+{
+    free(ctx->buffers[0].base);
+
+    if (ctx->buffers[1].base) {
+        free(ctx->buffers[1].base);
+    }
 }
