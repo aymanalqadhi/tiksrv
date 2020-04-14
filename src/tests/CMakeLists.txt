@@ -17,3 +17,7 @@ endfunction()
 # Project targets
 create_test(message_tests)
 target_link_libraries(message_tests ${NET_PROJECT_NAME})
+create_test(commands_request_tests)
+    target_link_libraries(commands_request_tests ${COMMANDS_PROJECT_NAME})
+create_test(commands_response_tests)
+    target_link_libraries(commands_response_tests ${COMMANDS_PROJECT_NAME})
