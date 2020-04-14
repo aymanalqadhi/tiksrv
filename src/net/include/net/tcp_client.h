@@ -14,12 +14,13 @@ struct ts_tcp_listener;
 
 struct ts_tcp_client
 {
-    uint32_t                     id;        /* The client unique identifier */
-    uv_tcp_t                     socket;    /* The client connection socket */
-    struct ts_tcp_listener *     listener;  /* A pointer to the listener which
-                                               accepted this client */
-    struct ts_read_state_machine read_sm;   /* Client data reading state
-                                               machine */
+    uint32_t                id;           /* The client unique identifier */
+    uv_tcp_t                socket;       /* The client connection socket */
+    struct ts_tcp_listener *listener;     /* A pointer to the listener which
+                                             accepted this client */
+    struct ts_read_state_machine read_sm; /* Client data reading state
+                                             machine */
+    struct ts_response_context response_ctx;
 
     UT_hash_handle hh;
 };
@@ -48,6 +49,34 @@ ts_tcp_client_create(struct ts_tcp_client **outclient);
  */
 ts_error_t
 ts_tcp_client_start_read(struct ts_tcp_client *client);
+
+/*!
+ * \brief Sends a response message pointed to by \see resp to a client
+ *        pointed to by \see client
+ *
+ * \param [in] client  A pointer to the client which to send the response to
+ * \param [in] resp    A pointer to the response message which to be sent
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_tcp_client_respond(struct ts_tcp_client *      client,
+                      struct ts_response_message *resp);
+/*!
+ * \brief Creates a response message object with a status code of \see code, and
+ *        a sequence number of \see seq_no, then call \see ts_tcp_client_respond
+ *        on the created response message
+ *
+ * \param [in] client  A pointer to the client which to send the response to
+ * \param [in] code    The response status code
+ * \param [in] seq_no  The conversation sequence number
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_tcp_client_respond_with_code(struct ts_tcp_client *client,
+                                uint16_t              code,
+                                uint32_t              seq_no);
 
 /*!
  * \brief Closes a client pointed to by \see client connection
