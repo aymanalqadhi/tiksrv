@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 
 int
 main(int argc, char *argv[])
@@ -15,6 +16,9 @@ main(int argc, char *argv[])
 
     ts_config_parse_argv(&config, argc, argv);
     log_set_level(config.log_level);
+
+    // Ignore SIGPIPE signal produced by connection being closed by remote peer
+    signal(SIGPIPE, SIG_IGN);
 
     if ((rc = ts_app_run(&config)) != 0) {
         log_fatal("Could not start app: %s", ts_strerror(rc));
