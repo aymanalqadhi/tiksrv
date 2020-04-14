@@ -12,6 +12,7 @@ set_state(struct ts_read_state_machine *read_sm,
           ts_read_state_machine_state   new_state)
 {
     free(read_sm->buf);
+
     read_sm->buf   = NULL;
     read_sm->nread = 0;
     read_sm->state = new_state;
