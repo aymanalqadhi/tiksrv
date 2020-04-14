@@ -12,11 +12,13 @@ static const char *error_messages[] = {
     "Not implemented",
     "Could not open socket",
     "Could not close socket",
+    "Could not write to socket",
     "Could not bind listener",
     "Could not stop listener",
     "Could not start event loop",
     "The listener is already started",
-    "Could not get the address of the specified socket"
+    "Could not get the address of the specified socket",
+    "Could not export commands"
 };
 
 const char *

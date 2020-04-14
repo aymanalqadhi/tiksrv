@@ -19,11 +19,15 @@ typedef enum
     /* Network errors */
     TS_ERR_SOCKET_CREATE_FAILED,
     TS_ERR_SOCKET_CLOSE_FAILED,
+    TS_ERR_SOCKET_WRITE_FAILED,
     TS_ERR_LISTENER_BIND_FAILED,
     TS_ERR_LISTENER_STOP_FAILED,
     TS_ERR_EVENT_LOOP_START_FAILED,
     TS_ERR_LISTENER_ALREADY_STARTED,
     TS_ERR_LOAD_ADDRESS_FAILED,
+
+    /* Commands errors */
+    TS_ERR_COMMAND_EXPORT_FAILED,
 
     /* Last error marer (used by ezd_strerror) */
     TS_ERR_LAST_MARKER
