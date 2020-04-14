@@ -22,17 +22,18 @@ reserve_bytes(struct ts_command_response *resp, size_t n)
         return TS_ERR_SUCCESS;
     }
 
-    new_cap = !resp->buffer_capacity ? RESPONSE_DEFAULT_CAPACITY
-                                     : resp->buffer_capacity * 2;
+    new_cap = resp->buffer_capacity == 0 ? RESPONSE_DEFAULT_CAPACITY
+                                         : resp->buffer_capacity * 2;
 
     if (new_cap > UINT32_MAX) {
         return TS_ERR_INDEX_OUT_OF_RANGE;
-    } else {
-        tmp = resp->body_buffer ? realloc(resp->body_buffer, new_cap)
-                                : malloc(new_cap);
-        if (!tmp) {
-            return TS_ERR_MEMORY_ALLOC_FAILED;
-        }
+    }
+
+    tmp = resp->body_buffer ? realloc(resp->body_buffer, new_cap)
+                            : malloc(new_cap);
+
+    if (!tmp) {
+        return TS_ERR_MEMORY_ALLOC_FAILED;
     }
 
     resp->buffer_capacity = new_cap;
@@ -49,7 +50,10 @@ ts_response_write(struct ts_command_response *resp,
     int rc;
 
     CHECK_NULL_PARAMS_2(resp, buf);
-    CHECK_UNINITIALIZED_DATA_1(resp->body_buffer);
+
+    if (len == 0) {
+        return TS_ERR_SUCCESS;
+    }
 
     if ((rc = reserve_bytes(resp, len)) != 0) {
         return rc;
