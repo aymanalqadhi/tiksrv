@@ -38,7 +38,8 @@ ts_tcp_listener_accepted_cb(uv_stream_t *stream, int status)
         goto cleanup;
     }
 
-    client->listener        = listener;
+    client->listener = listener;
+
     if ((rc = ts_tcp_client_start_read(client)) != 0) {
         log_error("ts_tcp_client_start_read: %s", ts_strerror(rc));
         goto cleanup;

@@ -56,7 +56,9 @@ tcp_listener_init(struct ts_tcp_listener *listener, const struct ts_config *cfg)
     if ((rc = uv_tcp_init(uv_default_loop(), &listener->socket)) < 0) {
         log_debug("uv_tcp_init: %s", uv_strerror(rc));
         return TS_ERR_SOCKET_CREATE_FAILED;
-    } else if ((rc = setup_listener_address(listener, cfg)) != 0) {
+    }
+
+    if ((rc = setup_listener_address(listener, cfg)) != 0) {
         return rc;
     }
 
@@ -81,7 +83,9 @@ ts_tcp_listener_create(struct ts_tcp_listener **             outlistener,
 
     if (!(listener = (struct ts_tcp_listener *)malloc(sizeof(*listener)))) {
         return TS_ERR_MEMORY_ALLOC_FAILED;
-    } else if ((rc = tcp_listener_init(listener, cfg)) != 0) {
+    }
+
+    if ((rc = tcp_listener_init(listener, cfg)) != 0) {
         free(listener);
         return rc;
     }
@@ -101,9 +105,11 @@ ts_tcp_listener_start(struct ts_tcp_listener *l)
 
     if (l->is_running) {
         return TS_ERR_LISTENER_ALREADY_STARTED;
-    } else if ((rc = uv_listen((uv_stream_t *)&l->socket,
-                               l->backlog,
-                               &ts_tcp_listener_accepted_cb)) < 0) {
+    }
+
+    if ((rc = uv_listen((uv_stream_t *)&l->socket,
+                        l->backlog,
+                        &ts_tcp_listener_accepted_cb)) < 0) {
         log_debug("uv_listen: %s", uv_strerror(rc));
         return TS_ERR_LISTENER_BIND_FAILED;
     }
