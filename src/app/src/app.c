@@ -1,6 +1,6 @@
 #include "app/app.h"
-#include "app/shared.h"
 #include "app/callbacks.h"
+#include "app/shared.h"
 
 #include "commands/command.h"
 #include "config/config.h"
@@ -10,6 +10,8 @@
 #include "net/tcp_client.h"
 #include "net/tcp_listener.h"
 #include "util/memory.h"
+
+#include "uthash.h"
 
 #include <stdlib.h>
 
@@ -21,12 +23,29 @@ export_command(const struct ts_command *cmd)
 {
     struct ts_command *tmp;
 
+    if (!cmd) {
+        log_warn("A request to export a NULL command");
+        return;
+    }
+
     if (!(tmp = (struct ts_command *)ts_memdup(cmd, sizeof(*cmd)))) {
         log_error("Could not add command with id #%d", cmd->id);
         return;
     }
 
     HASH_ADD_INT(commands, id, tmp);
+}
+
+static inline void
+destroy_commands(void)
+{
+    struct ts_command *command, *tmp;
+
+    HASH_ITER(hh, commands, command, tmp)
+    {
+        HASH_DEL(commands, command);
+        free(command);
+    }
 }
 
 static ts_error_t
@@ -79,8 +98,9 @@ ts_app_run(const struct ts_config *cfg)
 void
 ts_app_destroy(void)
 {
-    ts_tcp_listener_stop(listener);
-    free(listener);
+    log_info("Cleaning up");
+    ts_tcp_listener_free(listener);
+    destroy_commands();
 }
 
 struct ts_command *
