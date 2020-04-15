@@ -3,6 +3,8 @@
 
 #include "uv.h"
 
+#define TS_MAX_BODY_BUFFER_SIZE 8192
+
 /*!
  * \brief Allocates a proper buffer depending on the current reading state
  *
