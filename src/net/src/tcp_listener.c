@@ -125,20 +125,24 @@ ts_tcp_listener_stop(struct ts_tcp_listener *listener)
 
     CHECK_NULL_PARAMS_1(listener);
 
-    if ((rc = uv_tcp_close_reset(&listener->socket, &ts_tcp_listener_stop_cb)) <
-        0) {
-        log_debug("uv_tcp_close_reset: %s", uv_strerror(rc));
-        return TS_ERR_LISTENER_STOP_FAILED;
-    }
-
+    uv_close((uv_handle_t *)&listener->socket, &ts_tcp_listener_stop_cb);
     listener->is_running = false;
+
     return TS_ERR_SUCCESS;
 }
 
 void
 ts_tcp_listener_free(struct ts_tcp_listener *listener)
 {
-    int rc;
+    int                   rc;
+    struct ts_tcp_client *client, *tmp;
+
+    HASH_ITER(hh, listener->clients, client, tmp)
+    {
+        HASH_DEL(listener->clients, client);
+        ts_tcp_client_close(client);
+        ts_tcp_client_free(client);
+    }
 
     if (listener->is_running && (rc = ts_tcp_listener_stop(listener)) != 0) {
         log_error("Could not stop listener: %s", ts_strerror(rc));
