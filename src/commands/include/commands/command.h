@@ -21,7 +21,7 @@ typedef uint16_t (*ts_command_func_t)(struct ts_command_request *,
 
 struct ts_command
 {
-    uint32_t          id;
+    uint32_t          command;
     ts_command_func_t func;
     UT_hash_handle    hh;
 };

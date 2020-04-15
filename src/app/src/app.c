@@ -29,11 +29,12 @@ export_command(const struct ts_command *cmd)
     }
 
     if (!(tmp = (struct ts_command *)ts_memdup(cmd, sizeof(*cmd)))) {
-        log_error("Could not add command with id #%d", cmd->id);
+        log_error("Could not add command with command number: %d",
+                  cmd->command);
         return;
     }
 
-    HASH_ADD_INT(commands, id, tmp);
+    HASH_ADD_INT(commands, command, tmp);
 }
 
 static inline void

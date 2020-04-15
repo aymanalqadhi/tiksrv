@@ -21,5 +21,5 @@ echo_command_exec(struct ts_command_request *   req,
     return TS_COMMAND_CODE_SUCCESS;
 }
 
-struct ts_command ts_echo_command = { .cmd   = TS_COMMAND_ECHO,
-                                      .func = &echo_command_exec };
+struct ts_command ts_echo_command = { .command = TS_COMMAND_ECHO,
+                                      .func    = &echo_command_exec };
