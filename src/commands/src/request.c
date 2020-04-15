@@ -82,6 +82,12 @@ ts_request_read_string(struct ts_command_request *req, char *buf, uint32_t *len)
     return TS_ERR_SUCCESS;
 }
 
+uint32_t
+ts_command_request_get_client_id(const struct ts_command_request *req)
+{
+    return req->client_id;
+}
+
 uint16_t
 ts_command_request_get_flags(const struct ts_command_request *req)
 {

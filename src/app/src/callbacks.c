@@ -23,8 +23,10 @@ display_request_info(const struct ts_request_message *req)
 
 static inline void
 make_request_wrapper(struct ts_command_request *      req_wrapper,
-                     const struct ts_request_message *req)
+                     const struct ts_request_message *req,
+                     uint32_t                         client_id)
 {
+    req_wrapper->client_id   = client_id;
     req_wrapper->body_buffer = req->body;
     req_wrapper->body_length = req->header->body_length;
     req_wrapper->current_pos = 0;
@@ -79,7 +81,7 @@ ts_on_client_request(struct ts_tcp_client *           client,
         }
     }
 
-    make_request_wrapper(&req_wrapper, req);
+    make_request_wrapper(&req_wrapper, req, client->id);
     memset(&resp_wrapper, 0, sizeof(resp_wrapper));
 
     code = (*cmd->func)(&req_wrapper, &resp_wrapper, NULL);
