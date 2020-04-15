@@ -6,12 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct ts_command_request
-{
-    uint16_t    flags;
-    const void *body_buffer;
-    size_t      body_length, current_pos;
-};
+struct ts_command_request;
 
 /*!
  * \brief Reads \see *len bytes from a request object pointed to by \see req,
@@ -93,5 +88,39 @@ ts_error_t
 ts_request_read_string(struct ts_command_request *req,
                        char *                     buf,
                        uint32_t *                 len);
+
+/*!
+ * \brief Gets the flags vlaue associated with a request wrapper object pointed
+ *        to by \see req
+ *
+ * \param [in] req  A pointer to the request object of which to get the value
+ *
+ * \return The flags value of the supplied request object
+ */
+uint16_t
+ts_command_request_get_flags(const struct ts_command_request *req);
+
+/*!
+ * \brief Gets the buffer pointer associated with a request wrapper object
+ *        pointed to by \see req
+ *
+ * \param [in] req  A pointer to the request object of which to get the buffer
+ *
+ * \return The buffer pointer of the supplied request object
+ */
+const void *
+ts_command_request_get_buffer(const struct ts_command_request *req);
+
+/*!
+ * \brief Gets the buffer length of the buffer associated with a request wrapper
+ *        object pointed to by \see req
+ *
+ * \param [in] req  A pointer to the request object of which to get the buffer
+ *                  length
+ *
+ * \return The buffer length of the supplied request object buffer
+ */
+uint32_t
+ts_command_request_get_length(const struct ts_command_request *req);
 
 #endif

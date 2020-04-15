@@ -1,3 +1,4 @@
+#include "commands/impl/response.h"
 #include "commands/response.h"
 
 #include "log/error.h"
@@ -113,4 +114,34 @@ ts_response_write_string(struct ts_command_response *resp,
     }
 
     return ts_response_write(resp, (const void *)str, len);
+}
+
+uint16_t
+ts_command_response_get_flags(const struct ts_command_response *resp)
+{
+    return resp->flags;
+}
+
+const void *
+ts_command_response_get_buffer(const struct ts_command_response *resp)
+{
+    return resp->body_buffer;
+}
+
+uint32_t
+ts_command_response_get_length(const struct ts_command_response *resp)
+{
+    return resp->buffer_length;
+}
+
+uint32_t
+ts_command_response_get_capacity(const struct ts_command_response *resp)
+{
+    return resp->buffer_capacity;
+}
+
+void
+ts_command_response_set_flags(struct ts_command_response *resp, uint16_t flags)
+{
+    resp->flags = flags;
 }

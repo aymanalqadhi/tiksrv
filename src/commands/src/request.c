@@ -1,4 +1,5 @@
 #include "commands/request.h"
+#include "commands/impl/request.h"
 
 #include "log/error.h"
 #include "util/validation.h"
@@ -79,4 +80,22 @@ ts_request_read_string(struct ts_command_request *req, char *buf, uint32_t *len)
 
     buf[(*len = to_read)] = '\0';
     return TS_ERR_SUCCESS;
+}
+
+uint16_t
+ts_command_request_get_flags(const struct ts_command_request *req)
+{
+    return req->flags;
+}
+
+const void *
+ts_command_request_get_buffer(const struct ts_command_request *req)
+{
+    return req->body_buffer;
+}
+
+uint32_t
+ts_command_request_get_length(const struct ts_command_request *req)
+{
+    return req->body_length;
 }

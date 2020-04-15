@@ -10,20 +10,17 @@ enum ts_command_response_code
 {
     TS_COMMAND_CODE_SUCCESS = 0,
     TS_COMMAND_CODE_NO_SUCH_COMMAND,
+    TS_COMMAND_CODE_UNKNOWN_ERROR,
 };
 
-struct ts_command_response
-{
-    uint16_t flags;
-    void *   body_buffer;
-    size_t   buffer_length, buffer_capacity;
-};
+struct ts_command_response;
 
 /*!
- * \brief Appends \see len bytes from the buffer pointed to by \see buf into a
- *        response object pointed to by \see resp buffer
+ * \brief Appends \see len bytes from the buffer pointed to by \see buf into
+ *        a response object pointed to by \see resp buffer
  *
- * \param [in, out] resp   A pointer to the response object which to write into
+ * \param [in, out] resp   A pointer to the response object which to write
+ *                         into
  * \param [in]      value  The value which to be written
  *
  * \return 0 on success, or a negative value indicating error otherwise
@@ -32,7 +29,6 @@ ts_error_t
 ts_response_write(struct ts_command_response *resp,
                   const void *                buf,
                   uint32_t                    len);
-
 /*!
  * \brief Appends a single byte into a repsonse object pointed to by \see resp
  *        buffer
@@ -94,5 +90,62 @@ ts_error_t
 ts_response_write_string(struct ts_command_response *resp,
                          const char *                str,
                          uint32_t                    len);
+
+/*!
+ * \brief Gets the flags vlaue associated with a response wrapper object pointed
+ *        to by \see req
+ *
+ * \param [in] req  A pointer to the response object of which to get the value
+ *
+ * \return The flags value of the supplied response object
+ */
+uint16_t
+ts_command_response_get_flags(const struct ts_command_response *resp);
+
+/*!
+ * \brief Gets the buffer pointer associated with a response wrapper object
+ *        pointed to by \see req
+ *
+ * \param [in] req  A pointer to the response object of which to get the buffer
+ *
+ * \return The buffer pointer of the supplied response object
+ */
+const void *
+ts_command_response_get_buffer(const struct ts_command_response *resp);
+
+/*!
+ * \brief Gets the buffer length of the buffer associated with a response wrapper
+ *        object pointed to by \see req
+ *
+ * \param [in] req  A pointer to the response object of which to get the buffer
+ *                  length
+ *
+ * \return The buffer length of the supplied response object buffer
+ */
+uint32_t
+ts_command_response_get_length(const struct ts_command_response *resp);
+
+/*!
+ * \brief Gets the buffer capacity of the buffer associated with a response
+ *        wrapper object pointed to by \see req
+ *
+ * \param [in] req  A pointer to the response object of which to get the buffer
+ *                  capacity
+ *
+ * \return The buffer capacity of the supplied response object buffer
+ */
+uint32_t
+ts_command_response_get_capacity(const struct ts_command_response *resp);
+
+/*!
+ * \brief Sets the flags value of a response wrapper object pointed to by \see
+ *        resp to the value specified with \see flags
+ *
+ * \param [in, out] resp   A pointer to the response wrapper object which to set
+ *                         its flags vlaue
+ * \param [in]      flags  The new flags value
+ */
+void
+ts_command_response_set_flags(struct ts_command_response *resp, uint16_t flags);
 
 #endif
