@@ -13,7 +13,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 # Dependencies
 target_link_libraries(${PROJECT_NAME} ${LOG_PROJECT_NAME}
                                       ${SERVICES_PROJECT_NAME}
-                                      ${SHARED_PROJECT_NAME})
+                                      ${SHARED_PROJECT_NAME}
+                                      m)
 
 # Install destination
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
