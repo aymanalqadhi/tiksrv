@@ -1,6 +1,7 @@
 #include "app/app.h"
-#include "app/callbacks.h"
-#include "app/shared.h"
+
+#include "impl/callbacks.h"
+#include "impl/shared.h"
 
 #include "commands/command.h"
 #include "config/config.h"
@@ -55,7 +56,7 @@ destroy_commands(void)
 static ts_error_t
 on_plugin_load(struct ts_plugin *plug)
 {
-    int rc;
+    int               rc;
     struct ts_plugin *tmp;
 
     tmp = NULL;
