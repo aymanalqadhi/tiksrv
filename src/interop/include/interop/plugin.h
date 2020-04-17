@@ -2,9 +2,8 @@
 #define TIKSRV_INTEROP_PLUGIN_H
 
 #include "commands/command.h"
-#include "services/container.h"
-
 #include "log/error.h"
+#include "services/container.h"
 
 #include "uthash.h"
 #include "uv.h"
@@ -40,12 +39,38 @@ struct ts_plugin
     UT_hash_handle hh;
 };
 
+/*!
+ * \brief Loads a plugin of name \see filename into the plugin object pointed to
+ *        by \see plug
+ *
+ * \param [out] plug  A pointer to the plugin object into whcih to save the
+ *                    loaded plugin info
+ * \param [in] filename  A pointer to the plugin filename on the filesystem
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
 ts_error_t
 ts_plugin_load(struct ts_plugin *plug, const char *filename);
 
+/*!
+ * \brief Unloads a plugin object pointed to by \see plug freeing all resources
+ *        used by it
+ *
+ * \param [in, out] plug  A pointer to the plugin object which to be unloaded
+ */
 void
 ts_plugin_unload(struct ts_plugin *plug);
 
+/*!
+ * \breif Loads all plugins a directory of name \see dirname
+ *
+ * \param [in] dirname  A pointer to the directory name from which to load the
+ *                      plugins
+ * \param [in] cb       A callback function pointer to be called on each loaded
+ *                      plugin
+ *
+ * \param [in, out] plug  A pointer to the plugin object which to be unloaded
+ */
 ts_error_t
 ts_plugin_load_all(const char *dirname, ts_plugin_load_cb cb);
 
