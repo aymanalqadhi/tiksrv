@@ -122,6 +122,15 @@ ts_response_write_string(struct ts_command_response *resp,
     return ts_response_write(resp, (const void *)str, len);
 }
 
+ts_error_t
+ts_respone_init(struct ts_command_response *resp)
+{
+    CHECK_NULL_PARAMS_1(resp);
+
+    memset((void *)resp, 0, sizeof(*resp));
+    return TS_ERR_SUCCESS;
+}
+
 uint16_t
 ts_command_response_get_flags(const struct ts_command_response *resp)
 {

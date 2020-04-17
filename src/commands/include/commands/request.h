@@ -90,6 +90,23 @@ ts_request_read_string(struct ts_command_request *req,
                        uint32_t *                 len);
 
 /*!
+ * \brief Initializes a command request wrapper object pointed to by \see req
+ *
+ * \param [out] req        A pointer to the command request object to be
+ *                         initialized
+ * \param [in]  client_id  The request issuing client id
+ * \param [in]  body_buf   A pointer to the request object body buffer
+ * \param [in]  body_len   The length of the passed body buffer
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_request_init(struct ts_command_request *req,
+                uint32_t                   client_id,
+                const void *               body_buf,
+                uint32_t                   body_len);
+
+/*!
  * \brief Gets the client id vlaue associated with a request wrapper object
  *        pointed to by \see req
  *
