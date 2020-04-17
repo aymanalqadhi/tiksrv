@@ -18,14 +18,18 @@ static const char *error_messages[] = {
     "Could not start event loop",
     "The listener is already started",
     "Could not get the address of the specified socket",
-    "Could not export commands"
+    "Could not export commands",
+    "Could not load plugin",
+    "Could not iterate directory entries",
+    "Could not get current working directory",
+    "Could not change directory"
 };
 
 const char *
 ts_strerror(ts_error_t err)
 {
     if (err > TS_ERR_FIRST_MARKER && err < TS_ERR_LAST_MARKER) {
-        return error_messages[err + -TS_ERR_FIRST_MARKER - 1];
+        return error_messages[err + -TS_ERR_FIRST_MARKER - 2];
     }
 
     return strerror(err);
