@@ -4,6 +4,8 @@
 #include "net/message.h"
 #include "net/tcp_client.h"
 
+#include "interop/plugin.h"
+
 /*!
  * \brief A callback function to be called when a new client connects to the
  *        the server
