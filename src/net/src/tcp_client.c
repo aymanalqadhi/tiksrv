@@ -1,6 +1,5 @@
 #include "net/tcp_client.h"
-#include "net/tcp_client_callbacks.h"
-#include "net/tcp_listener.h"
+#include "impl/tcp_client_callbacks.h"
 
 #include "log/error.h"
 #include "log/logger.h"
@@ -133,7 +132,7 @@ ts_tcp_client_respond_with_code(struct ts_tcp_client *client,
     resp_header.seq_number  = seq_no;
     resp_header.flags       = 0;
 
-    resp.body = NULL;
+    resp.body   = NULL;
     resp.header = &resp_header;
 
     return ts_tcp_client_respond(client, &resp);
