@@ -1,5 +1,5 @@
-#include "app/callbacks.h"
-#include "app/shared.h"
+#include "impl/callbacks.h"
+#include "impl/shared.h"
 
 #include "commands/impl/request.h"
 #include "commands/impl/response.h"
@@ -19,18 +19,6 @@ display_request_info(const struct ts_request_message *req)
     log_trace("[+] Flags: %#08X", req->header->flags);
     log_trace("[+] Sequence Number: %#08X", req->header->seq_number);
     log_trace("[+] Body Length: %#08X", req->header->body_length);
-}
-
-static inline void
-make_request_wrapper(struct ts_command_request *      req_wrapper,
-                     const struct ts_request_message *req,
-                     uint32_t                         client_id)
-{
-    req_wrapper->client_id   = client_id;
-    req_wrapper->body_buffer = req->body;
-    req_wrapper->body_length = req->header->body_length;
-    req_wrapper->current_pos = 0;
-    req_wrapper->flags       = 0;
 }
 
 void
@@ -81,18 +69,27 @@ ts_on_client_request(struct ts_tcp_client *           client,
         }
     }
 
-    make_request_wrapper(&req_wrapper, req, client->id);
-    memset(&resp_wrapper, 0, sizeof(resp_wrapper));
+    if ((rc = ts_request_init(
+             &req_wrapper, client->id, req->body, req->header->body_length)) !=
+        0) {
+        log_error("ts_request_init: %s", ts_strerror(rc));
+        return;
+    }
+
+    if ((rc = ts_respone_init(&resp_wrapper)) != 0) {
+        log_error("ts_respone_init: %s", ts_strerror(rc));
+        return;
+    }
 
     code = (*cmd->func)(&req_wrapper, &resp_wrapper, NULL);
 
-    resp_header.code       = code;
-    resp_header.seq_number = req->header->seq_number;
-    resp_header.flags      = ts_command_response_get_flags(&resp_wrapper) << 16;
-    resp_header.body_length = ts_command_response_get_length(&resp_wrapper);
+    resp_header.code        = code;
+    resp_header.seq_number  = req->header->seq_number;
+    resp_header.flags       = resp_wrapper.flags << 16;
+    resp_header.body_length = resp_wrapper.buffer_length;
 
     resp.header = &resp_header;
-    resp.body   = ts_command_response_get_buffer(&resp_wrapper);
+    resp.body   = resp_wrapper.body_buffer;
 
     if ((rc = ts_tcp_client_respond(client, &resp)) != 0) {
         log_error("ts_tcp_client_respond: %s", ts_strerror(rc));

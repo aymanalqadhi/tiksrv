@@ -1,5 +1,5 @@
-#include "commands/request.h"
 #include "commands/impl/request.h"
+#include "commands/request.h"
 
 #include "log/error.h"
 #include "util/validation.h"
@@ -7,6 +7,7 @@
 #include <endian.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define REQUEST_READ_IMPL(size)                                                \
@@ -59,6 +60,23 @@ ts_request_read_byte(struct ts_command_request *req, uint8_t *valptr)
 REQUEST_READ_IMPL(16)
 REQUEST_READ_IMPL(32)
 REQUEST_READ_IMPL(64)
+
+ts_error_t
+ts_request_init(struct ts_command_request *req,
+                uint32_t                   client_id,
+                const void *               body_buf,
+                uint32_t                   body_len)
+{
+    CHECK_NULL_PARAMS_1(req);
+
+    req->client_id   = client_id;
+    req->body_buffer = body_buf;
+    req->body_length = body_len;
+    req->current_pos = 0;
+    req->flags       = 0;
+
+    return TS_ERR_SUCCESS;
+}
 
 ts_error_t
 ts_request_read_string(struct ts_command_request *req, char *buf, uint32_t *len)

@@ -8,7 +8,7 @@ typedef enum
     /* First error marer (used by ezd_strerror) */
     TS_ERR_FIRST_MARKER = -0x1000,
 
-    /* General Errors */
+    /* General errors */
     TS_ERR_NULL_ARGUMENTS,
     TS_ERR_UNINITIALIZED_DATA,
     TS_ERR_MEMORY_ALLOC_FAILED,
@@ -28,6 +28,15 @@ typedef enum
 
     /* Commands errors */
     TS_ERR_COMMAND_EXPORT_FAILED,
+
+    /* Plugins errors */
+    TS_ERR_LOAD_PLUGIN_FAILED,
+    TS_ERR_INVALID_PLUGIN,
+
+    /* Filesystem errors */
+    TS_ERR_SCAN_DIR_FAILED,
+    TS_ERR_GET_CWD_FAILED,
+    TS_ERR_CHDIR_FAILED,
 
     /* Last error marer (used by ezd_strerror) */
     TS_ERR_LAST_MARKER

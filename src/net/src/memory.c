@@ -11,9 +11,10 @@
 void
 ts_read_buffer_alloc_cb(uv_handle_t *handle, size_t s_size, uv_buf_t *buf)
 {
-    struct ts_tcp_client *client = (struct ts_tcp_client *)handle->data;
+    size_t                to_read;
+    struct ts_tcp_client *client;
 
-    size_t to_read;
+    client = (struct ts_tcp_client *)handle->data;
 
     if (client->read_sm.state == &ts_read_header_state) {
         to_read = TS_MESSAGE_REQUEST_HEADER_SIZE;

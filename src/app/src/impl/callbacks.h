@@ -1,8 +1,10 @@
-#ifndef TIKSRV_APP_CALLBACKS_H
-#define TIKSRV_APP_CALLBACKS_H
+#ifndef TIKSRV_APP_IMPL_CALLBACKS_H
+#define TIKSRV_APP_IMPL_CALLBACKS_H
 
 #include "net/message.h"
 #include "net/tcp_client.h"
+
+#include "interop/plugin.h"
 
 /*!
  * \brief A callback function to be called when a new client connects to the

@@ -6,12 +6,19 @@
 
 #include <endian.h>
 #include <limits.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define RESPONSE_DEFAULT_CAPACITY 0x10
+#define RESPONSE_MAX_CAPACITY 8192
+
+static inline size_t
+calculate_new_capacity(size_t current_cap, size_t current_len, size_t n)
+{
+    return pow(2, ceil(log2(current_len + n)));
+}
 
 static inline ts_error_t
 reserve_bytes(struct ts_command_response *resp, size_t n)
@@ -23,10 +30,9 @@ reserve_bytes(struct ts_command_response *resp, size_t n)
         return TS_ERR_SUCCESS;
     }
 
-    new_cap = resp->buffer_capacity == 0 ? RESPONSE_DEFAULT_CAPACITY
-                                         : resp->buffer_capacity * 2;
-
-    if (new_cap > UINT32_MAX) {
+    if ((new_cap = calculate_new_capacity(resp->buffer_capacity,
+                                          resp->buffer_length,
+                                          n)) > RESPONSE_MAX_CAPACITY) {
         return TS_ERR_INDEX_OUT_OF_RANGE;
     }
 
@@ -114,6 +120,15 @@ ts_response_write_string(struct ts_command_response *resp,
     }
 
     return ts_response_write(resp, (const void *)str, len);
+}
+
+ts_error_t
+ts_respone_init(struct ts_command_response *resp)
+{
+    CHECK_NULL_PARAMS_1(resp);
+
+    memset((void *)resp, 0, sizeof(*resp));
+    return TS_ERR_SUCCESS;
 }
 
 uint16_t

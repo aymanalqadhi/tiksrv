@@ -92,6 +92,18 @@ ts_response_write_string(struct ts_command_response *resp,
                          uint32_t                    len);
 
 /*!
+ * \brief Initializes a command response object pointed to by \see resp
+ *
+ * This function simply zeros the passed object
+ *
+ * \param [out] resp  A pointer to the command response object to be initialized
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_respone_init(struct ts_command_response *resp);
+
+/*!
  * \brief Gets the flags vlaue associated with a response wrapper object pointed
  *        to by \see req
  *

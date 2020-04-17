@@ -1,5 +1,5 @@
-#ifndef TIKSRV_APP_SHARED_H
-#define TIKSRV_APP_SHARED_H
+#ifndef TIKSRV_APP_IMPL_SHARED_H
+#define TIKSRV_APP_IMPL_SHARED_H
 
 #include "commands/command.h"
 
