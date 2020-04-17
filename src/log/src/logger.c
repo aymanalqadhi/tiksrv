@@ -28,7 +28,7 @@ log_log(log_level_t level, const char *file, int line, const char *fmt, ...)
     char       buf[0x20];
     struct tm *lt;
 
-    if (level < log_level) {
+    if (level > log_level) {
         return;
     }
 
