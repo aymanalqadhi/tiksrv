@@ -1,5 +1,6 @@
-#include "commands/request.h"
 #include "commands/impl/request.h"
+#include "commands/request.h"
+#include "net/message.h"
 
 #include "unity.h"
 
@@ -36,7 +37,9 @@ command_request_read_test(void)
     uint64_t q1, q2;
     time_t   start_seed;
 
-    struct ts_request req;
+    struct ts_request         req;
+    struct ts_request_header  header;
+    struct ts_request_message message;
 
     start_seed = time(NULL);
     srand(start_seed);
@@ -61,12 +64,17 @@ command_request_read_test(void)
         fwrite(
             (const void *)strbuf1, 1, strnlen(strbuf1, sizeof(strbuf1)), fbuf);
 
-        req.body_buffer = (const void *)buf;
-        req.body_length = ftell(fbuf);
-        req.current_pos = 0;
-        req.flags       = 0;
-        len             = sizeof(strbuf2);
+        message.body       = (const void *)buf;
+        header.flags       = 0;
+        header.body_length = ftell(fbuf);
+        req.current_pos    = 0;
+        len                = sizeof(strbuf2);
         fclose(fbuf);
+
+        req.client = NULL;
+        req.current_pos = 0;
+        req.message = &message;
+        message.header = &header;
 
         rc = ts_request_read_byte(&req, &b2);
         TEST_ASSERT_EQUAL(0, rc);
