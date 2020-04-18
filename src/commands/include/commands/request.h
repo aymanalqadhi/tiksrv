@@ -2,6 +2,8 @@
 #define TIKSRV_COMMANDS_REQUEST_H
 
 #include "log/error.h"
+#include "net/message.h"
+#include "net/tcp_client.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -99,10 +101,9 @@ ts_request_read_string(struct ts_request *req, char *buf, uint32_t *len);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_init(struct ts_request *req,
-                uint32_t           client_id,
-                const void *       body_buf,
-                uint32_t           body_len);
+ts_request_init(struct ts_request *              req,
+                struct ts_tcp_client *           client,
+                const struct ts_request_message *message);
 
 /*!
  * \brief Gets the client id vlaue associated with a request wrapper object
@@ -148,5 +149,8 @@ ts_request_get_buffer(const struct ts_request *req);
  */
 uint32_t
 ts_request_get_length(const struct ts_request *req);
+
+uint32_t
+ts_request_get_sequence_number(const struct ts_request *req);
 
 #endif
