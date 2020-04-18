@@ -124,6 +124,31 @@ ts_response_write_string(struct ts_response *resp,
 }
 
 ts_error_t
+ts_response_commit(struct ts_response *resp, struct ts_request *req)
+{
+    int rc;
+
+    struct ts_response_message resp_message;
+    struct ts_response_header  resp_header;
+
+    resp_header.code        = resp->code;
+    resp_header.seq_number  = req->message->header->seq_number;
+    resp_header.flags       = resp->flags << 16;
+    resp_header.body_length = resp->buffer_length;
+
+    resp_message.header = &resp_header;
+    resp_message.body   = resp->body_buffer;
+
+    if ((rc = ts_tcp_client_respond(req->client, &resp_message)) != 0) {
+        log_error("ts_tcp_client_respond: %s", ts_strerror(rc));
+        ts_tcp_client_close(req->client);
+        return rc;
+    }
+
+    return TS_ERR_SUCCESS;
+}
+
+ts_error_t
 ts_respone_init(struct ts_response *resp)
 {
     CHECK_NULL_PARAMS_1(resp);
@@ -171,29 +196,4 @@ void
 ts_response_set_flags(struct ts_response *resp, uint32_t flags)
 {
     resp->flags = flags;
-}
-
-ts_error_t
-ts_response_commit(struct ts_response *resp, struct ts_request *req)
-{
-    int rc;
-
-    struct ts_response_message resp_message;
-    struct ts_response_header  resp_header;
-
-    resp_header.code        = resp->code;
-    resp_header.seq_number  = req->message->header->seq_number;
-    resp_header.flags       = resp->flags << 16;
-    resp_header.body_length = resp->buffer_length;
-
-    resp_message.header = &resp_header;
-    resp_message.body   = resp->body_buffer;
-
-    if ((rc = ts_tcp_client_respond(req->client, &resp_message)) != 0) {
-        log_error("ts_tcp_client_respond: %s", ts_strerror(rc));
-        ts_tcp_client_close(req->client);
-        return rc;
-    }
-
-    return TS_ERR_SUCCESS;
 }

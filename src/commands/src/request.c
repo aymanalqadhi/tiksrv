@@ -105,10 +105,16 @@ ts_request_get_client_id(const struct ts_request *req)
     return req->client->id;
 }
 
-uint16_t
+uint32_t
 ts_request_get_flags(const struct ts_request *req)
 {
     return req->message->header->flags;
+}
+
+uint32_t
+ts_request_get_sequence_number(const struct ts_request *req)
+{
+    return req->message->header->seq_number;
 }
 
 const void *
@@ -121,10 +127,4 @@ uint32_t
 ts_request_get_length(const struct ts_request *req)
 {
     return req->message->header->body_length;
-}
-
-uint32_t
-ts_request_get_sequence_number(const struct ts_request *req)
-{
-    return req->message->header->seq_number;
 }

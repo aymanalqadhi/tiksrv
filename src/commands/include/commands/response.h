@@ -91,6 +91,18 @@ ts_response_write_string(struct ts_response *resp,
                          uint32_t            len);
 
 /*!
+ * \breif Commits respone pointed to by \see resp contents into a request
+ *        pointed to by \see req
+ *
+ * \param [in, out] resp  A pointer to the response which to be commited
+ * \param [in]      req   A pointer to the request into which to commit
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_response_commit(struct ts_response *resp, struct ts_request *req);
+
+/*!
  * \brief Initializes a command response object pointed to by \see resp
  *
  * This function simply zeros the passed object
@@ -158,8 +170,5 @@ ts_response_get_capacity(const struct ts_response *resp);
  */
 void
 ts_response_set_flags(struct ts_response *resp, uint32_t flags);
-
-ts_error_t
-ts_response_commit(struct ts_response *resp, struct ts_request *req);
 
 #endif

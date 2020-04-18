@@ -124,8 +124,20 @@ ts_request_get_client_id(const struct ts_request *req);
  *
  * \return The flags value of the supplied request object
  */
-uint16_t
+uint32_t
 ts_request_get_flags(const struct ts_request *req);
+
+/*!
+ * \brief Gets the sequence number vlaue associated with a request wrapper
+ *        object pointed to by \see req
+ *
+ * \param [in] req  A pointer to the request object of which to get the value
+ *
+ * \return The sequence number value of the supplied request object
+ */
+uint32_t
+ts_request_get_sequence_number(const struct ts_request *req);
+
 
 /*!
  * \brief Gets the buffer pointer associated with a request wrapper object
@@ -149,8 +161,5 @@ ts_request_get_buffer(const struct ts_request *req);
  */
 uint32_t
 ts_request_get_length(const struct ts_request *req);
-
-uint32_t
-ts_request_get_sequence_number(const struct ts_request *req);
 
 #endif
