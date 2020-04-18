@@ -36,7 +36,7 @@ command_request_read_test(void)
     uint64_t q1, q2;
     time_t   start_seed;
 
-    struct ts_command_request req;
+    struct ts_request req;
 
     start_seed = time(NULL);
     srand(start_seed);

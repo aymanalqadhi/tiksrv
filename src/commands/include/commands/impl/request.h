@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-struct ts_command_request
+struct ts_request
 {
     uint32_t    client_id;
     uint16_t    flags;

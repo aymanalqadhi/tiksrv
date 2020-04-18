@@ -52,8 +52,8 @@ ts_on_client_request(struct ts_tcp_client *           client,
 
     struct ts_response_message resp;
     struct ts_response_header  resp_header;
-    struct ts_command_request  req_wrapper;
-    struct ts_command_response resp_wrapper;
+    struct ts_request          req_wrapper;
+    struct ts_response         resp_wrapper;
     struct ts_command *        cmd;
 
     display_request_info(req);
@@ -61,7 +61,7 @@ ts_on_client_request(struct ts_tcp_client *           client,
     if (!(cmd = ts_app_get_command(req->header->command))) {
         if ((rc = ts_tcp_client_respond_with_code(
                  client,
-                 TS_COMMAND_CODE_NO_SUCH_COMMAND,
+                 TS_RESPONSE_CODE_NO_SUCH_COMMAND,
                  req->header->seq_number)) != 0) {
             log_error("ts_tcp_client_respond_with_code: %s", ts_strerror(rc));
             ts_tcp_client_close(client);

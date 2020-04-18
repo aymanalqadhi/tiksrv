@@ -35,7 +35,7 @@ command_response_write_test(void)
     uint64_t q1, q2;
     time_t   start_seed;
 
-    struct ts_command_response resp;
+    struct ts_response resp;
 
     start_seed = time(NULL);
     srand(start_seed);

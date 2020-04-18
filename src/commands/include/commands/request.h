@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct ts_command_request;
+struct ts_request;
 
 /*!
  * \brief Reads \see *len bytes from a request object pointed to by \see req,
@@ -19,7 +19,7 @@ struct ts_command_request;
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_read(struct ts_command_request *req, void *buf, size_t len);
+ts_request_read(struct ts_request *req, void *buf, size_t len);
 
 /*!
  * \brief Reads a single bytes from a request object pointed to by \see req,
@@ -32,7 +32,7 @@ ts_request_read(struct ts_command_request *req, void *buf, size_t len);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_read_byte(struct ts_command_request *req, uint8_t *valptr);
+ts_request_read_byte(struct ts_request *req, uint8_t *valptr);
 
 /*!
  * \brief Reads a 16 bit unsigned integer from a request object pointed to by
@@ -45,7 +45,7 @@ ts_request_read_byte(struct ts_command_request *req, uint8_t *valptr);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_read_uint16(struct ts_command_request *req, uint16_t *valptr);
+ts_request_read_uint16(struct ts_request *req, uint16_t *valptr);
 
 /*!
  * \brief Reads a 32 bit unsigned integer from a request object pointed to by
@@ -58,7 +58,7 @@ ts_request_read_uint16(struct ts_command_request *req, uint16_t *valptr);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_read_uint32(struct ts_command_request *req, uint32_t *valptr);
+ts_request_read_uint32(struct ts_request *req, uint32_t *valptr);
 
 /*!
  * \brief Reads a 64 bit unsigned integer from a request object pointed to by
@@ -71,7 +71,7 @@ ts_request_read_uint32(struct ts_command_request *req, uint32_t *valptr);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_read_uint64(struct ts_command_request *req, uint64_t *valptr);
+ts_request_read_uint64(struct ts_request *req, uint64_t *valptr);
 
 /*!
  * \brief Reads a string of of size \see *len from a request object pointed to
@@ -85,9 +85,7 @@ ts_request_read_uint64(struct ts_command_request *req, uint64_t *valptr);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_read_string(struct ts_command_request *req,
-                       char *                     buf,
-                       uint32_t *                 len);
+ts_request_read_string(struct ts_request *req, char *buf, uint32_t *len);
 
 /*!
  * \brief Initializes a command request wrapper object pointed to by \see req
@@ -101,10 +99,10 @@ ts_request_read_string(struct ts_command_request *req,
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_request_init(struct ts_command_request *req,
-                uint32_t                   client_id,
-                const void *               body_buf,
-                uint32_t                   body_len);
+ts_request_init(struct ts_request *req,
+                uint32_t           client_id,
+                const void *       body_buf,
+                uint32_t           body_len);
 
 /*!
  * \brief Gets the client id vlaue associated with a request wrapper object
@@ -115,7 +113,7 @@ ts_request_init(struct ts_command_request *req,
  * \return The client id value of the supplied request object
  */
 uint32_t
-ts_command_request_get_client_id(const struct ts_command_request *req);
+ts_request_get_client_id(const struct ts_request *req);
 
 /*!
  * \brief Gets the flags vlaue associated with a request wrapper object pointed
@@ -126,7 +124,7 @@ ts_command_request_get_client_id(const struct ts_command_request *req);
  * \return The flags value of the supplied request object
  */
 uint16_t
-ts_command_request_get_flags(const struct ts_command_request *req);
+ts_request_get_flags(const struct ts_request *req);
 
 /*!
  * \brief Gets the buffer pointer associated with a request wrapper object
@@ -137,7 +135,7 @@ ts_command_request_get_flags(const struct ts_command_request *req);
  * \return The buffer pointer of the supplied request object
  */
 const void *
-ts_command_request_get_buffer(const struct ts_command_request *req);
+ts_request_get_buffer(const struct ts_request *req);
 
 /*!
  * \brief Gets the buffer length of the buffer associated with a request wrapper
@@ -149,6 +147,6 @@ ts_command_request_get_buffer(const struct ts_command_request *req);
  * \return The buffer length of the supplied request object buffer
  */
 uint32_t
-ts_command_request_get_length(const struct ts_command_request *req);
+ts_request_get_length(const struct ts_request *req);
 
 #endif

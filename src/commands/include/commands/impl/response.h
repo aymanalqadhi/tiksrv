@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-struct ts_command_response
+struct ts_response
 {
     uint16_t flags;
     void *   body_buffer;

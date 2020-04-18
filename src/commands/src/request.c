@@ -11,8 +11,8 @@
 #include <string.h>
 
 #define REQUEST_READ_IMPL(size)                                                \
-    ts_error_t ts_request_read_uint##size(struct ts_command_request *req,      \
-                                          uint##size##_t *           valptr)   \
+    ts_error_t ts_request_read_uint##size(struct ts_request *req,              \
+                                          uint##size##_t *   valptr)           \
     {                                                                          \
         int            rc;                                                     \
         uint##size##_t tmp;                                                    \
@@ -28,7 +28,7 @@
     }
 
 ts_error_t
-ts_request_read(struct ts_command_request *req, void *buf, size_t len)
+ts_request_read(struct ts_request *req, void *buf, size_t len)
 {
     CHECK_NULL_PARAMS_2(req, buf);
     CHECK_UNINITIALIZED_DATA_1(req->body_buffer);
@@ -44,7 +44,7 @@ ts_request_read(struct ts_command_request *req, void *buf, size_t len)
 }
 
 ts_error_t
-ts_request_read_byte(struct ts_command_request *req, uint8_t *valptr)
+ts_request_read_byte(struct ts_request *req, uint8_t *valptr)
 {
     CHECK_NULL_PARAMS_2(req, valptr);
     CHECK_NULL_PARAMS_1(req->body_buffer);
@@ -62,10 +62,10 @@ REQUEST_READ_IMPL(32)
 REQUEST_READ_IMPL(64)
 
 ts_error_t
-ts_request_init(struct ts_command_request *req,
-                uint32_t                   client_id,
-                const void *               body_buf,
-                uint32_t                   body_len)
+ts_request_init(struct ts_request *req,
+                uint32_t           client_id,
+                const void *       body_buf,
+                uint32_t           body_len)
 {
     CHECK_NULL_PARAMS_1(req);
 
@@ -79,7 +79,7 @@ ts_request_init(struct ts_command_request *req,
 }
 
 ts_error_t
-ts_request_read_string(struct ts_command_request *req, char *buf, uint32_t *len)
+ts_request_read_string(struct ts_request *req, char *buf, uint32_t *len)
 {
     int      rc;
     uint32_t to_read;
@@ -101,25 +101,25 @@ ts_request_read_string(struct ts_command_request *req, char *buf, uint32_t *len)
 }
 
 uint32_t
-ts_command_request_get_client_id(const struct ts_command_request *req)
+ts_request_get_client_id(const struct ts_request *req)
 {
     return req->client_id;
 }
 
 uint16_t
-ts_command_request_get_flags(const struct ts_command_request *req)
+ts_request_get_flags(const struct ts_request *req)
 {
     return req->flags;
 }
 
 const void *
-ts_command_request_get_buffer(const struct ts_command_request *req)
+ts_request_get_buffer(const struct ts_request *req)
 {
     return req->body_buffer;
 }
 
 uint32_t
-ts_command_request_get_length(const struct ts_command_request *req)
+ts_request_get_length(const struct ts_request *req)
 {
     return req->body_length;
 }

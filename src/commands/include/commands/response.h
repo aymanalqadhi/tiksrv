@@ -6,14 +6,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-enum ts_command_response_code
+enum ts_response_code
 {
-    TS_COMMAND_CODE_SUCCESS = 0,
-    TS_COMMAND_CODE_NO_SUCH_COMMAND,
-    TS_COMMAND_CODE_UNKNOWN_ERROR,
+    TS_RESPONSE_CODE_SUCCESS = 0,
+    TS_RESPONSE_CODE_NO_SUCH_COMMAND,
+    TS_RESPONSE_CODE_UNKNOWN_ERROR,
 };
 
-struct ts_command_response;
+struct ts_response;
 
 /*!
  * \brief Appends \see len bytes from the buffer pointed to by \see buf into
@@ -26,9 +26,7 @@ struct ts_command_response;
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_response_write(struct ts_command_response *resp,
-                  const void *                buf,
-                  uint32_t                    len);
+ts_response_write(struct ts_response *resp, const void *buf, uint32_t len);
 /*!
  * \brief Appends a single byte into a repsonse object pointed to by \see resp
  *        buffer
@@ -39,7 +37,7 @@ ts_response_write(struct ts_command_response *resp,
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_response_write_byte(struct ts_command_response *resp, uint8_t value);
+ts_response_write_byte(struct ts_response *resp, uint8_t value);
 
 /*!
  * \brief Appends a 16 bit unsigned integer into a repsonse object pointed to by
@@ -51,7 +49,7 @@ ts_response_write_byte(struct ts_command_response *resp, uint8_t value);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_response_write_uint16(struct ts_command_response *resp, uint16_t value);
+ts_response_write_uint16(struct ts_response *resp, uint16_t value);
 
 /*!
  * \brief Appends a 16 bit unsigned integer into a repsonse object pointed to by
@@ -63,7 +61,7 @@ ts_response_write_uint16(struct ts_command_response *resp, uint16_t value);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_response_write_uint32(struct ts_command_response *resp, uint32_t value);
+ts_response_write_uint32(struct ts_response *resp, uint32_t value);
 
 /*!
  * \brief Appends a 32 bit unsigned integer into a repsonse object pointed to by
@@ -75,7 +73,7 @@ ts_response_write_uint32(struct ts_command_response *resp, uint32_t value);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_response_write_uint64(struct ts_command_response *resp, uint64_t value);
+ts_response_write_uint64(struct ts_response *resp, uint64_t value);
 
 /*!
  * \brief Appends a 64 bit unsigned integer into a repsonse object pointed to by
@@ -87,9 +85,9 @@ ts_response_write_uint64(struct ts_command_response *resp, uint64_t value);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_response_write_string(struct ts_command_response *resp,
-                         const char *                str,
-                         uint32_t                    len);
+ts_response_write_string(struct ts_response *resp,
+                         const char *        str,
+                         uint32_t            len);
 
 /*!
  * \brief Initializes a command response object pointed to by \see resp
@@ -101,7 +99,7 @@ ts_response_write_string(struct ts_command_response *resp,
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_respone_init(struct ts_command_response *resp);
+ts_respone_init(struct ts_response *resp);
 
 /*!
  * \brief Gets the flags vlaue associated with a response wrapper object pointed
@@ -112,7 +110,7 @@ ts_respone_init(struct ts_command_response *resp);
  * \return The flags value of the supplied response object
  */
 uint16_t
-ts_command_response_get_flags(const struct ts_command_response *resp);
+ts_response_get_flags(const struct ts_response *resp);
 
 /*!
  * \brief Gets the buffer pointer associated with a response wrapper object
@@ -123,11 +121,11 @@ ts_command_response_get_flags(const struct ts_command_response *resp);
  * \return The buffer pointer of the supplied response object
  */
 const void *
-ts_command_response_get_buffer(const struct ts_command_response *resp);
+ts_response_get_buffer(const struct ts_response *resp);
 
 /*!
- * \brief Gets the buffer length of the buffer associated with a response wrapper
- *        object pointed to by \see req
+ * \brief Gets the buffer length of the buffer associated with a response
+ * wrapper object pointed to by \see req
  *
  * \param [in] req  A pointer to the response object of which to get the buffer
  *                  length
@@ -135,7 +133,7 @@ ts_command_response_get_buffer(const struct ts_command_response *resp);
  * \return The buffer length of the supplied response object buffer
  */
 uint32_t
-ts_command_response_get_length(const struct ts_command_response *resp);
+ts_response_get_length(const struct ts_response *resp);
 
 /*!
  * \brief Gets the buffer capacity of the buffer associated with a response
@@ -147,7 +145,7 @@ ts_command_response_get_length(const struct ts_command_response *resp);
  * \return The buffer capacity of the supplied response object buffer
  */
 uint32_t
-ts_command_response_get_capacity(const struct ts_command_response *resp);
+ts_response_get_capacity(const struct ts_response *resp);
 
 /*!
  * \brief Sets the flags value of a response wrapper object pointed to by \see
@@ -158,6 +156,6 @@ ts_command_response_get_capacity(const struct ts_command_response *resp);
  * \param [in]      flags  The new flags value
  */
 void
-ts_command_response_set_flags(struct ts_command_response *resp, uint16_t flags);
+ts_response_set_flags(struct ts_response *resp, uint16_t flags);
 
 #endif

@@ -15,8 +15,8 @@ enum ts_system_commands
     TS_COMMAND_ECHO
 };
 
-typedef uint16_t (*ts_command_func_t)(struct ts_command_request *,
-                                      struct ts_command_response *,
+typedef uint16_t (*ts_command_func_t)(struct ts_request *,
+                                      struct ts_response *,
                                       struct ts_services_container *);
 
 struct ts_command
