@@ -18,9 +18,12 @@
 
 #include <stdlib.h>
 
-static struct ts_tcp_listener *listener;
-static struct ts_plugin *      plugins;
-static struct ts_command *     commands;
+static struct
+{
+    struct ts_tcp_listener *listener;
+    struct ts_plugin *      plugins;
+    struct ts_command *     commands;
+} app;
 
 static void
 export_command(const struct ts_command *cmd)
@@ -38,7 +41,7 @@ export_command(const struct ts_command *cmd)
         return;
     }
 
-    HASH_ADD_INT(commands, command, tmp);
+    HASH_ADD_INT(app.commands, command, tmp);
 }
 
 static inline void
@@ -46,9 +49,9 @@ destroy_commands(void)
 {
     struct ts_command *command, *tmp;
 
-    HASH_ITER(hh, commands, command, tmp)
+    HASH_ITER(hh, app.commands, command, tmp)
     {
-        HASH_DEL(commands, command);
+        HASH_DEL(app.commands, command);
         free(command);
     }
 }
@@ -60,7 +63,7 @@ on_plugin_load(struct ts_plugin *plug)
     struct ts_plugin *tmp;
 
     tmp = NULL;
-    HASH_FIND_STR(plugins, plug->name, tmp);
+    HASH_FIND_STR(app.plugins, plug->name, tmp);
 
     if (tmp) {
         log_warn("Duplicate plugin names %s", tmp->name);
@@ -80,7 +83,7 @@ on_plugin_load(struct ts_plugin *plug)
         return TS_ERR_MEMORY_ALLOC_FAILED;
     }
 
-    HASH_ADD_STR(plugins, name, tmp);
+    HASH_ADD_STR(app.plugins, name, tmp);
     return TS_ERR_SUCCESS;
 }
 
@@ -89,9 +92,9 @@ destroy_plugins(void)
 {
     struct ts_plugin *plug, *tmp;
 
-    HASH_ITER(hh, plugins, plug, tmp)
+    HASH_ITER(hh, app.plugins, plug, tmp)
     {
-        HASH_DEL(plugins, plug);
+        HASH_DEL(app.plugins, plug);
         ts_plugin_unload(plug);
         free(plug);
     }
@@ -109,7 +112,7 @@ app_init(const struct ts_config *cfg)
     };
 
     log_info("Creating a TCP listener on port %u", cfg->listen_port);
-    if ((rc = ts_tcp_listener_create(&listener, &app_cbs, cfg)) != 0) {
+    if ((rc = ts_tcp_listener_create(&app.listener, &app_cbs, cfg)) != 0) {
         return rc;
     }
 
@@ -139,7 +142,7 @@ ts_app_run(const struct ts_config *cfg)
     }
 
     log_info("Starting listener");
-    if ((rc = ts_tcp_listener_start(listener)) != 0) {
+    if ((rc = ts_tcp_listener_start(app.listener)) != 0) {
         return rc;
     }
 
@@ -155,7 +158,7 @@ void
 ts_app_destroy(void)
 {
     log_info("Cleaning up");
-    ts_tcp_listener_free(listener);
+    ts_tcp_listener_free(app.listener);
 
     destroy_commands();
     destroy_plugins();
@@ -165,7 +168,7 @@ struct ts_command *
 ts_app_get_command(uint32_t id)
 {
     struct ts_command *out;
-    HASH_FIND_INT(commands, &id, out);
+    HASH_FIND_INT(app.commands, &id, out);
 
     return out;
 }
