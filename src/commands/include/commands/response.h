@@ -112,7 +112,7 @@ ts_response_commit(struct ts_response *resp, struct ts_request *req);
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_respone_init(struct ts_response *resp);
+ts_respone_create(struct ts_response **outresp);
 
 /*!
  * \brief Gets the flags vlaue associated with a response wrapper object pointed

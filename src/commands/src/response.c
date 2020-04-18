@@ -149,11 +149,17 @@ ts_response_commit(struct ts_response *resp, struct ts_request *req)
 }
 
 ts_error_t
-ts_respone_init(struct ts_response *resp)
+ts_respone_create(struct ts_response **outresp)
 {
-    CHECK_NULL_PARAMS_1(resp);
+    struct ts_response *tmp;
 
-    memset((void *)resp, 0, sizeof(*resp));
+    CHECK_NULL_PARAMS_1(outresp);
+
+    if (!(tmp = (struct ts_response *)calloc(1, sizeof(*tmp)))) {
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    *outresp = tmp;
     return TS_ERR_SUCCESS;
 }
 

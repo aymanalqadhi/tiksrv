@@ -41,17 +41,6 @@ ts_command_execute(struct ts_command *              cmd,
         return rc;
     }
 
-    if ((rc = ts_respone_init(&resp_wrapper)) != 0) {
-        log_error("ts_respone_init: %s", ts_strerror(rc));
-        return rc;
-    }
-
-    code = (*cmd->func)(&req_wrapper, &resp_wrapper, NULL);
-
-    if ((rc = ts_response_commit(&resp_wrapper, &req_wrapper)) != 0) {
-        log_error("ts_response_commit: %s", ts_strerror(rc));
-        return rc;
-    }
-
+    (*cmd->func)(&req_wrapper, NULL);
     return TS_ERR_SUCCESS;
 }
