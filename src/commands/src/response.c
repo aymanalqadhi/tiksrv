@@ -1,7 +1,10 @@
-#include "commands/impl/response.h"
 #include "commands/response.h"
 
+#include "commands/impl/request.h"
+#include "commands/impl/response.h"
+
 #include "log/error.h"
+#include "log/logger.h"
 #include "util/validation.h"
 
 #include <endian.h>
@@ -130,6 +133,12 @@ ts_respone_init(struct ts_response *resp)
 }
 
 uint16_t
+ts_response_get_code(const struct ts_response *resp)
+{
+    return resp->code;
+}
+
+uint32_t
 ts_response_get_flags(const struct ts_response *resp)
 {
     return resp->flags;
@@ -152,9 +161,39 @@ ts_response_get_capacity(const struct ts_response *resp)
 {
     return resp->buffer_capacity;
 }
+void
+ts_response_set_code(struct ts_response *resp, uint16_t code)
+{
+    resp->code = code;
+}
 
 void
-ts_response_set_flags(struct ts_response *resp, uint16_t flags)
+ts_response_set_flags(struct ts_response *resp, uint32_t flags)
 {
     resp->flags = flags;
+}
+
+ts_error_t
+ts_response_commit(struct ts_response *resp, struct ts_request *req)
+{
+    int rc;
+
+    struct ts_response_message resp_message;
+    struct ts_response_header  resp_header;
+
+    resp_header.code        = resp->code;
+    resp_header.seq_number  = req->message->header->seq_number;
+    resp_header.flags       = resp->flags << 16;
+    resp_header.body_length = resp->buffer_length;
+
+    resp_message.header = &resp_header;
+    resp_message.body   = resp->body_buffer;
+
+    if ((rc = ts_tcp_client_respond(req->client, &resp_message)) != 0) {
+        log_error("ts_tcp_client_respond: %s", ts_strerror(rc));
+        ts_tcp_client_close(req->client);
+        return rc;
+    }
+
+    return TS_ERR_SUCCESS;
 }

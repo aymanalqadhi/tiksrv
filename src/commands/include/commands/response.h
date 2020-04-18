@@ -1,6 +1,7 @@
 #ifndef TIKSRV_COMMANDS_RESPONSE_H
 #define TIKSRV_COMMANDS_RESPONSE_H
 
+#include "commands/request.h"
 #include "log/error.h"
 
 #include <stddef.h>
@@ -109,7 +110,7 @@ ts_respone_init(struct ts_response *resp);
  *
  * \return The flags value of the supplied response object
  */
-uint16_t
+uint32_t
 ts_response_get_flags(const struct ts_response *resp);
 
 /*!
@@ -156,6 +157,9 @@ ts_response_get_capacity(const struct ts_response *resp);
  * \param [in]      flags  The new flags value
  */
 void
-ts_response_set_flags(struct ts_response *resp, uint16_t flags);
+ts_response_set_flags(struct ts_response *resp, uint32_t flags);
+
+ts_error_t
+ts_response_commit(struct ts_response *resp, struct ts_request *req);
 
 #endif
