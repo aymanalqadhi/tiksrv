@@ -1,15 +1,9 @@
 #include "impl/callbacks.h"
 #include "impl/shared.h"
 
-#include "commands/impl/request.h"
-#include "commands/impl/response.h"
-#include "commands/request.h"
-#include "commands/response.h"
-
 #include "log/logger.h"
 #include "net/address.h"
 #include "net/message.h"
-#include "util/memory.h"
 
 static inline void
 display_request_info(const struct ts_request_message *req)
@@ -47,14 +41,9 @@ void
 ts_on_client_request(struct ts_tcp_client *           client,
                      const struct ts_request_message *req)
 {
-    int      rc;
-    uint16_t code;
-
-    struct ts_response_message resp;
-    struct ts_response_header  resp_header;
-    struct ts_request          req_wrapper;
-    struct ts_response         resp_wrapper;
-    struct ts_command *        cmd;
+    int                rc;
+    uint16_t           code;
+    struct ts_command *cmd;
 
     display_request_info(req);
 
@@ -69,30 +58,7 @@ ts_on_client_request(struct ts_tcp_client *           client,
         }
     }
 
-    if ((rc = ts_request_init(
-             &req_wrapper, client->id, req->body, req->header->body_length)) !=
-        0) {
-        log_error("ts_request_init: %s", ts_strerror(rc));
-        return;
-    }
-
-    if ((rc = ts_respone_init(&resp_wrapper)) != 0) {
-        log_error("ts_respone_init: %s", ts_strerror(rc));
-        return;
-    }
-
-    code = (*cmd->func)(&req_wrapper, &resp_wrapper, NULL);
-
-    resp_header.code        = code;
-    resp_header.seq_number  = req->header->seq_number;
-    resp_header.flags       = resp_wrapper.flags << 16;
-    resp_header.body_length = resp_wrapper.buffer_length;
-
-    resp.header = &resp_header;
-    resp.body   = resp_wrapper.body_buffer;
-
-    if ((rc = ts_tcp_client_respond(client, &resp)) != 0) {
-        log_error("ts_tcp_client_respond: %s", ts_strerror(rc));
-        ts_tcp_client_close(client);
+    if ((rc = ts_command_execute(cmd, client, req)) != 0) {
+        log_error("ts_command_execute: %s", ts_strerror(rc));
     }
 }
