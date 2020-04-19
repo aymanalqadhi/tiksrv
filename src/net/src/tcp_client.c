@@ -118,7 +118,7 @@ ts_tcp_client_enqueue_response(struct ts_tcp_client *      client,
         0) {
         log_error("ezd_queue_enqueue: %s", ezd_strerror(rc));
         ts_tcp_client_close(client);
-        return TS_ERR_MEMORY_ALLOC_FAILED;
+        return TS_ERR_SOCKET_WRITE_FAILED;
     }
 
     return TS_ERR_SUCCESS;
