@@ -26,13 +26,16 @@ echo_command_exec(struct ts_request *req, struct ts_services_container *svcs)
                                 ts_request_get_buffer(req),
                                 ts_request_get_length(req))) != 0) {
         log_error("ts_response_write: %s", ts_strerror(rc));
-        return;
+        goto cleanup;
     }
 
     if ((rc = ts_response_commit(resp, req)) != 0) {
         log_error("ts_response_commit: %s", ts_strerror(rc));
-        return;
+        goto cleanup;
     }
+
+cleanup:
+    ts_response_free(resp);
 }
 
 struct ts_command ts_echo_command = { .command = TS_COMMAND_ECHO,
