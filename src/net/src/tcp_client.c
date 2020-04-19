@@ -246,8 +246,8 @@ ts_write_context_init(struct ts_write_context *   ctx,
         return TS_ERR_MEMORY_ALLOC_FAILED;
     }
 
-    ctx->client              = client;
-    ctx->response                = resp;
+    ctx->client         = client;
+    ctx->response       = resp;
     ctx->buffers[0].len = TS_MESSAGE_RESPONSE_HEADER_SIZE;
 
     if (resp->body) {
