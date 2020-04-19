@@ -5,6 +5,7 @@
 
 #include "uv.h"
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -44,6 +45,7 @@ struct ts_response_message
 struct ts_response_context
 {
     uv_buf_t buffers[2];
+    bool     include_body;
 };
 
 /*!
@@ -104,26 +106,5 @@ ts_error_t
 ts_decode_response_header(struct ts_response_header *resp,
                           const void *               buf,
                           size_t                     len);
-/*!
- * \brief Initializes a response context object pointed to by \see ctx with
- *        a response message object pointed to by \see resp
- *
- * \param [out] ctx   A pointer to the response context object to be initialized
- * \param [in]  resp  A pointer to the response message object to be used for
- *                    initializing \see ctx
- *
- * \return 0 on success, or a negative value indicating error on failure
- */
-ts_error_t
-ts_response_context_init(struct ts_response_context *ctx,
-                         struct ts_response_message *resp);
-
-/*!
- * \brief Frees the resources used by a response context object
- *
- * \param [in, out] ctx  A pointer to the response context object to be used
- */
-void
-ts_response_context_free(struct ts_response_context *ctx);
 
 #endif
