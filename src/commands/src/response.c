@@ -145,6 +145,7 @@ ts_response_commit(struct ts_response *resp, struct ts_request *req)
         return rc;
     }
 
+    memset(resp, 0, sizeof(*resp));
     return TS_ERR_SUCCESS;
 }
 
@@ -161,6 +162,15 @@ ts_respone_create(struct ts_response **outresp)
 
     *outresp = tmp;
     return TS_ERR_SUCCESS;
+}
+
+void
+ts_response_free(struct ts_response *resp)
+{
+    if (resp->body_buffer) {
+        free(resp->body_buffer);
+    }
+    free(resp);
 }
 
 uint16_t

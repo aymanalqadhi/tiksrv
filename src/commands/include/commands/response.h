@@ -171,4 +171,12 @@ ts_response_get_capacity(const struct ts_response *resp);
 void
 ts_response_set_flags(struct ts_response *resp, uint32_t flags);
 
+/*!
+ * \brief Frees the used resources by the response object
+ *
+ * \param [in, out] resp  A pointer to the response object to be freed
+ */
+void
+ts_response_free(struct ts_response *resp);
+
 #endif
