@@ -40,7 +40,7 @@ add_subdirectory(lib)
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:${MAIN_PROJECT_NAME}>)
 
 # Dependencies
-set(EXTERNAL_DEPS uv uthash)
+set(EXTERNAL_DEPS uv uthash ezd)
 target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
                                       ${NET_PROJECT_NAME}
