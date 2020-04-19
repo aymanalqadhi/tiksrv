@@ -5,23 +5,32 @@
 #include "net/message.h"
 #include "net/read_state_machine.h"
 
+#include "ezd/queue.h"
 #include "uthash.h"
 #include "uv.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 struct ts_tcp_listener;
 
+struct ts_write_context
+{
+    struct ts_tcp_client *      client;
+    struct ts_response_message *response;
+    uv_buf_t                    buffers[2];
+    bool                        has_body;
+};
+
 struct ts_tcp_client
 {
-    uint32_t                id;           /* The client unique identifier */
-    uv_tcp_t                socket;       /* The client connection socket */
-    struct ts_tcp_listener *listener;     /* A pointer to the listener which
-                                             accepted this client */
-    struct ts_read_state_machine read_sm; /* Client data reading state
-                                             machine */
-    struct ts_response_context response_ctx;
+    uint32_t id;
+    uv_tcp_t socket;
 
+    struct ts_tcp_listener *     listener;
+    struct ts_read_state_machine read_sm;
+
+    ezd_queue_t *  write_queue;
     UT_hash_handle hh;
 };
 
@@ -49,6 +58,31 @@ ts_tcp_client_create(struct ts_tcp_client **outclient);
  */
 ts_error_t
 ts_tcp_client_start_read(struct ts_tcp_client *client);
+
+/*!
+ * \brief Enqueues a response to be sent
+ *
+ * This function enqueues a request to be sent in order when a call to \see
+ * ts_tcp_client_send_equeued is made.
+ *
+ * \param [in] client  A pointer to the client which to enqueue the response for
+ * \param [in] resp    A pointer to the response object to be enqueued
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_tcp_client_enqueue_response(struct ts_tcp_client *      client,
+                               struct ts_response_message *resp);
+
+/*!
+ * \brief Sends the enqueued response messages
+ *
+ * \param [in] client  A pointer to the client whose requests to be sent
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_tcp_client_send_equeued(struct ts_tcp_client *client);
 
 /*!
  * \brief Sends a response message pointed to by \see resp to a client
@@ -94,5 +128,43 @@ ts_tcp_client_close(struct ts_tcp_client *client);
  */
 void
 ts_tcp_client_free(struct ts_tcp_client *client);
+
+/*!
+ * \brief Creates a response writing context, then initializes it with a call
+ *        to \see ts_write_context_init
+ *
+ * \param [out] outctx  A pointer to the output response write context object
+ * \param [in]  client  A pointer to the client into whose socket to write
+ * \param [in]  resp    A pointer to the response object to use
+ *
+ * \return 0 on success, or a negative value indicating error otherwise
+ */
+ts_error_t
+ts_write_context_create(struct ts_write_context **  outctx,
+                        struct ts_tcp_client *      client,
+                        struct ts_response_message *resp);
+
+/*!
+ * \brief Initializes a write context object pointed to by \see ctx with
+ *        a write message object pointed to by \see resp
+ *
+ * \param [out] ctx     A pointer to the write context object to be initialized
+ * \param [in]  client  A pointer to the client into whose socket to write
+ * \param [in]  resp    A pointer to the response object to use
+ *
+ * \return 0 on success, or a negative value indicating error on failure
+ */
+ts_error_t
+ts_write_context_init(struct ts_write_context *   ctx,
+                      struct ts_tcp_client *      client,
+                      struct ts_response_message *resp);
+
+/*!
+ * \brief Frees the resources used by a write context object
+ *
+ * \param [in, out] ctx  A pointer to the write context object to be used
+ */
+void
+ts_write_context_free(struct ts_write_context *ctx);
 
 #endif

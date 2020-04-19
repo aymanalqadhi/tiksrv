@@ -1,13 +1,25 @@
-#include "net/tcp_client.h"
 #include "impl/tcp_client_callbacks.h"
+#include "net/tcp_client.h"
 
 #include "log/error.h"
 #include "log/logger.h"
 #include "net/memory.h"
+#include "net/message.h"
 #include "util/validation.h"
+
+#include <sys/queue.h>
 
 #include <stdint.h>
 #include <stdlib.h>
+
+static void
+response_deallocator(struct ts_response_message *resp)
+{
+    if (resp->body) {
+        free((void *)resp->body);
+    }
+    free(resp);
+}
 
 static inline ts_error_t
 tcp_client_init(struct ts_tcp_client *client)
@@ -15,10 +27,19 @@ tcp_client_init(struct ts_tcp_client *client)
     int             rc;
     static uint32_t currnet_id = 0;
 
+    if ((ezd_queue_create(&client->write_queue,
+                          sizeof(struct ts_response_message))) != 0) {
+        log_error("ezd_queue_create: %s", ezd_strerror(rc));
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
     if ((rc = uv_tcp_init(uv_default_loop(), &client->socket)) < 0) {
         log_debug("uv_tcp_init: %s", uv_strerror(rc));
         return TS_ERR_SOCKET_CREATE_FAILED;
     }
+
+    ezd_slist_set_deallocator(client->write_queue,
+                              (ezd_dealloc_func_t)&response_deallocator);
 
     client->id              = currnet_id++;
     client->socket.data     = client;
@@ -81,42 +102,87 @@ ts_tcp_client_free(struct ts_tcp_client *client)
         free(client->read_sm.buf);
     }
 
+    ezd_queue_free(client->write_queue);
     free(client);
 }
 
 ts_error_t
-ts_tcp_client_respond(struct ts_tcp_client *      client,
-                      struct ts_response_message *resp)
+ts_tcp_client_enqueue_response(struct ts_tcp_client *      client,
+                               struct ts_response_message *resp)
+{
+    int rc;
+
+    CHECK_NULL_PARAMS_1(client);
+
+    if ((rc = ezd_queue_enqueue(client->write_queue, (const void *)resp)) !=
+        0) {
+        log_error("ezd_queue_enqueue: %s", ezd_strerror(rc));
+        ts_tcp_client_close(client);
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    return TS_ERR_SUCCESS;
+}
+
+ts_error_t
+ts_tcp_client_send_equeued(struct ts_tcp_client *client)
 {
     int         rc;
     uv_write_t *write_req;
 
-    CHECK_NULL_PARAMS_2(client, resp);
+    struct ts_response_message *resp;
+    struct ts_write_context *   ctx;
 
-    if (!(write_req = (uv_write_t *)malloc(sizeof(*write_req)))) {
+    if (ezd_queue_count(client->write_queue) == 0) {
+        return TS_ERR_SUCCESS;
+    }
+
+    if ((rc = ezd_queue_dequeue(client->write_queue, (void **)&resp)) != 0) {
+        log_error("ezd_queue_dequeue", ezd_strerror(rc));
         return TS_ERR_MEMORY_ALLOC_FAILED;
     }
 
-    if ((rc = ts_response_context_init(&client->response_ctx, resp)) != 0) {
+    if (!(write_req = (uv_write_t *)malloc(sizeof(*write_req)))) {
+        free(resp);
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    if ((rc = ts_write_context_create(&ctx, client, resp)) != 0) {
+        free(resp);
         free(write_req);
         return rc;
     }
 
-    write_req->data = client;
+    write_req->data = ctx;
 
     if ((rc = uv_write(write_req,
                        (uv_stream_t *)&client->socket,
-                       client->response_ctx.buffers,
-                       2,
+                       ctx->buffers,
+                       ctx->has_body ? 2 : 1,
                        &ts_tcp_client_write_cb)) < 0) {
         log_error("uv_write: %s\n", uv_strerror(rc));
-        ts_response_context_free(&client->response_ctx);
+        ts_write_context_free(ctx);
         free(write_req);
 
         return rc;
     }
 
     return TS_ERR_SUCCESS;
+}
+
+ts_error_t
+ts_tcp_client_respond(struct ts_tcp_client *      client,
+                      struct ts_response_message *resp)
+{
+    int rc;
+
+    CHECK_NULL_PARAMS_2(client, resp);
+
+    if ((rc = ts_tcp_client_enqueue_response(client, resp)) != 0) {
+        return rc;
+    }
+
+    return ts_tcp_client_send_equeued(client);
 }
 
 ts_error_t
@@ -136,4 +202,74 @@ ts_tcp_client_respond_with_code(struct ts_tcp_client *client,
     resp.header = &resp_header;
 
     return ts_tcp_client_respond(client, &resp);
+}
+
+ts_error_t
+ts_write_context_create(struct ts_write_context **  outctx,
+                        struct ts_tcp_client *      client,
+                        struct ts_response_message *resp)
+{
+    int                      rc;
+    struct ts_write_context *ctx;
+
+    if (!(ctx = (struct ts_write_context *)malloc(sizeof(*ctx)))) {
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    if ((rc = ts_write_context_init(ctx, client, resp)) != 0) {
+        return rc;
+    }
+
+    *outctx = ctx;
+    return TS_ERR_SUCCESS;
+}
+
+ts_error_t
+ts_write_context_init(struct ts_write_context *   ctx,
+                      struct ts_tcp_client *      client,
+                      struct ts_response_message *resp)
+{
+    int rc;
+
+    CHECK_NULL_PARAMS_2(ctx, resp);
+
+    if (!(ctx->buffers[0].base =
+              (char *)malloc(TS_MESSAGE_RESPONSE_HEADER_SIZE))) {
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    if ((rc = ts_encode_response_header(resp->header,
+                                        ctx->buffers[0].base,
+                                        TS_MESSAGE_RESPONSE_HEADER_SIZE)) !=
+        0) {
+        free(ctx->buffers[0].base);
+        return TS_ERR_MEMORY_ALLOC_FAILED;
+    }
+
+    ctx->client              = client;
+    ctx->response                = resp;
+    ctx->buffers[0].len = TS_MESSAGE_RESPONSE_HEADER_SIZE;
+
+    if (resp->body) {
+        ctx->buffers[1].len  = resp->header->body_length;
+        ctx->buffers[1].base = (char *)resp->body;
+        ctx->has_body        = true;
+    } else {
+        ctx->has_body = false;
+    }
+
+    return TS_ERR_SUCCESS;
+}
+
+void
+ts_write_context_free(struct ts_write_context *ctx)
+{
+    free(ctx->buffers[0].base);
+    free(ctx->response);
+
+    if (ctx->has_body) {
+        free(ctx->buffers[1].base);
+    }
+
+    free(ctx);
 }

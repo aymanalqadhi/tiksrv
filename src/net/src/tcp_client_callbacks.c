@@ -1,4 +1,5 @@
 #include "impl/tcp_client_callbacks.h"
+#include "net/tcp_client.h"
 
 #include "net/address.h"
 #include "net/memory.h"
@@ -8,6 +9,8 @@
 #include "net/tcp_listener.h"
 
 #include "log/logger.h"
+
+#include "ezd/queue.h"
 
 #include "uv.h"
 
@@ -30,19 +33,26 @@ ts_tcp_client_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
 void
 ts_tcp_client_write_cb(uv_write_t *req, int status)
 {
-    int                   i;
-    struct ts_tcp_client *client;
+    int i;
 
-    client = (struct ts_tcp_client *)req->data;
-
-    ts_response_context_free(&client->response_ctx);
+    struct ts_write_context *ctx = (struct ts_write_context *)req->data;
     free(req);
 
     if (status < 0) {
         log_error("uv_write: %s", uv_strerror(status));
-        ts_tcp_client_close(client);
-        return;
+        ts_tcp_client_close(ctx->client);
+        goto cleanup;
     }
+
+    if (ezd_queue_count(ctx->client->write_queue) > 0) {
+        if ((status = ts_tcp_client_send_equeued(ctx->client)) != 0) {
+            log_error("ts_tcp_client_send_equeued: %s", ts_strerror(status));
+            ts_tcp_client_close(ctx->client);
+        }
+    }
+
+cleanup:
+    ts_write_context_free(ctx);
 }
 
 void
