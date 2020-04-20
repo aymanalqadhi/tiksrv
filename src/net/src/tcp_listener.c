@@ -6,7 +6,7 @@
 #include "util/validation.h"
 
 #include <glib.h>
-#include "uv.h"
+#include <uv.h>
 
 #include <netdb.h>
 #include <netinet/in.h>

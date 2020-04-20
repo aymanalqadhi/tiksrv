@@ -3,7 +3,7 @@
 
 #include "log/error.h"
 
-#include "uv.h"
+#include <uv.h>
 
 #include <stdbool.h>
 #include <stddef.h>

@@ -2,7 +2,7 @@
 #include "log/logger.h"
 #include "util/validation.h"
 
-#include "uv.h"
+#include <uv.h>
 
 #include <stdbool.h>
 #include <sys/stat.h>

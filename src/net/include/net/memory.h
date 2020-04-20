@@ -1,7 +1,7 @@
 #ifndef TIKSRV_NET_MEMORY_H
 #define TIKSRV_NET_MEMORY_H
 
-#include "uv.h"
+#include <uv.h>
 
 #define TS_MAX_BODY_BUFFER_SIZE 8192
 

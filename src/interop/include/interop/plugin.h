@@ -7,7 +7,7 @@
 #include "config/config.h"
 #include "log/error.h"
 
-#include "uv.h"
+#include <uv.h>
 
 #include <stddef.h>
 

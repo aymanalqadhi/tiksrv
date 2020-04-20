@@ -4,7 +4,7 @@
 #include "net/read_state_machine.h"
 #include "net/tcp_client.h"
 
-#include "uv.h"
+#include <uv.h>
 #include <glib.h>
 
 #include <stdlib.h>

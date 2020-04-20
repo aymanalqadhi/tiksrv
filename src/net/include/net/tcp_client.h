@@ -5,7 +5,7 @@
 #include "net/message.h"
 #include "net/read_state_machine.h"
 
-#include "uv.h"
+#include <uv.h>
 #include <glib.h>
 
 #include <stdbool.h>

@@ -9,7 +9,7 @@
 #include "log/error.h"
 #include "log/logger.h"
 
-#include "uv.h"
+#include <uv.h>
 
 static void
 free_listener_client(gpointer client)

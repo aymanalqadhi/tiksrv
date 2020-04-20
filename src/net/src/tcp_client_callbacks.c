@@ -12,7 +12,7 @@
 
 #include <glib.h>
 
-#include "uv.h"
+#include <uv.h>
 
 void
 ts_tcp_client_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)

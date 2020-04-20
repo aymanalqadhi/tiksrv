@@ -3,7 +3,7 @@
 
 #include "net/tcp_client.h"
 
-#include "uv.h"
+#include <uv.h>
 
 /*!
  * \brief A callback function to be called when a listener stops listening
