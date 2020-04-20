@@ -10,8 +10,6 @@
 #include "log/error.h"
 #include "services/container.h"
 
-#include "uthash.h"
-
 #include <stdint.h>
 
 enum ts_system_commands
@@ -26,7 +24,6 @@ struct ts_command
 {
     uint32_t          command;
     ts_command_func_t func;
-    UT_hash_handle    hh;
 };
 
 typedef void (*ts_command_export_func_t)(const struct ts_command *);

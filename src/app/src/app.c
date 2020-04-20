@@ -16,6 +16,8 @@
 
 #include "uthash.h"
 
+#include <glib.h>
+
 #include <stdlib.h>
 
 static struct
@@ -23,7 +25,8 @@ static struct
     struct ts_config *      config;
     struct ts_tcp_listener *listener;
     struct ts_plugin *      plugins;
-    struct ts_command *     commands;
+    GHashTable *            commands;
+
 } app;
 
 static void
@@ -36,25 +39,15 @@ export_command(const struct ts_command *cmd)
         return;
     }
 
-    if (!(tmp = (struct ts_command *)ts_memdup(cmd, sizeof(*cmd)))) {
-        log_error("Could not add command with command number: %d",
-                  cmd->command);
-        return;
+    if (!app.commands) {
+        app.commands =
+            g_hash_table_new_full(g_int_hash, g_int_equal, &g_free, &g_free);
     }
 
-    HASH_ADD_INT(app.commands, command, tmp);
-}
-
-static inline void
-destroy_commands(void)
-{
-    struct ts_command *command, *tmp;
-
-    HASH_ITER(hh, app.commands, command, tmp)
-    {
-        HASH_DEL(app.commands, command);
-        free(command);
-    }
+    g_hash_table_insert(
+        app.commands,
+        g_memdup((gconstpointer)&cmd->command, sizeof(cmd->command)),
+        g_memdup((gconstpointer)cmd, sizeof(*cmd)));
 }
 
 static ts_error_t
@@ -170,15 +163,14 @@ ts_app_destroy(void)
     ts_tcp_listener_free(app.listener);
 
     ts_config_free(app.config);
-    destroy_commands();
+    g_hash_table_destroy(app.commands);
+
     destroy_plugins();
 }
 
 struct ts_command *
 ts_app_get_command(uint32_t id)
 {
-    struct ts_command *out;
-    HASH_FIND_INT(app.commands, &id, out);
-
-    return out;
+    return (struct ts_command *)g_hash_table_lookup(app.commands,
+                                                    (gconstpointer)&id);
 }
