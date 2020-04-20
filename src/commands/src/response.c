@@ -7,6 +7,8 @@
 #include "log/logger.h"
 #include "util/validation.h"
 
+#include <glib.h>
+
 #include <endian.h>
 #include <limits.h>
 #include <math.h>
@@ -39,8 +41,8 @@ reserve_bytes(struct ts_response *resp, size_t n)
         return TS_ERR_INDEX_OUT_OF_RANGE;
     }
 
-    tmp = resp->body_buffer ? realloc(resp->body_buffer, new_cap)
-                            : malloc(new_cap);
+    tmp = resp->body_buffer ? g_realloc(resp->body_buffer, new_cap)
+                            : g_malloc(new_cap);
 
     if (!tmp) {
         return TS_ERR_MEMORY_ALLOC_FAILED;
@@ -152,15 +154,9 @@ ts_response_commit(struct ts_response *resp, struct ts_request *req)
 ts_error_t
 ts_respone_create(struct ts_response **outresp)
 {
-    struct ts_response *tmp;
-
     CHECK_NULL_PARAMS_1(outresp);
 
-    if (!(tmp = (struct ts_response *)calloc(1, sizeof(*tmp)))) {
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
-
-    *outresp = tmp;
+    *outresp = g_new0(struct ts_response, 1);
     return TS_ERR_SUCCESS;
 }
 
@@ -168,9 +164,9 @@ void
 ts_response_free(struct ts_response *resp)
 {
     if (resp->body_buffer) {
-        free(resp->body_buffer);
+        g_free(resp->body_buffer);
     }
-    free(resp);
+    g_free(resp);
 }
 
 uint16_t
