@@ -36,11 +36,6 @@ export_command(const struct ts_command *cmd)
         return;
     }
 
-    if (!app.commands) {
-        app.commands =
-            g_hash_table_new_full(g_int_hash, g_int_equal, &g_free, &g_free);
-    }
-
     g_hash_table_insert(
         app.commands,
         g_memdup((gconstpointer)&cmd->command, sizeof(cmd->command)),
@@ -73,11 +68,6 @@ on_plugin_load(struct ts_plugin *plug)
         }
     }
 
-    if (!app.plugins) {
-        app.plugins = g_hash_table_new_full(
-            g_str_hash, g_str_equal, &g_free, &free_plugin);
-    }
-
     g_hash_table_insert(app.plugins,
                         g_strdup(plug->name),
                         (gpointer)g_memdup(plug, sizeof(*plug)));
@@ -97,6 +87,10 @@ app_init(struct ts_config *cfg)
     };
 
     app.config = cfg;
+    app.commands =
+        g_hash_table_new_full(g_int_hash, g_int_equal, &g_free, &g_free);
+    app.plugins =
+        g_hash_table_new_full(g_str_hash, g_str_equal, &g_free, &free_plugin);
 
     log_info("Parsing configuration file");
     if ((rc = ts_config_parse_config_file(cfg))) {

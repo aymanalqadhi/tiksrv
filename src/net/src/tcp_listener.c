@@ -16,9 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define IPV6_LISTEN_ADDR "::"
-#define IPV4_LISTEN_ADDR "0.0.0.0"
-
 static inline ts_error_t
 setup_listener_address(struct ts_tcp_listener *listener,
                        const struct ts_config *cfg)
@@ -28,10 +25,7 @@ setup_listener_address(struct ts_tcp_listener *listener,
     char             port_buf[0x10];
 
     snprintf(port_buf, sizeof(port_buf), "%u", listener->port);
-    if ((rc = getaddrinfo(cfg->ipv6 ? IPV6_LISTEN_ADDR : IPV4_LISTEN_ADDR,
-                          port_buf,
-                          NULL,
-                          &addr)) != 0) {
+    if ((rc = getaddrinfo(cfg->listen_address, port_buf, NULL, &addr)) != 0) {
         log_debug("getaddrinfo: %s", strerror(errno));
         return TS_ERR_LISTENER_BIND_FAILED;
     }
@@ -44,6 +38,13 @@ setup_listener_address(struct ts_tcp_listener *listener,
 
     freeaddrinfo(addr);
     return TS_ERR_SUCCESS;
+}
+
+static void
+free_listener_client(gpointer client)
+{
+    ts_tcp_client_close((struct ts_tcp_client *)client);
+    ts_tcp_client_free((struct ts_tcp_client *)client);
 }
 
 static inline ts_error_t
@@ -65,8 +66,10 @@ tcp_listener_init(struct ts_tcp_listener *listener, const struct ts_config *cfg)
     listener->socket.data          = listener;
     listener->backlog              = cfg->backlog;
     listener->is_running           = false;
-    listener->clients              = NULL;
     listener->client_disconnect_cb = &ts_tcp_listener_disconnected_cb;
+
+    listener->clients = g_hash_table_new_full(
+        g_int_hash, g_int_equal, &g_free, &free_listener_client);
 
     return TS_ERR_SUCCESS;
 }

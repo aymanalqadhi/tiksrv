@@ -11,13 +11,6 @@
 
 #include <uv.h>
 
-static void
-free_listener_client(gpointer client)
-{
-    ts_tcp_client_close((struct ts_tcp_client *)client);
-    ts_tcp_client_free((struct ts_tcp_client *)client);
-}
-
 void
 ts_tcp_listener_stop_cb(uv_handle_t *l)
 {
@@ -52,11 +45,6 @@ ts_tcp_listener_accepted_cb(uv_stream_t *stream, int status)
 
     if (client->listener->app_cbs.on_connection_cb) {
         (*client->listener->app_cbs.on_connection_cb)(client);
-    }
-
-    if (!listener->clients) {
-        listener->clients = g_hash_table_new_full(
-            g_int_hash, g_int_equal, &g_free, &free_listener_client);
     }
 
     g_hash_table_insert(
