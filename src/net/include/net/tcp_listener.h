@@ -5,6 +5,8 @@
 #include "net/message.h"
 #include "net/tcp_client.h"
 
+#include <glib.h>
+
 #include <stddef.h>
 #include <uv.h>
 
@@ -12,32 +14,22 @@
 
 struct ts_tcp_listener_app_callbacks
 {
-    /* The callback function pointer which to be called when the listener has
-     * accepted a new client */
     void (*on_connection_cb)(struct ts_tcp_client *);
-    /* The callback function pointer which to be called when a a previously
-     * accepted client has closed its connection */
     void (*on_disconnection_cb)(struct ts_tcp_client *);
-    /* The callback function pointer which to be called when a previously
-     * accepted client has sent a request message */
     void (*on_request_cb)(struct ts_tcp_client *,
                           const struct ts_request_message *);
 };
 
 struct ts_tcp_listener
 {
-    uv_tcp_t socket;  /* The listener TCP socket */
-    uint16_t port;    /* The listner listening port */
-    uint16_t backlog; /* The maximum pending connections in the accpet queue */
-    bool is_running;  /* An indicator of the current listener running status */
+    uv_tcp_t socket;
+    uint16_t port;
+    uint16_t backlog;
+    bool     is_running;
 
-    /* The callback function pointer which to be called by the client which are
-     * closing their connections */
     void (*client_disconnect_cb)(uv_stream_t *);
-    /* The application-exposed callback functions pointers */
     struct ts_tcp_listener_app_callbacks app_cbs;
-    /* The currently-connect accepted clients */
-    struct ts_tcp_client *clients;
+    struct ts_tcp_client *               clients;
 };
 
 /*!
