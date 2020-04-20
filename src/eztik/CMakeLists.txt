@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 project(eztik C)
 
 # Files
-set(SOURCE_FILES src/plugin.c)
+set(SOURCE_FILES src/eztik.c)
 
 # Targets
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
