@@ -9,13 +9,13 @@ set(SOURCE_FILES src/memory.c src/address.c src/message.c src/tcp_client.c
                  src/tcp_client_callbacks.c src/tcp_listener_callbacks.c)
 
 # Targets
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 # Dependencies
 target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
-                                      ${SHARED_PROJECT_NAME} ezd)
+                                      ${SHARED_PROJECT_NAME} ezd uv)
 
 # Install destination
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # Project name
 project(tiksrv C)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Options
 set(CMAKE_C_STANDARD 11)
@@ -35,6 +36,9 @@ add_subdirectory(interop)
 add_subdirectory(shared)
 add_subdirectory(tests)
 add_subdirectory(lib)
+
+# Plugins
+add_subdirectory(eztik)
 
 # Final executable
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:${MAIN_PROJECT_NAME}>)

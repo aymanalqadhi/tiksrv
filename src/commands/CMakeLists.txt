@@ -7,7 +7,7 @@ project(${COMMANDS_PROJECT_NAME} C)
 set(SOURCE_FILES src/request.c src/response.c src/command.c src/echo_command.c)
 
 # Targets
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 # Dependencies

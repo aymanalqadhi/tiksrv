@@ -7,7 +7,7 @@ project(${SERVICES_PROJECT_NAME} C)
 set(SOURCE_FILES src/container.c)
 
 # Targets
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 # Dependencies
