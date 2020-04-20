@@ -219,7 +219,7 @@ ts_write_context_init(struct ts_write_context *   ctx,
                                         TS_MESSAGE_RESPONSE_HEADER_SIZE)) !=
         0) {
         g_free(ctx->buffers[0].base);
-        return TS_ERR_MEMORY_ALLOC_FAILED;
+        return TS_ERR_RESPONSE_HEADER_ENCODE_FAILED;
     }
 
     ctx->client         = client;

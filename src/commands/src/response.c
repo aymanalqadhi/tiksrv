@@ -44,10 +44,6 @@ reserve_bytes(struct ts_response *resp, size_t n)
     tmp = resp->body_buffer ? g_realloc(resp->body_buffer, new_cap)
                             : g_malloc(new_cap);
 
-    if (!tmp) {
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
-
     resp->buffer_capacity = new_cap;
     resp->body_buffer     = tmp;
 

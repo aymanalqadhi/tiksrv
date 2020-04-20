@@ -6,7 +6,6 @@
 static const char *error_messages[] = {
     "NULL arguments were passed to the function",
     "An attempt to use uninitialized data",
-    "Could not allocate memory",
     "No matching items were found",
     "Index out of range",
     "Not implemented",
@@ -18,6 +17,7 @@ static const char *error_messages[] = {
     "Could not start event loop",
     "The listener is already started",
     "Could not get the address of the specified socket",
+    "Could not encode response message header",
     "Could not export commands",
     "Could not load plugin",
     "Could not iterate directory entries",
