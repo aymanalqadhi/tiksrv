@@ -40,7 +40,7 @@ log_log(log_level_t level, const char *file, int line, const char *fmt, ...)
     }
 
     current_time = time(NULL);
-    log_file     = level > LOG_WARN ? stderr : stdout;
+    log_file     = level >= LOG_WARN ? stderr : stdout;
 
     if (!(tm = localtime(&current_time)) ||
         strftime(time_buf, sizeof(time_buf), "%H:%M:%S", tm) < 0) {
