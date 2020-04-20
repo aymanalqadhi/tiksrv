@@ -9,6 +9,10 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 enable_testing()
 
+# External libraries config
+include(cmake/FindGLIB.cmake)
+include_directories(${GLIB_INCLUDE_DIRS})
+
 # Paths
 set(EXECUTABLE_OUTPUT_PATH bin)
 set(LIBRARY_OUTPUT_PATH lib)
@@ -44,7 +48,8 @@ add_subdirectory(eztik)
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:${MAIN_PROJECT_NAME}>)
 
 # Dependencies
-set(EXTERNAL_DEPS uv uthash ezd)
+set(EXTERNAL_DEPS uv uthash ezd ${GLIB_LIBRARIES})
+
 target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
                                       ${NET_PROJECT_NAME}
