@@ -20,6 +20,7 @@
 
 static struct
 {
+    struct ts_config *      config;
     struct ts_tcp_listener *listener;
     struct ts_plugin *      plugins;
     struct ts_command *     commands;
@@ -101,7 +102,7 @@ destroy_plugins(void)
 }
 
 static ts_error_t
-app_init(const struct ts_config *cfg)
+app_init(struct ts_config *cfg)
 {
     int rc;
 
@@ -110,6 +111,13 @@ app_init(const struct ts_config *cfg)
         .on_disconnection_cb = &ts_on_client_disconnection,
         .on_request_cb       = &ts_on_client_request
     };
+
+    app.config = cfg;
+
+    log_info("Parsing configuration file");
+    if ((rc = ts_config_parse_config_file(cfg))) {
+        log_warn("Could not parse configuration file");
+    }
 
     log_info("Creating a TCP listener on port %u", cfg->listen_port);
     if ((rc = ts_tcp_listener_create(&app.listener, &app_cbs, cfg)) != 0) {
@@ -124,7 +132,8 @@ app_init(const struct ts_config *cfg)
     log_info("Loading plugins");
     if (!ts_is_directory("plugins")) {
         log_debug("No plugins directory detected, skipping plugins loading");
-    } else if ((rc = ts_plugin_load_all("plugins", &on_plugin_load)) != 0) {
+    } else if ((rc = ts_plugin_load_all(
+                    "plugins", &on_plugin_load, cfg, NULL)) != 0) {
         return rc;
     }
 
@@ -132,7 +141,7 @@ app_init(const struct ts_config *cfg)
 }
 
 ts_error_t
-ts_app_run(const struct ts_config *cfg)
+ts_app_run(struct ts_config *cfg)
 {
     int rc;
 
@@ -160,6 +169,7 @@ ts_app_destroy(void)
     log_info("Cleaning up");
     ts_tcp_listener_free(app.listener);
 
+    ts_config_free(app.config);
     destroy_commands();
     destroy_plugins();
 }

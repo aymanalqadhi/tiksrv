@@ -15,7 +15,7 @@
  * \return 0 on success, or a negative vaue indicating error otheriwse
  */
 ts_error_t
-ts_app_run(const struct ts_config *cfg);
+ts_app_run(struct ts_config *cfg);
 
 /*!
  * \brief Free all resources held by the application
