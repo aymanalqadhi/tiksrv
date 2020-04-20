@@ -6,7 +6,6 @@
 #include "net/read_state_machine.h"
 
 #include "ezd/queue.h"
-#include "uthash.h"
 #include "uv.h"
 
 #include <stdbool.h>
@@ -30,8 +29,7 @@ struct ts_tcp_client
     struct ts_tcp_listener *     listener;
     struct ts_read_state_machine read_sm;
 
-    ezd_queue_t *  write_queue;
-    UT_hash_handle hh;
+    ezd_queue_t *write_queue;
 };
 
 /*!

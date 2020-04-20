@@ -9,8 +9,14 @@
 #include "log/error.h"
 #include "log/logger.h"
 
-#include "uthash.h"
 #include "uv.h"
+
+static void
+free_listener_client(gpointer client)
+{
+    ts_tcp_client_close((struct ts_tcp_client *)client);
+    ts_tcp_client_free((struct ts_tcp_client *)client);
+}
 
 void
 ts_tcp_listener_stop_cb(uv_handle_t *l)
@@ -44,11 +50,19 @@ ts_tcp_listener_accepted_cb(uv_stream_t *stream, int status)
         goto cleanup;
     }
 
-    HASH_ADD_INT(listener->clients, id, client);
-
     if (client->listener->app_cbs.on_connection_cb) {
         (*client->listener->app_cbs.on_connection_cb)(client);
     }
+
+    if (!listener->clients) {
+        listener->clients = g_hash_table_new_full(
+            g_int_hash, g_int_equal, &g_free, &free_listener_client);
+    }
+
+    g_hash_table_insert(
+        listener->clients,
+        g_memdup((gconstpointer)&client->id, sizeof(client->id)),
+        (gpointer)client);
 
     return;
 
@@ -65,6 +79,6 @@ ts_tcp_listener_disconnected_cb(uv_stream_t *stream)
         (*client->listener->app_cbs.on_disconnection_cb)(client);
     }
 
-    HASH_DEL(client->listener->clients, client);
+    g_hash_table_remove(client->listener->clients, (gconstpointer)&client->id);
     ts_tcp_client_free(client);
 }

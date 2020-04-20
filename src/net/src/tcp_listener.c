@@ -1,11 +1,10 @@
-#include "net/tcp_listener.h"
 #include "impl/tcp_listener_callbacks.h"
+#include "net/tcp_listener.h"
 
 #include "log/error.h"
 #include "log/logger.h"
 #include "util/validation.h"
 
-#include "uthash.h"
 #include "uv.h"
 
 #include <netdb.h>
@@ -134,16 +133,9 @@ ts_tcp_listener_stop(struct ts_tcp_listener *listener)
 void
 ts_tcp_listener_free(struct ts_tcp_listener *listener)
 {
-    int                   rc;
-    struct ts_tcp_client *client, *tmp;
+    int rc;
 
-    HASH_ITER(hh, listener->clients, client, tmp)
-    {
-        HASH_DEL(listener->clients, client);
-        ts_tcp_client_close(client);
-        ts_tcp_client_free(client);
-    }
-
+    g_hash_table_destroy(listener->clients);
     if (listener->is_running && (rc = ts_tcp_listener_stop(listener)) != 0) {
         log_error("Could not stop listener: %s", ts_strerror(rc));
     }

@@ -29,7 +29,8 @@ struct ts_tcp_listener
 
     void (*client_disconnect_cb)(uv_stream_t *);
     struct ts_tcp_listener_app_callbacks app_cbs;
-    struct ts_tcp_client *               clients;
+
+    GHashTable *clients;
 };
 
 /*!
