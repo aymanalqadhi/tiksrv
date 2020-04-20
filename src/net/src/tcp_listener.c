@@ -5,6 +5,7 @@
 #include "log/logger.h"
 #include "util/validation.h"
 
+#include <glib.h>
 #include "uv.h"
 
 #include <netdb.h>
@@ -80,12 +81,10 @@ ts_tcp_listener_create(struct ts_tcp_listener **             outlistener,
 
     CHECK_NULL_PARAMS_2(outlistener, app_cbs);
 
-    if (!(listener = (struct ts_tcp_listener *)malloc(sizeof(*listener)))) {
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
+    listener = (struct ts_tcp_listener *)g_new(struct ts_tcp_listener, 1);
 
     if ((rc = tcp_listener_init(listener, cfg)) != 0) {
-        free(listener);
+        g_free(listener);
         return rc;
     }
 
@@ -140,5 +139,5 @@ ts_tcp_listener_free(struct ts_tcp_listener *listener)
         log_error("Could not stop listener: %s", ts_strerror(rc));
     }
 
-    free(listener);
+    g_free(listener);
 }
