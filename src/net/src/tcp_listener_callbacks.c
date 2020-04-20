@@ -80,5 +80,4 @@ ts_tcp_listener_disconnected_cb(uv_stream_t *stream)
     }
 
     g_hash_table_remove(client->listener->clients, (gconstpointer)&client->id);
-    ts_tcp_client_free(client);
 }
