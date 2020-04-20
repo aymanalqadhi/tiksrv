@@ -10,7 +10,7 @@
 
 #include "log/logger.h"
 
-#include "ezd/queue.h"
+#include <glib.h>
 
 #include "uv.h"
 
@@ -36,7 +36,7 @@ ts_tcp_client_write_cb(uv_write_t *req, int status)
     int i;
 
     struct ts_write_context *ctx = (struct ts_write_context *)req->data;
-    free(req);
+    g_free(req);
 
     if (status < 0) {
         log_error("uv_write: %s", uv_strerror(status));
@@ -44,7 +44,7 @@ ts_tcp_client_write_cb(uv_write_t *req, int status)
         goto cleanup;
     }
 
-    if (ezd_queue_count(ctx->client->write_queue) > 0) {
+    if (!g_queue_is_empty(ctx->client->write_queue)) {
         if ((status = ts_tcp_client_send_equeued(ctx->client)) != 0) {
             log_error("ts_tcp_client_send_equeued: %s", ts_strerror(status));
             ts_tcp_client_close(ctx->client);

@@ -5,8 +5,8 @@
 #include "net/message.h"
 #include "net/read_state_machine.h"
 
-#include "ezd/queue.h"
 #include "uv.h"
+#include <glib.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -29,7 +29,7 @@ struct ts_tcp_client
     struct ts_tcp_listener *     listener;
     struct ts_read_state_machine read_sm;
 
-    ezd_queue_t *write_queue;
+    GQueue *write_queue;
 };
 
 /*!

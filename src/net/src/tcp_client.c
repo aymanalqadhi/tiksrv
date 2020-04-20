@@ -13,12 +13,15 @@
 #include <stdlib.h>
 
 static void
-response_deallocator(struct ts_response_message *resp)
+response_deallocator(gpointer ptr)
 {
+    struct ts_response_message *resp = (struct ts_response_message *)ptr;
+
     if (resp->body) {
         g_free((gpointer)resp->body);
     }
-    free(resp);
+
+    g_free(resp);
 }
 
 static inline ts_error_t
@@ -27,19 +30,12 @@ tcp_client_init(struct ts_tcp_client *client)
     int             rc;
     static uint32_t currnet_id = 0;
 
-    if ((ezd_queue_create(&client->write_queue,
-                          sizeof(struct ts_response_message))) != 0) {
-        log_error("ezd_queue_create: %s", ezd_strerror(rc));
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
+    client->write_queue = g_queue_new();
 
     if ((rc = uv_tcp_init(uv_default_loop(), &client->socket)) < 0) {
         log_debug("uv_tcp_init: %s", uv_strerror(rc));
         return TS_ERR_SOCKET_CREATE_FAILED;
     }
-
-    ezd_slist_set_deallocator(client->write_queue,
-                              (ezd_dealloc_func_t)&response_deallocator);
 
     client->id              = currnet_id++;
     client->socket.data     = client;
@@ -100,7 +96,7 @@ ts_tcp_client_free(struct ts_tcp_client *client)
         g_free(client->read_sm.buf);
     }
 
-    ezd_queue_free(client->write_queue);
+    g_queue_free_full(client->write_queue, &response_deallocator);
     g_free(client);
 }
 
@@ -108,16 +104,10 @@ ts_error_t
 ts_tcp_client_enqueue_response(struct ts_tcp_client *      client,
                                struct ts_response_message *resp)
 {
-    int rc;
-
     CHECK_NULL_PARAMS_1(client);
 
-    if ((rc = ezd_queue_enqueue(client->write_queue, (const void *)resp)) !=
-        0) {
-        log_error("ezd_queue_enqueue: %s", ezd_strerror(rc));
-        ts_tcp_client_close(client);
-        return TS_ERR_SOCKET_WRITE_FAILED;
-    }
+    g_queue_push_tail(client->write_queue,
+                      (gpointer)g_memdup(resp, sizeof(*resp)));
 
     return TS_ERR_SUCCESS;
 }
@@ -131,19 +121,15 @@ ts_tcp_client_send_equeued(struct ts_tcp_client *client)
     struct ts_response_message *resp;
     struct ts_write_context *   ctx;
 
-    if (ezd_queue_count(client->write_queue) == 0) {
+    if (g_queue_is_empty(client->write_queue)) {
         return TS_ERR_SUCCESS;
     }
 
-    if ((rc = ezd_queue_dequeue(client->write_queue, (void **)&resp)) != 0) {
-        log_error("ezd_queue_dequeue", ezd_strerror(rc));
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
-
+    resp = (struct ts_response_message *)g_queue_pop_head(client->write_queue);
     write_req = (uv_write_t *)g_new(uv_write_t, 1);
 
     if ((rc = ts_write_context_create(&ctx, client, resp)) != 0) {
-        free(resp);
+        response_deallocator(resp);
         g_free(write_req);
         return rc;
     }
@@ -255,11 +241,6 @@ void
 ts_write_context_free(struct ts_write_context *ctx)
 {
     g_free(ctx->buffers[0].base);
-    free(ctx->response);
-
-    if (ctx->has_body) {
-        free(ctx->buffers[1].base);
-    }
-
+    response_deallocator(ctx->response);
     g_free(ctx);
 }
