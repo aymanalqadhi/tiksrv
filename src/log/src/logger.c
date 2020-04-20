@@ -29,6 +29,9 @@ log_set_level(log_level_t level)
 void
 log_log(log_level_t level, const char *file, int line, const char *fmt, ...)
 {
+    if (level == LOG_FATAL) {
+        printf("Here i am\n");
+    }
     time_t     current_time;
     va_list    vl;
     char       time_buf[0x20];

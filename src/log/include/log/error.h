@@ -38,6 +38,9 @@ typedef enum
     TS_ERR_GET_CWD_FAILED,
     TS_ERR_CHDIR_FAILED,
 
+    /* Configuration errors */
+    TS_ERR_CONFIG_FILE_PARSE_FAILED,
+
     /* Last error marer (used by ezd_strerror) */
     TS_ERR_LAST_MARKER
 } ts_error_t;

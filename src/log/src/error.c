@@ -22,7 +22,8 @@ static const char *error_messages[] = {
     "Could not load plugin",
     "Could not iterate directory entries",
     "Could not get current working directory",
-    "Could not change directory"
+    "Could not change directory",
+    "Could not parse configuration file"
 };
 
 const char *
