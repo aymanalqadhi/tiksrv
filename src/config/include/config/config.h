@@ -1,20 +1,28 @@
 #ifndef TIKSRV_CONFIG_CONFIG_H
 #define TIKSRV_CONFIG_CONFIG_H
 
-#include "constants.h"
+#include "config/constants.h"
+
+#include "log/error.h"
+#include "log/logger.h"
+
+#include <glib.h>
 
 #include <stdint.h>
 
 struct ts_config
 {
-    const char *exec_name;  /* The name of the executable */
+    const char *exec_name;
+    const char *config_file;
+    const char *listen_address;
 
-    uint16_t listen_port;   /* The port on whcih to listen (default: 3434) */
-    uint32_t backlog;       /* The maximum number of clients in the accept 
-                               queue */
+    uint16_t listen_port;
+    uint32_t backlog;
 
-    int  log_level: 3;      /* The logging verbosity level (0-7) */
-    int      ipv6 : 1;      /* Use IPv6? (0-1, default: 1) */
+    int log_level : 3;
+    int ipv6 : 1;
+
+    GHashTable *config_table;
 };
 
 /*!
@@ -33,5 +41,48 @@ struct ts_config
  */
 void
 ts_config_parse_argv(struct ts_config *cfg, int argc, char **argv);
+
+/*!
+ * \brief Parses the configuration file specified in a configuration object
+ *        pointed to by \see cfg
+ *
+ * This function parses the configuration file specified in the configuration
+ * object pointed to by \see cfg. The file must be in a valid INI format
+ * in order to be parsed successfully.
+ *
+ * \param [in, out] cfg  A pointer to the configuration object which to parse
+ *                       the configuration file for
+ *
+ * \return 0 on success, or a negative value indicating error on failure
+ */
+ts_error_t
+ts_config_parse_config_file(struct ts_config *cfg);
+
+/*!
+ * \brief Gets a configuration value from the configuration object pointed to
+ *        by \see cfg
+ *
+ * \param [in] cfg      A pointer to the configuration object which to look into
+ * \param [in] section  The name of the section in which to look for the
+ *                      configuration value
+ * \param [in] key      The key of the configuration value
+ * \param [in] def      A default value to be return in case no matches were
+ *                      found
+ *
+ * \return The configuration value if found, or \see def otheriwse
+ */
+const char *
+ts_config_get_value(const struct ts_config *cfg,
+                    const char *            section,
+                    const char *            key,
+                    const char *            def);
+
+/*!
+ * \brief Frees the resources used by a configuration object
+ *
+ * \param [in, out] cfg  A pointer to the configuration object which to free
+ */
+void
+ts_config_free(struct ts_config *cfg);
 
 #endif
