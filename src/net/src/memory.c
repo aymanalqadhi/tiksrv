@@ -5,6 +5,7 @@
 #include "net/tcp_client.h"
 
 #include "uv.h"
+#include <glib.h>
 
 #include <stdlib.h>
 
@@ -33,7 +34,7 @@ ts_read_buffer_alloc_cb(uv_handle_t *handle, size_t s_size, uv_buf_t *buf)
     }
 
     if (!client->read_sm.buf) {
-        client->read_sm.buf   = malloc(to_read);
+        client->read_sm.buf   = g_malloc(to_read);
         client->read_sm.nread = 0;
     }
 

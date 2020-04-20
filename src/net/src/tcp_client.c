@@ -7,7 +7,7 @@
 #include "net/message.h"
 #include "util/validation.h"
 
-#include <sys/queue.h>
+#include <glib.h>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -16,7 +16,7 @@ static void
 response_deallocator(struct ts_response_message *resp)
 {
     if (resp->body) {
-        free((void *)resp->body);
+        g_free((gpointer)resp->body);
     }
     free(resp);
 }
@@ -58,12 +58,10 @@ ts_tcp_client_create(struct ts_tcp_client **c)
 
     CHECK_NULL_PARAMS_1(c);
 
-    if (!(client = (struct ts_tcp_client *)malloc(sizeof(*client)))) {
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
+    client = (struct ts_tcp_client *)g_new(struct ts_tcp_client, 1);
 
     if ((rc = tcp_client_init(client)) != 0) {
-        free(client);
+        g_free((gpointer)client);
         return rc;
     }
 
@@ -99,11 +97,11 @@ void
 ts_tcp_client_free(struct ts_tcp_client *client)
 {
     if (client->read_sm.buf) {
-        free(client->read_sm.buf);
+        g_free(client->read_sm.buf);
     }
 
     ezd_queue_free(client->write_queue);
-    free(client);
+    g_free(client);
 }
 
 ts_error_t
@@ -142,14 +140,11 @@ ts_tcp_client_send_equeued(struct ts_tcp_client *client)
         return TS_ERR_MEMORY_ALLOC_FAILED;
     }
 
-    if (!(write_req = (uv_write_t *)malloc(sizeof(*write_req)))) {
-        free(resp);
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
+    write_req = (uv_write_t *)g_new(uv_write_t, 1);
 
     if ((rc = ts_write_context_create(&ctx, client, resp)) != 0) {
         free(resp);
-        free(write_req);
+        g_free(write_req);
         return rc;
     }
 
@@ -212,9 +207,7 @@ ts_write_context_create(struct ts_write_context **  outctx,
     int                      rc;
     struct ts_write_context *ctx;
 
-    if (!(ctx = (struct ts_write_context *)malloc(sizeof(*ctx)))) {
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
+    ctx = (struct ts_write_context *)g_new(struct ts_write_context, 1);
 
     if ((rc = ts_write_context_init(ctx, client, resp)) != 0) {
         return rc;
@@ -233,16 +226,13 @@ ts_write_context_init(struct ts_write_context *   ctx,
 
     CHECK_NULL_PARAMS_2(ctx, resp);
 
-    if (!(ctx->buffers[0].base =
-              (char *)malloc(TS_MESSAGE_RESPONSE_HEADER_SIZE))) {
-        return TS_ERR_MEMORY_ALLOC_FAILED;
-    }
+    ctx->buffers[0].base = (char *)g_malloc(TS_MESSAGE_RESPONSE_HEADER_SIZE);
 
     if ((rc = ts_encode_response_header(resp->header,
                                         ctx->buffers[0].base,
                                         TS_MESSAGE_RESPONSE_HEADER_SIZE)) !=
         0) {
-        free(ctx->buffers[0].base);
+        g_free(ctx->buffers[0].base);
         return TS_ERR_MEMORY_ALLOC_FAILED;
     }
 
@@ -264,12 +254,12 @@ ts_write_context_init(struct ts_write_context *   ctx,
 void
 ts_write_context_free(struct ts_write_context *ctx)
 {
-    free(ctx->buffers[0].base);
+    g_free(ctx->buffers[0].base);
     free(ctx->response);
 
     if (ctx->has_body) {
         free(ctx->buffers[1].base);
     }
 
-    free(ctx);
+    g_free(ctx);
 }
