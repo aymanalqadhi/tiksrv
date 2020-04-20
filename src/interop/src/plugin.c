@@ -5,7 +5,6 @@
 #include "commands/command.h"
 #include "config/config.h"
 #include "services/container.h"
-#include "util/memory.h"
 #include "util/validation.h"
 
 #include "log/error.h"
