@@ -7,7 +7,6 @@
 #include "config/config.h"
 #include "log/error.h"
 
-#include "uthash.h"
 #include "uv.h"
 
 #include <stddef.h>
@@ -39,7 +38,6 @@ struct ts_plugin
     ts_plugin_commands_export_func_t commads_export_func;
 
     uv_lib_t       handle;
-    UT_hash_handle hh;
 };
 
 /*!

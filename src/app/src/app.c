@@ -12,9 +12,6 @@
 #include "net/address.h"
 #include "net/tcp_client.h"
 #include "net/tcp_listener.h"
-#include "util/memory.h"
-
-#include "uthash.h"
 
 #include <glib.h>
 
@@ -24,7 +21,7 @@ static struct
 {
     struct ts_config *      config;
     struct ts_tcp_listener *listener;
-    struct ts_plugin *      plugins;
+    GHashTable *            plugins;
     GHashTable *            commands;
 
 } app;
@@ -50,17 +47,21 @@ export_command(const struct ts_command *cmd)
         g_memdup((gconstpointer)cmd, sizeof(*cmd)));
 }
 
+static void
+free_plugin(gpointer plug)
+{
+    ts_plugin_unload(plug);
+    free(plug);
+}
+
 static ts_error_t
 on_plugin_load(struct ts_plugin *plug)
 {
-    int               rc;
-    struct ts_plugin *tmp;
+    int rc;
 
-    tmp = NULL;
-    HASH_FIND_STR(app.plugins, plug->name, tmp);
-
-    if (tmp) {
-        log_warn("Duplicate plugin names %s", tmp->name);
+    if (app.plugins &&
+        g_hash_table_contains(app.plugins, (gpointer)plug->name)) {
+        log_warn("Duplicate plugin names %s", plug->name);
         return TS_ERR_SUCCESS;
     }
 
@@ -72,26 +73,16 @@ on_plugin_load(struct ts_plugin *plug)
         }
     }
 
-    if (!(tmp = (struct ts_plugin *)ts_memdup(plug, sizeof(*plug)))) {
-        log_error("Could not add plugin `%s'", plug->name);
-        return TS_ERR_MEMORY_ALLOC_FAILED;
+    if (!app.plugins) {
+        app.plugins = g_hash_table_new_full(
+            g_str_hash, g_str_equal, &g_free, &free_plugin);
     }
 
-    HASH_ADD_STR(app.plugins, name, tmp);
+    g_hash_table_insert(app.plugins,
+                        g_strdup(plug->name),
+                        (gpointer)g_memdup(plug, sizeof(*plug)));
+
     return TS_ERR_SUCCESS;
-}
-
-static inline void
-destroy_plugins(void)
-{
-    struct ts_plugin *plug, *tmp;
-
-    HASH_ITER(hh, app.plugins, plug, tmp)
-    {
-        HASH_DEL(app.plugins, plug);
-        ts_plugin_unload(plug);
-        free(plug);
-    }
 }
 
 static ts_error_t
@@ -164,8 +155,7 @@ ts_app_destroy(void)
 
     ts_config_free(app.config);
     g_hash_table_destroy(app.commands);
-
-    destroy_plugins();
+    g_hash_table_destroy(app.plugins);
 }
 
 struct ts_command *
