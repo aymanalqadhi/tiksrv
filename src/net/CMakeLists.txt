@@ -15,7 +15,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 # Dependencies
 target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
-                                      ${SHARED_PROJECT_NAME} ezd uv)
+                                      ${SHARED_PROJECT_NAME} uv)
 
 # Install destination
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)

@@ -48,7 +48,7 @@ add_subdirectory(eztik)
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:${MAIN_PROJECT_NAME}>)
 
 # Dependencies
-set(EXTERNAL_DEPS uv ezd ${GLIB_LIBRARIES})
+set(EXTERNAL_DEPS uv ${GLIB_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
