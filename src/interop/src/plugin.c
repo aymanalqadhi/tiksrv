@@ -3,6 +3,7 @@
 #include "interop/plugin.h"
 
 #include "commands/command.h"
+#include "config/config.h"
 #include "services/container.h"
 #include "util/memory.h"
 #include "util/validation.h"
@@ -14,23 +15,31 @@
 
 #include <string.h>
 
+struct plugin_load_context
+{
+    const struct ts_config *      config;
+    struct ts_services_container *services;
+    ts_plugin_load_cb             callback;
+};
+
 static ts_error_t
 plugin_load_cb(const uv_dirent_t *ent, void *ctx)
 {
-    int               rc;
-    struct ts_plugin  plug;
-    ts_plugin_load_cb cb;
+    int                         rc;
+    struct ts_plugin            plug;
+    struct plugin_load_context *load_ctx;
 
     if (ent->type != UV_DIRENT_FILE) {
         return TS_ERR_SUCCESS;
     }
 
-    cb = (ts_plugin_load_cb)ctx;
+    load_ctx = (struct plugin_load_context *)ctx;
     log_info("Loading plugin `%s'", ent->name);
 
-    if ((rc = ts_plugin_load(&plug, ent->name)) != 0) {
+    if ((rc = ts_plugin_load(
+             &plug, ent->name, load_ctx->config, load_ctx->services)) != 0) {
         log_warn("Could not load plugin `%s'", ent->name);
-    } else if ((rc = (*cb)(&plug)) != 0) {
+    } else if ((rc = (*load_ctx->callback)(&plug)) != 0) {
         return rc;
     }
 
@@ -38,7 +47,10 @@ plugin_load_cb(const uv_dirent_t *ent, void *ctx)
 }
 
 ts_error_t
-ts_plugin_load(struct ts_plugin *plug, const char *filename)
+ts_plugin_load(struct ts_plugin *            plug,
+               const char *                  filename,
+               const struct ts_config *      cfg,
+               struct ts_services_container *svcs)
 {
     int   rc;
     void *ptr;
@@ -64,7 +76,7 @@ ts_plugin_load(struct ts_plugin *plug, const char *filename)
               plug->author,
               plug->version);
 
-    if (plug->init_func && (rc = (*plug->init_func)(NULL)) != 0) {
+    if (plug->init_func && (rc = (*plug->init_func)(cfg, svcs)) != 0) {
         log_error(
             "Coud not initialize plugin `%s': %s", plug->name, ts_strerror(rc));
         ts_plugin_unload(plug);
@@ -85,7 +97,14 @@ ts_plugin_unload(struct ts_plugin *plug)
 }
 
 ts_error_t
-ts_plugin_load_all(const char *dirname, ts_plugin_load_cb cb)
+ts_plugin_load_all(const char *                  dirname,
+                   ts_plugin_load_cb             cb,
+                   const struct ts_config *      cfg,
+                   struct ts_services_container *svcs)
 {
-    return ts_iterate_directory(dirname, true, &plugin_load_cb, (void *)cb);
+    struct plugin_load_context ctx = { .config   = cfg,
+                                       .services = svcs,
+                                       .callback = cb };
+
+    return ts_iterate_directory(dirname, true, &plugin_load_cb, (void *)&ctx);
 }
