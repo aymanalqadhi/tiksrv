@@ -34,36 +34,36 @@ ts_fill_plugins_symoles(struct ts_plugin *plug)
 
     plug->name = *(const char **)ptr;
 
-#define LOAD_OPTIONAL_SYM(to, sym, type, def)                                  \
+#define LOAD_OPTIONAL_SYM(to, sym, cast, def)                                  \
     if ((ptr = load_symbole(plug, sym))) {                                     \
-        to = (type)ptr;                                                        \
+        to = cast ptr;                                                        \
     } else {                                                                   \
         to = def;                                                              \
     }
 
     LOAD_OPTIONAL_SYM(plug->author,
                       TS_PLUGIN_AUTHOR_SYM,
-                      const char *,
+                      *(const char **),
                       unknown_plugin_author);
 
     LOAD_OPTIONAL_SYM(plug->version,
                       TS_PLUGIN_VERSION_SYM,
-                      const char *,
+                      *(const char **),
                       unknown_plugin_version);
 
     LOAD_OPTIONAL_SYM(plug->init_func,
                       TS_PLUGIN_INIT_FUNCTION_SYM,
-                      ts_plugin_init_func_t,
-                      NULL);
-
-    LOAD_OPTIONAL_SYM(plug->free_func,
-                      TS_PLUGIN_FREE_FUNCTION_SYM,
-                      ts_plugin_free_func_t,
+                      (ts_plugin_init_func_t),
                       NULL);
 
     LOAD_OPTIONAL_SYM(plug->commads_export_func,
                       TS_PLUGIN_COMMANDS_EXPORT_FUNCTION_SYM,
-                      ts_plugin_commands_export_func_t,
+                      (ts_plugin_commands_export_func_t),
+                      NULL);
+
+    LOAD_OPTIONAL_SYM(plug->free_func,
+                      TS_PLUGIN_FREE_FUNCTION_SYM,
+                      (ts_plugin_free_func_t),
                       NULL);
 
     return TS_ERR_SUCCESS;

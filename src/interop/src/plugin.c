@@ -59,6 +59,11 @@ ts_plugin_load(struct ts_plugin *plug, const char *filename)
         return TS_ERR_INVALID_PLUGIN;
     }
 
+    log_debug("Initializing plugin: %s, author: %s, version: %s",
+              plug->name,
+              plug->author,
+              plug->version);
+
     if (plug->init_func && (rc = (*plug->init_func)(NULL)) != 0) {
         log_error(
             "Coud not initialize plugin `%s': %s", plug->name, ts_strerror(rc));

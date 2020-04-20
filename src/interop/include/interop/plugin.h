@@ -19,7 +19,8 @@
 
 struct ts_plugin;
 
-typedef ts_error_t (*ts_plugin_commands_export_func_t)(ts_command_exprt_func_t);
+typedef ts_error_t (*ts_plugin_commands_export_func_t)(
+    ts_command_export_func_t);
 typedef ts_error_t (*ts_plugin_init_func_t)(struct ts_services_container *);
 typedef void (*ts_plugin_free_func_t)(void);
 

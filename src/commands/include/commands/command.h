@@ -29,7 +29,7 @@ struct ts_command
     UT_hash_handle    hh;
 };
 
-typedef void (*ts_command_exprt_func_t)(const struct ts_command *);
+typedef void (*ts_command_export_func_t)(const struct ts_command *);
 
 /*!
  * \brief Exports system commands
@@ -41,7 +41,7 @@ typedef void (*ts_command_exprt_func_t)(const struct ts_command *);
  */
 
 ts_error_t
-ts_commands_export(ts_command_exprt_func_t export_func);
+ts_commands_export(ts_command_export_func_t export_func);
 /*!
  * \brief Execute a command pointed to by \see cmd which has been issued by a
  *        client pointed to by \see client, with a request pointed to by \see
