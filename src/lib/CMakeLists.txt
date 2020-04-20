@@ -5,6 +5,3 @@ add_subdirectory(libuv)
 
 # Unity
 add_subdirectory(Unity)
-
-# ezd
-add_subdirectory(ezd)

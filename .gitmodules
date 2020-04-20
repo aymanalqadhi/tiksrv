@@ -10,6 +10,3 @@
 [submodule "src/lib/Unity"]
 	path = src/lib/Unity
 	url = https://github.com/ThrowTheSwitch/Unity
-[submodule "src/lib/ezd"]
-	path = src/lib/ezd
-	url = https://github.com/xSHAD0Wx/ezd
