@@ -59,7 +59,7 @@ ts_error_t
 ts_config_parse_config_file(struct ts_config *cfg);
 
 /*!
- * \brief Gets a configuration value from the configuration object pointed to
+ * \brief Gets a configuration value from a configuration object pointed to
  *        by \see cfg
  *
  * \param [in] cfg      A pointer to the configuration object which to look into
@@ -76,6 +76,82 @@ ts_config_get_value(const struct ts_config *cfg,
                     const char *            section,
                     const char *            key,
                     const char *            def);
+
+/*!
+ * \brief Gets an 8 bit unsigned integer from a configuration object pointed to
+ *        by \see cfg
+ *
+ * \param [in] cfg      A pointer to the configuration object which to look into
+ * \param [in] section  The name of the section in which to look for the
+ *                      configuration value
+ * \param [in] key      The key of the configuration value
+ * \param [in] def      A default value to be return in case no matches were
+ *                      found
+ *
+ * \return The configuration value if found, or \see def otheriwse
+ */
+uint8_t
+ts_config_get_uint8(const struct ts_config *cfg,
+                    const char *            section,
+                    const char *            key,
+                    uint8_t                 def);
+
+/*!
+ * \brief Gets an 16 bit unsigned integer from a configuration object pointed to
+ *        by \see cfg
+ *
+ * \param [in] cfg      A pointer to the configuration object which to look into
+ * \param [in] section  The name of the section in which to look for the
+ *                      configuration value
+ * \param [in] key      The key of the configuration value
+ * \param [in] def      A default value to be return in case no matches were
+ *                      found
+ *
+ * \return The configuration value if found, or \see def otheriwse
+ */
+uint16_t
+ts_config_get_uint16(const struct ts_config *cfg,
+                     const char *            section,
+                     const char *            key,
+                     uint16_t                def);
+
+/*!
+ * \brief Gets an 32 bit unsigned integer from a configuration object pointed to
+ *        by \see cfg
+ *
+ * \param [in] cfg      A pointer to the configuration object which to look into
+ * \param [in] section  The name of the section in which to look for the
+ *                      configuration value
+ * \param [in] key      The key of the configuration value
+ * \param [in] def      A default value to be return in case no matches were
+ *                      found
+ *
+ * \return The configuration value if found, or \see def otheriwse
+ */
+uint32_t
+ts_config_get_uint32(const struct ts_config *cfg,
+                     const char *            section,
+                     const char *            key,
+                     uint32_t                def);
+
+/*!
+ * \brief Gets an 64 bit unsigned integer from a configuration object pointed to
+ *        by \see cfg
+ *
+ * \param [in] cfg      A pointer to the configuration object which to look into
+ * \param [in] section  The name of the section in which to look for the
+ *                      configuration value
+ * \param [in] key      The key of the configuration value
+ * \param [in] def      A default value to be return in case no matches were
+ *                      found
+ *
+ * \return The configuration value if found, or \see def otheriwse
+ */
+uint64_t
+ts_config_get_uint64(const struct ts_config *cfg,
+                     const char *            section,
+                     const char *            key,
+                     uint64_t                def);
 
 /*!
  * \brief Frees the resources used by a configuration object

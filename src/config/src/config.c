@@ -2,6 +2,8 @@
 #include "config/constants.h"
 #include "config/ini.h"
 
+#include "util/string.h"
+
 #include "log/error.h"
 #include "log/logger.h"
 
@@ -13,25 +15,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline long
-parse_long(const char *str, const char *field, long min, long max)
+#define TS_CONFIG_TO_UINT_IMPL(size, fmt)                                      \
+    uint##size##_t ts_config_get_uint##size(const struct ts_config *cfg,       \
+                                            const char *            section,   \
+                                            const char *            key,       \
+                                            uint##size##_t          def)       \
+    {                                                                          \
+        const char *   val;                                                    \
+        uint##size##_t ret;                                                    \
+        if (!(val = (ts_config_get_value(cfg, section, key, NULL)))) {         \
+            log_warn("Configuration in section `%s' with key `%s` was not "    \
+                     "found, defaulting to %" fmt,                             \
+                     section,                                                  \
+                     key,                                                      \
+                     def);                                                     \
+            return def;                                                        \
+        }                                                                      \
+        return ts_str_to_uint##size(val, &ret) ? ret : def;                    \
+    }
+
+static inline uint64_t
+parse_long(const char *str, const char *field, uint64_t min, uint64_t max)
 {
-    char *endp;
-    long  n;
+    uint64_t val;
 
-    endp = NULL;
-    n    = strtol(str, &endp, 10);
-
-    if (!endp || *endp) {
+    if (!ts_str_to_uint64(str, &val)) {
         log_error("Invalid %s value: %s\n", field, str);
         exit(EXIT_FAILURE);
-    } else if (n < min || n > max) {
+    } else if (val < min || val > max) {
         log_error(
             "Value of %s has exceeded boundaries (%ld-%ld)", field, min, max);
         exit(EXIT_FAILURE);
     }
 
-    return n;
+    return val;
 }
 
 static int
@@ -96,7 +113,7 @@ ts_config_parse_argv(struct ts_config *cfg, int argc, char **argv)
                 "%s version %s\n", TS_CONFIG_APP_NAME, TS_CONFIG_APP_VERSION);
             exit(EXIT_SUCCESS);
         case 'p':
-            cfg->listen_port = parse_long(optarg, "port", 0, 0xFFFF);
+            cfg->listen_port = parse_long(optarg, "port", 0, UINT16_MAX);
             break;
         case 'b':
             cfg->backlog = parse_long(optarg, "backlog", 0, INT32_MAX);
@@ -151,14 +168,21 @@ ts_config_get_value(const struct ts_config *cfg,
                     const char *            def)
 {
     GHashTable *section_table;
+    const char *value;
 
     if (!cfg || !cfg->config_table ||
-        (section_table = g_hash_table_lookup(cfg->config_table, section))) {
+        !(section_table = g_hash_table_lookup(cfg->config_table, section)) ||
+        !(value = g_hash_table_lookup(section_table, key))) {
         return def;
     }
 
-    return g_hash_table_lookup(section_table, key);
+    return value;
 }
+
+TS_CONFIG_TO_UINT_IMPL(8, "u")
+TS_CONFIG_TO_UINT_IMPL(16, "u")
+TS_CONFIG_TO_UINT_IMPL(32, "u")
+TS_CONFIG_TO_UINT_IMPL(64, "lu")
 
 void
 ts_config_free(struct ts_config *cfg)
