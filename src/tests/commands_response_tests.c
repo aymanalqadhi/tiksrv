@@ -1,5 +1,5 @@
-#include "commands/response.h"
 #include "commands/impl/response.h"
+#include "commands/response.h"
 
 #include "unity.h"
 
@@ -49,16 +49,11 @@ command_response_write_test(void)
 
         memset((void *)&resp, 0, sizeof(resp));
 
-        rc = ts_response_write_byte(&resp, b1);
-        TEST_ASSERT_EQUAL(0, rc);
-        rc = ts_response_write_uint16(&resp, w1);
-        TEST_ASSERT_EQUAL(0, rc);
-        rc = ts_response_write_uint32(&resp, d1);
-        TEST_ASSERT_EQUAL(0, rc);
-        rc = ts_response_write_uint64(&resp, q1);
-        TEST_ASSERT_EQUAL(0, rc);
-        rc = ts_response_write_string(
-            &resp, strbuf1, strnlen(strbuf1, sizeof(strbuf1)));
+        ts_response_write_byte(&resp, b1);
+        ts_response_write_uint16(&resp, w1);
+        ts_response_write_uint32(&resp, d1);
+        ts_response_write_uint64(&resp, q1);
+        ts_response_write_string(&resp, strbuf1);
         TEST_ASSERT_EQUAL(0, rc);
         TEST_ASSERT_NOT_NULL(resp.body_buffer);
 
