@@ -7,6 +7,7 @@
 #include "log/error.h"
 #include "util/validation.h"
 
+#include <assert.h>
 #include <endian.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -65,13 +66,13 @@ REQUEST_READ_IMPL(32)
 REQUEST_READ_IMPL(64)
 
 ts_error_t
-ts_request_init(struct ts_request *req,
-        struct ts_tcp_client *client,
-        const struct ts_request_message *message)
+ts_request_init(struct ts_request *              req,
+                struct ts_tcp_client *           client,
+                const struct ts_request_message *message)
 {
     CHECK_NULL_PARAMS_1(req);
 
-    req->client = client;
+    req->client  = client;
     req->message = message;
 
     return TS_ERR_SUCCESS;
@@ -83,7 +84,7 @@ ts_request_read_string(struct ts_request *req, char *buf, uint32_t *len)
     int      rc;
     uint32_t to_read;
 
-    CHECK_NULL_PARAMS_2(buf, len);
+    CHECK_NULL_PARAMS_3(req, buf, len);
 
     if ((rc = ts_request_read_uint32(req, &to_read)) != 0) {
         return rc;
@@ -102,29 +103,34 @@ ts_request_read_string(struct ts_request *req, char *buf, uint32_t *len)
 uint32_t
 ts_request_get_client_id(const struct ts_request *req)
 {
+    assert(req != NULL);
     return req->client->id;
 }
 
 uint32_t
 ts_request_get_flags(const struct ts_request *req)
 {
+    assert(req != NULL);
     return req->message->header->flags;
 }
 
 uint32_t
 ts_request_get_sequence_number(const struct ts_request *req)
 {
+    assert(req != NULL);
     return req->message->header->seq_number;
 }
 
 const void *
 ts_request_get_buffer(const struct ts_request *req)
 {
+    assert(req != NULL);
     return req->message->body;
 }
 
 uint32_t
 ts_request_get_length(const struct ts_request *req)
 {
+    assert(req != NULL);
     return req->message->header->body_length;
 }
