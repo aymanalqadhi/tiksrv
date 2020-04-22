@@ -1,7 +1,9 @@
+#include "eztik/commands.h"
+#include "eztik/eztik.h"
+
 #include "commands/command.h"
 #include "config/config.h"
 #include "log/error.h"
-#include "log/logger.h"
 #include "services/container.h"
 
 #include <stdio.h>
@@ -14,16 +16,21 @@ const char *ts_plugin_version = "0.1 ALPHA";
 ts_error_t
 ts_plugin_init(const struct ts_config *cfg, struct ts_services_container *svcs)
 {
-    return TS_ERR_SUCCESS;
+    return eztik_init(cfg, svcs);
 }
 
 void
 ts_plugin_free(void)
 {
+    eztik_destroy();
 }
 
 ts_error_t
-ts_plugin_export_commands(ts_command_export_func_t export_func)
+ts_plugin_commands_export(ts_command_export_func_t export_func)
 {
+    (*export_func)(&eztik_ros_api_open_command);
+    (*export_func)(&eztik_ros_api_close_command);
+    (*export_func)(&eztik_ros_version_command);
+
     return TS_ERR_SUCCESS;
 }
