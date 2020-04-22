@@ -48,14 +48,17 @@ ts_on_client_request(struct ts_tcp_client *           client,
     display_request_info(req);
 
     if (!(cmd = ts_app_get_command(req->header->command))) {
+        log_warn("Client #%u requested a non-existent command: %#x",
+                 client->id,
+                 req->header->command);
         if ((rc = ts_tcp_client_respond_with_code(
                  client,
                  TS_RESPONSE_CODE_NO_SUCH_COMMAND,
                  req->header->seq_number)) != 0) {
             log_error("ts_tcp_client_respond_with_code: %s", ts_strerror(rc));
             ts_tcp_client_close(client);
-            return;
         }
+        return;
     }
 
     if ((rc = ts_command_execute(cmd, client, req)) != 0) {
