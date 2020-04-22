@@ -10,6 +10,7 @@ set(SOURCE_FILES src/config.c src/ini.c)
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_link_libraries(${PROJECT_NAME} ${LOG_PROJECT_NAME}
+                                      ${SHARED_PROJECT_NAME}
                                       ${GLIB_LIBRARIES})
 
 # Install destination
