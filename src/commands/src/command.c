@@ -41,6 +41,6 @@ ts_command_execute(struct ts_command *              cmd,
         return rc;
     }
 
-    (*cmd->func)(&req_wrapper, NULL);
+    (*cmd->func)(&req_wrapper);
     return TS_ERR_SUCCESS;
 }
