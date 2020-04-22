@@ -1,0 +1,9 @@
+#ifndef EZTIK_REPONSE_H
+#define EZTIK_REPONSE_H
+
+enum
+{
+    EZTIK_REPONSE_SESSION_ALREADY_OPEN,
+};
+
+#endif
