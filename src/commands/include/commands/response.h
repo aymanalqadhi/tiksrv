@@ -23,72 +23,72 @@ struct ts_response;
  * \param [in, out] resp   A pointer to the response object which to write
  *                         into
  * \param [in]      value  The value which to be written
- *
- * \return 0 on success, or a negative value indicating error otherwise
  */
-ts_error_t
+void
 ts_response_write(struct ts_response *resp, const void *buf, uint32_t len);
 /*!
- * \brief Appends a single byte into a repsonse object pointed to by \see resp
+ * \brief Appends a single byte to a repsonse object pointed to by \see resp
  *        buffer
  *
  * \param [in, out] resp   A pointer to the response object which to write into
  * \param [in]      value  The value which to be written
- *
- * \return 0 on success, or a negative value indicating error otherwise
  */
-ts_error_t
+void
 ts_response_write_byte(struct ts_response *resp, uint8_t value);
 
 /*!
- * \brief Appends a 16 bit unsigned integer into a repsonse object pointed to by
+ * \brief Appends a 16 bit unsigned integer to a repsonse object pointed to by
  *        \see resp buffer
  *
  * \param [in, out] resp   A pointer to the response object which to write into
  * \param [in]      value  The value which to be written
- *
- * \return 0 on success, or a negative value indicating error otherwise
  */
-ts_error_t
+void
 ts_response_write_uint16(struct ts_response *resp, uint16_t value);
 
 /*!
- * \brief Appends a 16 bit unsigned integer into a repsonse object pointed to by
+ * \brief Appends a 32 bit unsigned integer to a repsonse object pointed to by
  *        \see resp buffer
  *
  * \param [in, out] resp   A pointer to the response object which to write into
  * \param [in]      value  The value which to be written
- *
- * \return 0 on success, or a negative value indicating error otherwise
  */
-ts_error_t
+void
 ts_response_write_uint32(struct ts_response *resp, uint32_t value);
 
 /*!
- * \brief Appends a 32 bit unsigned integer into a repsonse object pointed to by
+ * \brief Appends a 64 bit unsigned integer to a repsonse object pointed to by
  *        \see resp buffer
  *
  * \param [in, out] resp   A pointer to the response object which to write into
  * \param [in]      value  The value which to be written
- *
- * \return 0 on success, or a negative value indicating error otherwise
  */
-ts_error_t
+void
 ts_response_write_uint64(struct ts_response *resp, uint64_t value);
 
 /*!
- * \brief Appends a 64 bit unsigned integer into a repsonse object pointed to by
- *        \see resp buffer
+ * \brief Appends a string pointed to by \see str of length \see len to a 
+ *        response object pointed to by \see resp response buffer
  *
  * \param [in, out] resp   A pointer to the response object which to write into
- * \param [in]      value  The value which to be written
- *
- * \return 0 on success, or a negative value indicating error otherwise
+ * \param [in]      str    A pointer to the string which to be appended
+ * \param [in]      len    The length of the supplied string
  */
-ts_error_t
-ts_response_write_string(struct ts_response *resp,
+void
+ts_response_write_nstring(struct ts_response *resp,
                          const char *        str,
                          uint32_t            len);
+
+/*!
+ * \brief Appends a string pointed to by \see str to a response object pointed
+ *        to by \see resp response buffer
+ *
+ * \param [in, out] resp   A pointer to the response object which to write into
+ * \param [in]      str    A pointer to the string which to be appended
+ */
+void
+ts_response_write_string(struct ts_response *resp,
+                         const char *        str);
 
 /*!
  * \breif Commits respone pointed to by \see resp contents into a request
@@ -100,19 +100,18 @@ ts_response_write_string(struct ts_response *resp,
  * \return 0 on success, or a negative value indicating error otherwise
  */
 ts_error_t
-ts_response_commit(struct ts_response *resp, struct ts_request *req);
+ts_response_commit(struct ts_response *resp);
 
 /*!
- * \brief Initializes a command response object pointed to by \see resp
+ * \brief Creates a new reponse object
  *
- * This function simply zeros the passed object
+ * \param [in] req  A pointer to the request object which the created response
+ *                  object is a reponse to
  *
- * \param [out] resp  A pointer to the command response object to be initialized
- *
- * \return 0 on success, or a negative value indicating error otherwise
+ * \return  A pointer to the created response object
  */
-ts_error_t
-ts_respone_create(struct ts_response **outresp);
+struct ts_response *
+ts_respone_new(const struct ts_request *req);
 
 /*!
  * \brief Gets the flags vlaue associated with a response wrapper object pointed
@@ -159,6 +158,17 @@ ts_response_get_length(const struct ts_response *resp);
  */
 uint32_t
 ts_response_get_capacity(const struct ts_response *resp);
+
+/*!
+ * \brief Sets the response code value of a response wrapper object pointed
+ *        to by \see resp to the value specified with \see flags
+ *
+ * \param [in, out] resp   A pointer to the response wrapper object which to set
+ *                         its flags vlaue
+ * \param [in]      code   The new response code value
+ */
+void
+ts_response_set_code(struct ts_response *resp, uint16_t code);
 
 /*!
  * \brief Sets the flags value of a response wrapper object pointed to by \see
