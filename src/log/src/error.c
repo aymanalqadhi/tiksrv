@@ -13,6 +13,7 @@ static const char *error_messages[] = {
     "Could not open socket",
     "Could not close socket",
     "Could not write to socket",
+    "The socket is in an invalid state",
     "Could not bind listener",
     "Could not stop listener",
     "The listener is already started",
