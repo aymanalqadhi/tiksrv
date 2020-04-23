@@ -11,6 +11,24 @@
 
 struct eztik eztik;
 
+void
+eztik_connection_hook(const void *idptr, void *ctx)
+{
+    /** Does nothing **/
+    log_trace("eztik plugin connection hook");
+}
+
+void
+eztik_disconnection_hook(const void *idptr, void *ctx)
+{
+    uint32_t id = *(const uint32_t *)idptr;
+
+    if (eztik_has_session(id)) {
+        log_info("Destroying client #%u session", id);
+        eztik_remove_session(id);
+    }
+}
+
 ts_error_t
 eztik_init(const struct ts_config *cfg, struct ts_services_container *svcs)
 {
