@@ -36,6 +36,7 @@ ts_tcp_listener_accepted_cb(uv_stream_t *stream, int status)
         goto cleanup;
     }
 
+    client->state = TS_TCP_CLIENT_STATE_CONNECTED;
     client->listener = listener;
 
     if ((rc = ts_tcp_client_start_read(client)) != 0) {
