@@ -6,6 +6,7 @@ project(eztik C)
 # Files
 set(SOURCE_FILES src/eztik.c
                  src/export.c
+                 src/api.c
                  src/api_open.c
                  src/api_close.c
                  src/api_write.c
