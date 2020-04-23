@@ -2,8 +2,23 @@
 #define TIKSRV_APP_IMPL_SHARED_H
 
 #include "commands/command.h"
+#include "config/config.h"
+#include "interop/plugin.h"
+#include "net/tcp_listener.h"
+#include "services/container.h"
+
+#include <glib.h>
 
 #include <stdint.h>
+
+extern struct ts_app
+{
+    struct ts_config *            config;
+    struct ts_tcp_listener *      listener;
+    struct ts_services_container *services;
+    GHashTable *                  plugins;
+    GHashTable *                  commands;
+} app;
 
 /*!
  * \brief Gest an exported command by id
