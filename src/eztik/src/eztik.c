@@ -1,7 +1,9 @@
 #include "eztik/eztik.h"
+#include "eztik/hooks.h"
 
 #include "log/error.h"
 #include "log/logger.h"
+#include "services/hooks_manager.h"
 #include "util/validation.h"
 
 #include <glib.h>
@@ -19,6 +21,15 @@ eztik_init(const struct ts_config *cfg, struct ts_services_container *svcs)
     eztik.services = svcs;
     eztik.sessions = g_hash_table_new_full(
         g_int_hash, g_int_equal, &g_free, (GDestroyNotify)&eztik_session_free);
+
+    ts_hooks_manager_register_hook(svcs->hooks_manager,
+                                   TS_HOOKS_MANAGER_HOOK_CONNECTION,
+                                   &eztik_connection_hook,
+                                   NULL);
+    ts_hooks_manager_register_hook(svcs->hooks_manager,
+                                   TS_HOOKS_MANAGER_HOOK_DISCONNECTION,
+                                   &eztik_disconnection_hook,
+                                   NULL);
 
     return TS_ERR_SUCCESS;
 }
