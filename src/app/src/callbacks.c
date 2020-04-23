@@ -21,6 +21,10 @@ ts_on_client_connection(struct ts_tcp_client *client)
     int  rc;
     char addrbuf[INET6_ADDRSTRLEN];
 
+    ts_hooks_manager_run_hooks(app.services->hooks_manager,
+                               TS_HOOKS_MANAGER_HOOK_CONNECTION,
+                               (const void *)&client->id);
+
     if ((rc = ts_addr_to_string(&client->socket, addrbuf, sizeof(addrbuf))) !=
         0) {
         log_error("ts_addr_to_string: %s", ts_strerror(rc));
@@ -34,6 +38,9 @@ ts_on_client_connection(struct ts_tcp_client *client)
 void
 ts_on_client_disconnection(struct ts_tcp_client *client)
 {
+    ts_hooks_manager_run_hooks(app.services->hooks_manager,
+                               TS_HOOKS_MANAGER_HOOK_DISCONNECTION,
+                               (const void *)&client->id);
     log_info("Connection to client #%d was closed", client->id);
 }
 
