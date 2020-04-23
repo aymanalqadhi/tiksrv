@@ -4,8 +4,9 @@ cmake_minimum_required(VERSION 3.10)
 project(eztik C)
 
 # Files
-set(SOURCE_FILES src/eztik.c
-                 src/export.c
+set(SOURCE_FILES src/export.c
+                 src/eztik.c
+                 src/hooks.c
                  src/api.c
                  src/api_open.c
                  src/api_close.c
