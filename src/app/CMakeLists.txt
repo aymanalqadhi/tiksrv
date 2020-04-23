@@ -15,6 +15,7 @@ target_link_libraries(${PROJECT_NAME} ${CONFIG_PROJECT_NAME}
                                       ${LOG_PROJECT_NAME}
                                       ${NET_PROJECT_NAME}
                                       ${COMMANDS_PROJECT_NAME}
+                                      ${SERVICES_PROJECT_NAME}
                                       ${INTEROP_PROJECT_NAME}
                                       ${SHARED_PROJECT_NAME})
 
