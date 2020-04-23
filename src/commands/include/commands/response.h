@@ -117,7 +117,7 @@ ts_respone_new(const struct ts_request *req);
  * \brief Gets the flags vlaue associated with a response wrapper object pointed
  *        to by \see req
  *
- * \param [in] req  A pointer to the response object of which to get the value
+ * \param [in] req  A pointer to the response object from which to get the value
  *
  * \return The flags value of the supplied response object
  */
@@ -125,10 +125,21 @@ uint32_t
 ts_response_get_flags(const struct ts_response *resp);
 
 /*!
+ * \brief Gets the client id vlaue associated with a response wrapper object
+ *        pointed to by \see req
+ *
+ * \param [in] req  A pointer to the response object from which to get the value
+ *
+ * \return The client id value of the supplied response object
+ */
+uint32_t
+ts_response_get_client_id(const struct ts_response *resp);
+
+/*!
  * \brief Gets the buffer pointer associated with a response wrapper object
  *        pointed to by \see req
  *
- * \param [in] req  A pointer to the response object of which to get the buffer
+ * \param [in] req  A pointer to the response object from which to get the buffer
  *
  * \return The buffer pointer of the supplied response object
  */
@@ -139,7 +150,7 @@ ts_response_get_buffer(const struct ts_response *resp);
  * \brief Gets the buffer length of the buffer associated with a response
  * wrapper object pointed to by \see req
  *
- * \param [in] req  A pointer to the response object of which to get the buffer
+ * \param [in] req  A pointer to the response object from which to get the buffer
  *                  length
  *
  * \return The buffer length of the supplied response object buffer
@@ -151,7 +162,7 @@ ts_response_get_length(const struct ts_response *resp);
  * \brief Gets the buffer capacity of the buffer associated with a response
  *        wrapper object pointed to by \see req
  *
- * \param [in] req  A pointer to the response object of which to get the buffer
+ * \param [in] req  A pointer to the response object from which to get the buffer
  *                  capacity
  *
  * \return The buffer capacity of the supplied response object buffer

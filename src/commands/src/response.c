@@ -175,6 +175,13 @@ ts_response_get_flags(const struct ts_response *resp)
     return resp->flags;
 }
 
+uint32_t
+ts_response_get_client_id(const struct ts_response *resp)
+{
+    assert(resp != NULL);
+    return resp->client->id;
+}
+
 const void *
 ts_response_get_buffer(const struct ts_response *resp)
 {
