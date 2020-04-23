@@ -12,10 +12,22 @@
 typedef void (*ros_api_open_cb)(bool, void *);
 typedef void (*ros_api_close_cb)(bool, void *);
 typedef void (*ros_api_write_cb)(bool, void *);
+typedef void (*ros_api_free_cb)(void *);
+
+typedef enum
+{
+    EZTIK_ROS_API_STATE_DISCONNECTED,
+    EZTIK_ROS_API_STATE_CLOSING,
+    EZTIK_ROS_API_STATE_CONNECTING,
+    EZTIK_ROS_API_STATE_CONNECTED,
+    EZTIK_ROS_API_STATE_READING,
+    EZTIK_ROS_API_STATE_WRITING,
+} ros_api_state_t;
 
 struct ros_api
 {
-    uv_tcp_t socket;
+    uv_tcp_t        socket;
+    ros_api_state_t state;
 };
 
 struct ros_sentence
@@ -23,6 +35,9 @@ struct ros_sentence
     GArray * words;
     uint32_t current_tag;
 };
+
+struct ros_api *
+ros_api_new(void);
 
 /*!
  * \brief Opens a RouterOS API connection
@@ -70,5 +85,8 @@ ros_api_write(struct ros_api *           api,
               const struct ros_sentence *sentence,
               ros_api_write_cb           cb,
               void *                     data);
+
+void
+ros_api_free(struct ros_api *api, ros_api_free_cb cb, void *data);
 
 #endif

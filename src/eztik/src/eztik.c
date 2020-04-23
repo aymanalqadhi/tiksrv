@@ -13,7 +13,7 @@ struct eztik eztik;
 ts_error_t
 eztik_init(const struct ts_config *cfg, struct ts_services_container *svcs)
 {
-    CHECK_NULL_PARAMS_2(cfg, svcs);
+    CHECK_NULL_PARAMS_1(cfg);
 
     eztik.config   = cfg;
     eztik.services = svcs;
