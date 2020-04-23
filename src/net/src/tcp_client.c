@@ -9,6 +9,7 @@
 
 #include <glib.h>
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -38,10 +39,12 @@ tcp_client_init(struct ts_tcp_client *client)
     }
 
     client->id              = currnet_id++;
+    client->ref_count       = 1;
     client->socket.data     = client;
     client->read_sm.state   = &ts_read_header_state;
     client->read_sm.read_cb = &ts_tcp_client_read_cb;
     client->read_sm.buf     = NULL;
+    client->state           = TS_TCP_CLIENT_STATE_DISCONNECTED;
 
     return TS_ERR_SUCCESS;
 }
@@ -65,6 +68,23 @@ ts_tcp_client_create(struct ts_tcp_client **c)
     return TS_ERR_SUCCESS;
 }
 
+void
+ts_tcp_client_ref(struct ts_tcp_client *client)
+{
+    ++client->ref_count;
+}
+
+void
+ts_tcp_client_unref(struct ts_tcp_client *client)
+{
+    assert(client != NULL);
+    assert(client->ref_count > 0);
+
+    if (--client->ref_count == 0) {
+        ts_tcp_client_free(client);
+    }
+}
+
 ts_error_t
 ts_tcp_client_start_read(struct ts_tcp_client *client)
 {
@@ -85,6 +105,7 @@ void
 ts_tcp_client_close(struct ts_tcp_client *client)
 {
     if (!uv_is_closing((uv_handle_t *)&client->socket)) {
+        client->state = TS_TCP_CLIENT_STATE_DISCONNECTING;
         uv_close((uv_handle_t *)&client->socket, &ts_tcp_client_close_cb);
     }
 }
@@ -106,6 +127,10 @@ ts_tcp_client_enqueue_response(struct ts_tcp_client *      client,
 {
     CHECK_NULL_PARAMS_1(client);
 
+    if (client->state != TS_TCP_CLIENT_STATE_CONNECTED) {
+        return TS_ERR_SOCKET_INVALID_STATE;
+    }
+
     g_queue_push_tail(client->write_queue,
                       (gpointer)g_memdup(resp, sizeof(*resp)));
 
@@ -120,6 +145,10 @@ ts_tcp_client_send_equeued(struct ts_tcp_client *client)
 
     struct ts_response_message *resp;
     struct ts_write_context *   ctx;
+
+    if (client->state != TS_TCP_CLIENT_STATE_CONNECTED) {
+        return TS_ERR_SOCKET_INVALID_STATE;
+    }
 
     if (g_queue_is_empty(client->write_queue)) {
         return TS_ERR_SUCCESS;

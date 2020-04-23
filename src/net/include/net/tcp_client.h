@@ -5,13 +5,20 @@
 #include "net/message.h"
 #include "net/read_state_machine.h"
 
-#include <uv.h>
 #include <glib.h>
+#include <uv.h>
 
 #include <stdbool.h>
 #include <stdint.h>
 
 struct ts_tcp_listener;
+
+typedef enum
+{
+    TS_TCP_CLIENT_STATE_DISCONNECTED,
+    TS_TCP_CLIENT_STATE_CONNECTED,
+    TS_TCP_CLIENT_STATE_DISCONNECTING,
+} ts_tcp_client_state_t;
 
 struct ts_write_context
 {
@@ -23,7 +30,10 @@ struct ts_write_context
 
 struct ts_tcp_client
 {
-    uint32_t id;
+    uint32_t              id;
+    uint32_t              ref_count;
+    ts_tcp_client_state_t state;
+
     uv_tcp_t socket;
 
     struct ts_tcp_listener *     listener;
@@ -43,6 +53,12 @@ struct ts_tcp_client
  */
 ts_error_t
 ts_tcp_client_create(struct ts_tcp_client **outclient);
+
+void
+ts_tcp_client_ref(struct ts_tcp_client *client);
+
+void
+ts_tcp_client_unref(struct ts_tcp_client *client);
 
 /*!
  * \brief Starts reading loop on the client pointed to by \see client
