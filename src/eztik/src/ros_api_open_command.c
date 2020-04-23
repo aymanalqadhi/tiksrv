@@ -31,14 +31,13 @@ api_open_session_new_cb(struct eztik_session *session, void *data)
         goto cleanup;
     }
 
-    log_info("A RouterOS session was opened successfully for client #%u",
-             ts_response_get_client_id(resp));
-
     ts_response_set_code(resp, TS_RESPONSE_CODE_SUCCESS);
     if ((rc = ts_response_commit(resp)) != 0) {
         log_error("ts_response_commit: %s", ts_strerror(rc));
         eztik_session_free(session);
     } else {
+        log_info("A RouterOS session was opened successfully for client #%u",
+                 ts_response_get_client_id(resp));
         eztik_add_session(session);
     }
 
