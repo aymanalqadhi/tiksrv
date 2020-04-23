@@ -127,12 +127,16 @@ ts_response_commit(struct ts_response *resp)
     resp_message.body   = resp->body_buffer;
 
     if ((rc = ts_tcp_client_respond(resp->client, &resp_message)) != 0) {
-        log_error("ts_tcp_client_respond: %s", ts_strerror(rc));
         ts_tcp_client_close(resp->client);
         return rc;
     }
 
-    memset(resp, 0, sizeof(*resp));
+    resp->body_buffer = NULL;
+    resp->buffer_capacity = 0;
+    resp->buffer_length = 0;
+    resp->code = 0;
+    resp->flags = 0;
+
     return TS_ERR_SUCCESS;
 }
 
@@ -149,6 +153,8 @@ ts_respone_new(const struct ts_request *req)
     ret->client             = req->client;
     ret->seq_number         = req->message->header->seq_number;
 
+    ts_tcp_client_ref(ret->client);
+
     return ret;
 }
 
@@ -158,6 +164,8 @@ ts_response_free(struct ts_response *resp)
     if (resp->body_buffer) {
         g_free(resp->body_buffer);
     }
+
+    ts_tcp_client_unref(resp->client);
     g_free(resp);
 }
 
