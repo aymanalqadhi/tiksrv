@@ -11,8 +11,9 @@
 #include "log/logger.h"
 
 #include <glib.h>
-
 #include <uv.h>
+
+#include <assert.h>
 
 void
 ts_tcp_client_read_cb(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
@@ -59,5 +60,9 @@ void
 ts_tcp_client_close_cb(uv_handle_t *socket)
 {
     struct ts_tcp_client *client = (struct ts_tcp_client *)socket->data;
+
+    assert(client->state == TS_TCP_CLIENT_STATE_DISCONNECTING);
+
+    client->state = TS_TCP_CLIENT_STATE_DISCONNECTED;
     (*client->listener->client_disconnect_cb)((uv_stream_t *)&client->socket);
 }
