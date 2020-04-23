@@ -54,9 +54,23 @@ struct ts_tcp_client
 ts_error_t
 ts_tcp_client_create(struct ts_tcp_client **outclient);
 
+/*!
+ * \brief Increment the reference counter of a client pointed to by \see client
+ *        by one
+ *
+ * \param [in, out] client  A pointer to the client which reference count to be
+ *                          incremented
+ */
 void
 ts_tcp_client_ref(struct ts_tcp_client *client);
 
+/*!
+ * \brief Decrement the reference counter of a client pointed to by \see client
+ *        by one calling \see ts_tcp_client_free when the counter reaches 0
+ *
+ * \param [in, out] client  A pointer to the client which reference count to be
+ *                          decremented
+ */
 void
 ts_tcp_client_unref(struct ts_tcp_client *client);
 
