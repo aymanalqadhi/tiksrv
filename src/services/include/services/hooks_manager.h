@@ -3,7 +3,7 @@
 
 #include <glib.h>
 
-typedef void (*ts_hooks_manager_hook_cb)(const void *, void *data);
+typedef void (*ts_hooks_manager_hook_cb)(const void *, void *);
 
 typedef enum
 {
