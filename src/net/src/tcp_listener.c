@@ -44,7 +44,7 @@ static void
 free_listener_client(gpointer client)
 {
     ts_tcp_client_close((struct ts_tcp_client *)client);
-    ts_tcp_client_free((struct ts_tcp_client *)client);
+    ts_tcp_client_unref((struct ts_tcp_client *)client);
 }
 
 static inline ts_error_t
