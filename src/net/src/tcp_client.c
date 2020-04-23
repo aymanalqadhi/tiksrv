@@ -141,7 +141,7 @@ ts_tcp_client_send_equeued(struct ts_tcp_client *client)
                        ctx->buffers,
                        ctx->has_body ? 2 : 1,
                        &ts_tcp_client_write_cb)) < 0) {
-        log_error("uv_write: %s\n", uv_strerror(rc));
+        log_error("uv_write: %s", uv_strerror(rc));
         ts_write_context_free(ctx);
         free(write_req);
 
