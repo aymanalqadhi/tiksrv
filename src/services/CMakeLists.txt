@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 project(${SERVICES_PROJECT_NAME} C)
 
 # Files
-set(SOURCE_FILES src/container.c)
+set(SOURCE_FILES src/container.c src/hooks_manager.c)
 
 # Targets
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
