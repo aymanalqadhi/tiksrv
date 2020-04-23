@@ -81,15 +81,20 @@ app_init(struct ts_config *cfg)
     };
 
     app.config = cfg;
+    app.services = ts_services_container_new();
     app.commands =
         g_hash_table_new_full(g_int_hash, g_int_equal, &g_free, &g_free);
     app.plugins =
         g_hash_table_new_full(g_str_hash, g_str_equal, &g_free, &free_plugin);
-    app.services = ts_services_container_new();
 
     log_info("Parsing configuration file");
     if ((rc = ts_config_parse_config_file(cfg))) {
         log_warn("Could not parse configuration file");
+    }
+
+    log_info("Initializing services");
+    if ((rc = ts_services_container_init(app.services)) != 0) {
+        return rc;
     }
 
     log_info("Creating a TCP listener on port %u", cfg->listen_port);
@@ -107,11 +112,6 @@ app_init(struct ts_config *cfg)
         log_debug("No plugins directory detected, skipping plugins loading");
     } else if ((rc = ts_plugin_load_all(
                     "plugins", &on_plugin_load, cfg, app.services)) != 0) {
-        return rc;
-    }
-
-    log_info("Initializing services");
-    if ((rc = ts_services_container_init(app.services)) != 0) {
         return rc;
     }
 
