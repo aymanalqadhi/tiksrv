@@ -3,7 +3,9 @@
 
 #define EZTIK_CONFIG_SECTION "eztik"
 
-#define EZTIK_ROS_IP       "ros_ip"
-#define EZTIK_ROS_API_PORT "ros_api_port"
+#define EZTIK_CONFIG_ROS_IP       "ip"
+#define EZTIK_CONFIG_ROS_API_PORT "api_port"
+
+#define EZTIK_CONFIG_DEFAULT_API_PORT 8728
 
 #endif
