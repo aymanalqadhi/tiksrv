@@ -61,6 +61,14 @@ void
 eztik_add_session(struct eztik_session *session);
 
 /*!
+ * \brief Removes a registered session
+ *
+ * \param [in] session  The id of the session which to be removed
+ */
+void
+eztik_remove_session(uint32_t id);
+
+/*!
  * \brief Frees the resources used by this plugin
  */
 void

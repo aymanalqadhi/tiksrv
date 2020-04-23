@@ -1,5 +1,4 @@
 #include "eztik/eztik.h"
-#include "eztik/hooks.h"
 
 #include "log/error.h"
 #include "log/logger.h"
@@ -51,6 +50,17 @@ eztik_add_session(struct eztik_session *session)
         eztik.sessions,
         (gpointer)g_memdup((gconstpointer)&session->id, sizeof(session->id)),
         (gpointer)session);
+}
+
+void
+eztik_remove_session(uint32_t id)
+{
+    if (!g_hash_table_contains(eztik.sessions, (gconstpointer)&id)) {
+        log_warn("An attempt to remove a non existent session");
+        return;
+    }
+
+    g_hash_table_remove(eztik.sessions, (gconstpointer)&id);
 }
 
 void
