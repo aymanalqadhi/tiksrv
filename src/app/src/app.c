@@ -12,19 +12,13 @@
 #include "net/address.h"
 #include "net/tcp_client.h"
 #include "net/tcp_listener.h"
+#include "services/container.h"
 
 #include <glib.h>
 
 #include <stdlib.h>
 
-static struct
-{
-    struct ts_config *      config;
-    struct ts_tcp_listener *listener;
-    GHashTable *            plugins;
-    GHashTable *            commands;
-
-} app;
+struct ts_app app;
 
 static void
 export_command(const struct ts_command *cmd)
@@ -91,6 +85,7 @@ app_init(struct ts_config *cfg)
         g_hash_table_new_full(g_int_hash, g_int_equal, &g_free, &g_free);
     app.plugins =
         g_hash_table_new_full(g_str_hash, g_str_equal, &g_free, &free_plugin);
+    app.services = ts_services_container_new();
 
     log_info("Parsing configuration file");
     if ((rc = ts_config_parse_config_file(cfg))) {
@@ -111,7 +106,12 @@ app_init(struct ts_config *cfg)
     if (!ts_is_directory("plugins")) {
         log_debug("No plugins directory detected, skipping plugins loading");
     } else if ((rc = ts_plugin_load_all(
-                    "plugins", &on_plugin_load, cfg, NULL)) != 0) {
+                    "plugins", &on_plugin_load, cfg, app.services)) != 0) {
+        return rc;
+    }
+
+    log_info("Initializing services");
+    if ((rc = ts_services_container_init(app.services)) != 0) {
         return rc;
     }
 
@@ -150,6 +150,7 @@ ts_app_destroy(void)
     ts_config_free(app.config);
     g_hash_table_destroy(app.commands);
     g_hash_table_destroy(app.plugins);
+    ts_services_container_free(app.services);
 }
 
 struct ts_command *
