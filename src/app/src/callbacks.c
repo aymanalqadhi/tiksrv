@@ -54,7 +54,8 @@ ts_on_client_request(struct ts_tcp_client *           client,
 
     display_request_info(req);
 
-    if (!(cmd = ts_app_get_command(req->header->command))) {
+    if (!(cmd = ts_app_get_command(
+              MAKE_COMMAND_ID(req->header->type, req->header->command)))) {
         log_warn("Client #%u requested a non-existent command: %#x",
                  client->id,
                  req->header->command);

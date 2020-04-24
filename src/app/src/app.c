@@ -21,8 +21,9 @@
 struct ts_app app;
 
 static void
-export_command(const struct ts_command *cmd)
+export_command(uint16_t type, const struct ts_command *cmd)
 {
+    uint32_t           id;
     struct ts_command *tmp;
 
     if (!cmd) {
@@ -30,10 +31,10 @@ export_command(const struct ts_command *cmd)
         return;
     }
 
-    g_hash_table_insert(
-        app.commands,
-        g_memdup((gconstpointer)&cmd->command, sizeof(cmd->command)),
-        g_memdup((gconstpointer)cmd, sizeof(*cmd)));
+    id = MAKE_COMMAND_ID(type, cmd->command);
+    g_hash_table_insert(app.commands,
+                        g_memdup((gconstpointer)&id, sizeof(id)),
+                        g_memdup((gconstpointer)cmd, sizeof(*cmd)));
 }
 
 static void
@@ -80,7 +81,7 @@ app_init(struct ts_config *cfg)
         .on_request_cb       = &ts_on_client_request
     };
 
-    app.config = cfg;
+    app.config   = cfg;
     app.services = ts_services_container_new();
     app.commands =
         g_hash_table_new_full(g_int_hash, g_int_equal, &g_free, &g_free);

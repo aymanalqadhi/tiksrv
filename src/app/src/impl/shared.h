@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#define MAKE_COMMAND_ID(type, cmd) ((type << 0x10) | (cmd & 0xFFFF))
+
 extern struct ts_app
 {
     struct ts_config *            config;
