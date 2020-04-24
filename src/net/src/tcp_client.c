@@ -203,6 +203,7 @@ ts_tcp_client_respond_with_code(struct ts_tcp_client *client,
     struct ts_response_message resp;
     struct ts_response_header  resp_header;
 
+    resp_header.type        = TS_RESPONSE_TYPE_SYSTEM;
     resp_header.body_length = 0;
     resp_header.code        = code;
     resp_header.seq_number  = seq_no;
