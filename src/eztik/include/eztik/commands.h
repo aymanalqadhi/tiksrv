@@ -3,6 +3,8 @@
 
 #include "commands/command.h"
 
+#define EZTIK_COMMANDS_TYPE 0x1000
+
 enum
 {
     EZTIK_COMMAND_ROS_API_OPEN = 0x1000,
