@@ -118,6 +118,7 @@ ts_response_commit(struct ts_response *resp)
     struct ts_response_message resp_message;
     struct ts_response_header  resp_header;
 
+    resp_header.type        = resp->type;
     resp_header.code        = resp->code;
     resp_header.seq_number  = resp->seq_number;
     resp_header.flags       = resp->flags << 16;
@@ -131,11 +132,9 @@ ts_response_commit(struct ts_response *resp)
         return rc;
     }
 
-    resp->body_buffer = NULL;
+    resp->body_buffer     = NULL;
     resp->buffer_capacity = 0;
-    resp->buffer_length = 0;
-    resp->code = 0;
-    resp->flags = 0;
+    resp->buffer_length   = 0;
 
     return TS_ERR_SUCCESS;
 }
@@ -209,6 +208,13 @@ ts_response_get_capacity(const struct ts_response *resp)
 {
     assert(resp != NULL);
     return resp->buffer_capacity;
+}
+
+void
+ts_response_set_type(struct ts_response *resp, uint16_t type)
+{
+    assert(resp != NULL);
+    resp->type = type;
 }
 
 void

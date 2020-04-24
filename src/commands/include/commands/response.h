@@ -7,12 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-enum ts_response_code
+enum
 {
     TS_RESPONSE_CODE_SUCCESS = 0,
     TS_RESPONSE_CODE_NO_SUCH_COMMAND,
     TS_RESPONSE_CODE_UNKNOWN_ERROR,
-};
+} ts_response_code_t;
 
 struct ts_response;
 
@@ -67,7 +67,7 @@ void
 ts_response_write_uint64(struct ts_response *resp, uint64_t value);
 
 /*!
- * \brief Appends a string pointed to by \see str of length \see len to a 
+ * \brief Appends a string pointed to by \see str of length \see len to a
  *        response object pointed to by \see resp response buffer
  *
  * \param [in, out] resp   A pointer to the response object which to write into
@@ -76,8 +76,8 @@ ts_response_write_uint64(struct ts_response *resp, uint64_t value);
  */
 void
 ts_response_write_nstring(struct ts_response *resp,
-                         const char *        str,
-                         uint32_t            len);
+                          const char *        str,
+                          uint32_t            len);
 
 /*!
  * \brief Appends a string pointed to by \see str to a response object pointed
@@ -87,8 +87,7 @@ ts_response_write_nstring(struct ts_response *resp,
  * \param [in]      str    A pointer to the string which to be appended
  */
 void
-ts_response_write_string(struct ts_response *resp,
-                         const char *        str);
+ts_response_write_string(struct ts_response *resp, const char *str);
 
 /*!
  * \breif Commits respone pointed to by \see resp contents into a request
@@ -139,7 +138,8 @@ ts_response_get_client_id(const struct ts_response *resp);
  * \brief Gets the buffer pointer associated with a response wrapper object
  *        pointed to by \see req
  *
- * \param [in] req  A pointer to the response object from which to get the buffer
+ * \param [in] req  A pointer to the response object from which to get the
+ * buffer
  *
  * \return The buffer pointer of the supplied response object
  */
@@ -150,8 +150,8 @@ ts_response_get_buffer(const struct ts_response *resp);
  * \brief Gets the buffer length of the buffer associated with a response
  * wrapper object pointed to by \see req
  *
- * \param [in] req  A pointer to the response object from which to get the buffer
- *                  length
+ * \param [in] req  A pointer to the response object from which to get the
+ * buffer length
  *
  * \return The buffer length of the supplied response object buffer
  */
@@ -162,13 +162,24 @@ ts_response_get_length(const struct ts_response *resp);
  * \brief Gets the buffer capacity of the buffer associated with a response
  *        wrapper object pointed to by \see req
  *
- * \param [in] req  A pointer to the response object from which to get the buffer
- *                  capacity
+ * \param [in] req  A pointer to the response object from which to get the
+ * buffer capacity
  *
  * \return The buffer capacity of the supplied response object buffer
  */
 uint32_t
 ts_response_get_capacity(const struct ts_response *resp);
+
+/*!
+ * \brief Sets the response type value of a response wrapper object pointed
+ *        to by \see resp to the value specified with \see flags
+ *
+ * \param [in, out] resp   A pointer to the response wrapper object which to set
+ *                         its flags vlaue
+ * \param [in]      type   The new response type value
+ */
+void
+ts_response_set_type(struct ts_response *resp, uint16_t type);
 
 /*!
  * \brief Sets the response code value of a response wrapper object pointed
