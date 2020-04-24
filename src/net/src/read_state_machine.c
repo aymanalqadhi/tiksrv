@@ -18,6 +18,17 @@ set_state(struct ts_read_state_machine *read_sm,
     read_sm->state = new_state;
 }
 
+static inline void
+read_done(struct ts_tcp_client *client)
+{
+    struct ts_request_message req;
+    if (client->listener->app_cbs.on_request_cb) {
+        req.header = &client->read_sm.header;
+        req.body   = client->read_sm.buf;
+        (*client->listener->app_cbs.on_request_cb)(client, &req);
+    }
+}
+
 void
 ts_read_header_state(struct ts_tcp_client *client, ssize_t nread)
 {
@@ -33,23 +44,24 @@ ts_read_header_state(struct ts_tcp_client *client, ssize_t nread)
             ts_tcp_client_close(client);
             return;
         }
-        set_state(&client->read_sm, ts_read_body_state);
+
+        if (client->read_sm.header.body_length > 0) {
+            set_state(&client->read_sm, ts_read_body_state);
+        } else {
+            g_free(client->read_sm.buf);
+            client->read_sm.buf = NULL;
+            read_done(client);
+        }
     }
 }
 
 void
 ts_read_body_state(struct ts_tcp_client *client, ssize_t nread)
 {
-    struct ts_request_message req;
-
     client->read_sm.nread += nread;
 
     if (client->read_sm.nread == client->read_sm.header.body_length) {
-        if (client->listener->app_cbs.on_request_cb) {
-            req.header = &client->read_sm.header;
-            req.body   = client->read_sm.buf;
-            (*client->listener->app_cbs.on_request_cb)(client, &req);
-        }
+        read_done(client);
         set_state(&client->read_sm, ts_read_header_state);
     }
 }
