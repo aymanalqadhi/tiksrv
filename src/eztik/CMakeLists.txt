@@ -7,8 +7,6 @@ project(eztik C)
 set(SOURCE_FILES src/export.c
                  src/eztik.c
                  src/api.c
-                 src/api_open.c
-                 src/api_close.c
                  src/api_write.c
                  src/session.c
                  src/ros_api_open_command.c
