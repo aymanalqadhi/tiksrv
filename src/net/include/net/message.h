@@ -10,36 +10,41 @@
 #include <stdint.h>
 
 #define TS_MESSAGE_REQUEST_HEADER_SIZE  16
-#define TS_MESSAGE_RESPONSE_HEADER_SIZE 14
+#define TS_MESSAGE_RESPONSE_HEADER_SIZE 16
+
+typedef enum
+{
+    TS_RESPONSE_TYPE_SYSTEM = 0
+} ts_response_type_t;
 
 struct ts_request_header
 {
-    uint32_t command;     /* The request message command number */
-    uint32_t flags;       /* The request message flags */
-    uint32_t seq_number;  /* The request message conversation sequence
-                             number */
-    uint32_t body_length; /* The request message body length */
+    uint16_t type;
+    uint16_t command;
+    uint32_t flags;
+    uint32_t seq_number;
+    uint32_t body_length;
 };
 
 struct ts_response_header
 {
-    uint16_t code;        /* The response message response code */
-    uint32_t flags;       /* The response message flags */
-    uint32_t seq_number;  /* The response message conversation sequence
-                             number */
-    uint32_t body_length; /* The response message body length */
+    uint16_t type;
+    uint16_t code;
+    uint32_t flags;
+    uint32_t seq_number;
+    uint32_t body_length;
 };
 
 struct ts_request_message
 {
-    const struct ts_request_header *header; /* The request message header */
-    const void *                    body;   /* The request message body */
+    const struct ts_request_header *header;
+    const void *                    body;
 };
 
 struct ts_response_message
 {
-    const struct ts_response_header *header; /* The response message header */
-    const void *                     body;   /* The response message body */
+    const struct ts_response_header *header;
+    const void *                     body;
 };
 
 struct ts_response_context
