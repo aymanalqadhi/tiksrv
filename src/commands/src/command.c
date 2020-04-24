@@ -3,6 +3,7 @@
 #include "commands/impl/request.h"
 #include "commands/impl/response.h"
 
+#include "net/message.h"
 #include "net/memory.h"
 #include "net/tcp_client.h"
 
@@ -18,7 +19,7 @@ extern struct ts_command ts_echo_command;
 ts_error_t
 ts_commands_export(ts_command_export_func_t export_func)
 {
-    (*export_func)(&ts_echo_command);
+    (*export_func)(TS_SYSTEM_COMMANDS_TYPE, &ts_echo_command);
 
     return TS_ERR_SUCCESS;
 }
