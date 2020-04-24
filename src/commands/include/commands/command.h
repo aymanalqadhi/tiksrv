@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 
+#define TS_SYSTEM_COMMANDS_TYPE 0
+
 enum ts_system_commands
 {
     TS_COMMAND_ECHO
@@ -25,7 +27,7 @@ struct ts_command
     ts_command_func_t func;
 };
 
-typedef void (*ts_command_export_func_t)(const struct ts_command *);
+typedef void (*ts_command_export_func_t)(uint16_t, const struct ts_command *);
 
 /*!
  * \brief Exports system commands
