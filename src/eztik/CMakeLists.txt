@@ -6,9 +6,9 @@ project(eztik C)
 # Files
 set(SOURCE_FILES src/export.c
                  src/eztik.c
-                 src/api.c
-                 src/api_write.c
                  src/session.c
+                 src/ros_api.c
+                 src/ros_api_write.c
                  src/ros_api_open_command.c
                  src/ros_api_close_command.c
                  src/ros_version_command.c)
