@@ -37,7 +37,7 @@ struct ts_plugin
     ts_plugin_free_func_t            free_func;
     ts_plugin_commands_export_func_t commads_export_func;
 
-    uv_lib_t       handle;
+    uv_lib_t handle;
 };
 
 /*!
