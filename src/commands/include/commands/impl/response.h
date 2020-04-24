@@ -7,6 +7,7 @@
 
 struct ts_response
 {
+    uint16_t type;
     uint16_t code;
     uint32_t flags;
     uint32_t seq_number;
