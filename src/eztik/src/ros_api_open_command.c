@@ -57,6 +57,8 @@ ros_api_open_command_exec(const struct ts_request *req)
     client_id = ts_request_get_client_id(req);
     resp      = ts_respone_new(req);
 
+    ts_response_set_type(resp, EZTIK_COMMANDS_TYPE);
+
     if (eztik_has_session(client_id)) {
         log_warn(
             "Client #%u with an already open session requested a new session",

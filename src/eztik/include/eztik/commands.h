@@ -7,9 +7,9 @@
 
 enum
 {
-    EZTIK_COMMAND_ROS_API_OPEN = 0x1000,
-    EZTIK_COMMAND_ROS_API_CLOSE,
-    EZTIK_COMMAND_ROS_VERSION
+    EZTIK_COMMAND_ROS_API_OPEN  = 0x1000,
+    EZTIK_COMMAND_ROS_API_CLOSE = 0x1001,
+    EZTIK_COMMAND_ROS_VERSION   = 0x1002
 };
 
 extern struct ts_command eztik_ros_api_open_command;
