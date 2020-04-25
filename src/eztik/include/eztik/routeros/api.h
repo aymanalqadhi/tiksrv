@@ -30,12 +30,6 @@ struct ros_api
     ros_api_state_t state;
 };
 
-struct ros_sentence
-{
-    GArray * words;
-    uint32_t current_tag;
-};
-
 struct ros_api *
 ros_api_new(void);
 
