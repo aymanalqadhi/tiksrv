@@ -30,6 +30,7 @@ ts_plugin_commands_export(ts_command_export_func_t export_func)
 {
     (*export_func)(EZTIK_COMMANDS_TYPE, &eztik_ros_api_open_command);
     (*export_func)(EZTIK_COMMANDS_TYPE, &eztik_ros_api_close_command);
+    (*export_func)(EZTIK_COMMANDS_TYPE, &eztik_ros_api_send_raw_command);
     (*export_func)(EZTIK_COMMANDS_TYPE, &eztik_ros_version_command);
 
     return TS_ERR_SUCCESS;
