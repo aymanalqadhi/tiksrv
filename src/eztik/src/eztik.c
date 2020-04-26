@@ -70,6 +70,12 @@ eztik_add_session(struct eztik_session *session)
         (gpointer)session);
 }
 
+struct eztik_session *
+eztik_get_session(uint32_t id)
+{
+    return g_hash_table_lookup(eztik.sessions, (gconstpointer)&id);
+}
+
 void
 eztik_remove_session(uint32_t id)
 {

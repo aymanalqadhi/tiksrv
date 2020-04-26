@@ -61,6 +61,16 @@ void
 eztik_add_session(struct eztik_session *session);
 
 /*!
+ * \brief Gets a session by id specified by \see id
+ *
+ * \param [in] id  The id of the session to get
+ *
+ * \return The session which id is \see id if found, or NULL otherwise
+ */
+struct eztik_session *
+eztik_get_session(uint32_t id);
+
+/*!
  * \brief Removes a registered session
  *
  * \param [in] session  The id of the session which to be removed
