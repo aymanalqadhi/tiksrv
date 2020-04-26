@@ -7,7 +7,7 @@
 
 struct ros_api_sentence
 {
-    GArray * words;
+    GSList * words;
     uint32_t tag;
 };
 
@@ -65,7 +65,7 @@ ros_api_sentence_append_attr(struct ros_api_sentence *s,
  * \return The flattened sentence byte buffer
  */
 GByteArray *
-ros_api_sentence_flatten(struct ros_api_sentence *s);
+ros_api_sentence_flatten(const struct ros_api_sentence *s);
 
 /*
  * \brief Frees the used resources by a RouterOS API sentence object
@@ -73,6 +73,6 @@ ros_api_sentence_flatten(struct ros_api_sentence *s);
  * \param [in, out] s  A pointer to the sentence object which to be freed
  */
 void
-ros_api_free(struct ros_api_sentence *s);
+ros_api_sentence_free(struct ros_api_sentence *s);
 
 #endif

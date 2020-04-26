@@ -34,13 +34,6 @@ encode_length(GByteArray *array, uint32_t len)
     }
 }
 
-static void
-word_free_cb(gpointer ptr)
-{
-    assert(ptr != NULL);
-    g_string_free((GString *)ptr, TRUE);
-}
-
 struct ros_api_sentence *
 ros_api_sentence_new(const char *command, uint32_t tag)
 {
@@ -48,8 +41,7 @@ ros_api_sentence_new(const char *command, uint32_t tag)
 
     sentence        = g_new(struct ros_api_sentence, 1);
     sentence->tag   = tag;
-    sentence->words = g_array_new(FALSE, FALSE, sizeof(GString *));
-    g_array_set_clear_func(sentence->words, &word_free_cb);
+    sentence->words = NULL;
 
     ros_api_sentence_append(sentence, command);
     ros_api_sentence_appendf(sentence, "tag=%u", tag);
@@ -60,13 +52,10 @@ ros_api_sentence_new(const char *command, uint32_t tag)
 void
 ros_api_sentence_append(struct ros_api_sentence *s, const char *word)
 {
-    GString *str;
-
     assert(s != NULL);
     assert(word != NULL);
 
-    str = g_string_new(word);
-    g_array_append_val(s->words, str);
+    s->words = g_slist_append(s->words, g_string_new(word));
 }
 
 void
@@ -98,31 +87,39 @@ ros_api_sentence_append_attr(struct ros_api_sentence *s,
 }
 
 GByteArray *
-ros_api_sentence_flatten(struct ros_api_sentence *s)
+ros_api_sentence_flatten(const struct ros_api_sentence *s)
 {
     int         i;
     GByteArray *ret;
     GString *   word;
+    GSList *    itr;
 
     assert(s != NULL);
 
     ret = g_byte_array_new();
 
-    for (i = 0; i < s->words->len; ++i) {
-        word = g_array_index(s->words, GString *, i);
+    for (itr = s->words; itr; itr = itr->next) {
+        word = (GString *)itr->data;
         encode_length(ret, word->len);
         g_byte_array_append(ret, word->str, word->len);
     }
+
     encode_length(ret, 0);
 
     return ret;
 }
 
 void
-ros_api_free(struct ros_api_sentence *s)
+ros_api_sentence_free(struct ros_api_sentence *s)
 {
+    GSList *itr;
+
     assert(s != NULL);
 
-    g_array_free(s->words, TRUE);
+    for (itr = s->words; itr; itr = itr->next) {
+        g_string_free((GString *)itr->data, TRUE);
+    }
+
+    g_slist_free(s->words);
     g_free(s);
 }
