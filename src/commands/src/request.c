@@ -72,8 +72,9 @@ ts_request_init(struct ts_request *              req,
 {
     CHECK_NULL_PARAMS_1(req);
 
-    req->client  = client;
-    req->message = message;
+    req->client      = client;
+    req->message     = message;
+    req->current_pos = 0;
 
     return TS_ERR_SUCCESS;
 }
