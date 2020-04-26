@@ -5,7 +5,7 @@
 #include "commands/response.h"
 
 static void
-ros_version_command_exec(const struct ts_request *req)
+ros_version_command_exec(struct ts_request *req)
 {
     struct ts_response *resp = ts_respone_new(req);
 

@@ -14,7 +14,7 @@
 #include <stdbool.h>
 
 static void
-ros_api_close_command_exec(const struct ts_request *req)
+ros_api_close_command_exec(struct ts_request *req)
 {
     int                 rc;
     uint32_t            client_id;

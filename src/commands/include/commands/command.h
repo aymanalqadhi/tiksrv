@@ -19,7 +19,7 @@ enum ts_system_commands
     TS_COMMAND_ECHO
 };
 
-typedef void (*ts_command_func_t)(const struct ts_request *);
+typedef void (*ts_command_func_t)(struct ts_request *);
 
 struct ts_command
 {

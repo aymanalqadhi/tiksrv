@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 static void
-echo_command_exec(const struct ts_request *req)
+echo_command_exec(struct ts_request *req)
 {
     int                 rc;
     struct ts_response *resp;

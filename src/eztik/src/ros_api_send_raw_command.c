@@ -45,7 +45,7 @@ api_send_raw_send_cb(bool                     success,
 }
 
 static void
-ros_api_send_raw_command_exec(const struct ts_request *req)
+ros_api_send_raw_command_exec(struct ts_request *req)
 {
     int      rc;
     uint32_t client_id;
