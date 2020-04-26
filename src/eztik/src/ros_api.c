@@ -95,7 +95,7 @@ ros_api_open(struct ros_api *api, ros_api_open_cb cb, void *data)
 
     struct api_open_context *ctx;
     struct sockaddr_in       addr;
-    uv_connect_t *           conn_req;
+    uv_connect_t *           req;
 
     CHECK_NULL_PARAMS_2(api, cb);
     assert(api->state == EZTIK_ROS_API_STATE_DISCONNECTED);
@@ -118,19 +118,19 @@ ros_api_open(struct ros_api *api, ros_api_open_cb cb, void *data)
     ctx->cb   = cb;
     ctx->data = data;
 
-    conn_req       = g_new(uv_connect_t, 1);
-    conn_req->data = ctx;
+    req       = g_new(uv_connect_t, 1);
+    req->data = ctx;
 
     log_debug("Connecting to %s:%u", ip, port);
     api->state = EZTIK_ROS_API_STATE_CONNECTING;
 
-    if ((rc = uv_tcp_connect(conn_req,
+    if ((rc = uv_tcp_connect(req,
                              &ctx->api->socket,
                              (struct sockaddr *)&addr,
                              &api_open_connect_cb)) < 0) {
         log_error("uv_tcp_connect: %s", uv_strerror(rc));
         uv_close((uv_handle_t *)&api->socket, NULL);
-        g_free(conn_req);
+        g_free(req);
         g_free(ctx);
         api->state = EZTIK_ROS_API_STATE_DISCONNECTED;
         return TS_ERR_SOCKET_OPEN_FAILED;
