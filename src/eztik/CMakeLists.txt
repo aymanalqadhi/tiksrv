@@ -9,9 +9,10 @@ set(SOURCE_FILES src/export.c
                  src/session.c
                  src/ros_api.c
                  src/ros_api_sentence.c
-                 src/ros_api_write.c
+                 src/ros_api_send.c
                  src/ros_api_open_command.c
                  src/ros_api_close_command.c
+                 src/ros_api_send_raw_command.c
                  src/ros_version_command.c)
 
 # Targets
