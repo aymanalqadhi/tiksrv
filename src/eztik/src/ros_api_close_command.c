@@ -37,6 +37,7 @@ ros_api_close_command_exec(const struct ts_request *req)
     if ((rc = ts_response_commit(resp)) != 0) {
         log_error("ts_response_commit: %s", ts_strerror(rc));
     }
+
     ts_response_free(resp);
 }
 
