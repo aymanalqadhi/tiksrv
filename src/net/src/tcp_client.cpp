@@ -17,7 +17,6 @@ using boost::asio::placeholders::error;
 namespace ts::net {
 
 void tcp_client::read_next(std::size_t n) {
-
     if (context().buffer.size() < n) {
         context().buffer.resize(n);
     }

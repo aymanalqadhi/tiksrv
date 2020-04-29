@@ -15,9 +15,10 @@ namespace ts::net {
 
 class tcp_client;
 
-struct tcp_client_handler {
+class tcp_client_handler {
     using client_ptr = std::shared_ptr<tcp_client>;
 
+  public:
     virtual void on_error(client_ptr                       client,
                           const boost::system::error_code &err) = 0;
     virtual void on_close(client_ptr client)                    = 0;
@@ -36,16 +37,12 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
     void start();
     void stop();
 
-    inline const auto &id() const noexcept {
+    inline const std::uint32_t &id() const noexcept {
         return id_;
     }
 
     inline auto &socket() noexcept {
         return sock_;
-    }
-
-    inline auto endpoint() const noexcept {
-        return sock_.remote_endpoint();
     }
 
   protected:
