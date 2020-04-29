@@ -13,7 +13,9 @@ set(LIBRARY_OUTPUT_PATH lib)
 
 # Sub directories inclusion
 add_subdirectory(app)
+add_subdirectory(log)
 add_subdirectory(main)
+add_subdirectory(lib)
 
 # Final executable
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:tiksrv_main>)
