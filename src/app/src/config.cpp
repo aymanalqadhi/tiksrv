@@ -43,7 +43,7 @@ void config::parse_config_file(std::string_view path) {
     po::store(po::parse_config_file(path.data(), desc_), values_);
 }
 
-bool config::has(config_key key) {
+bool config::has(config_key key) const {
     return has(::config_string_keys[static_cast<std::uint32_t>(key)]);
 }
 

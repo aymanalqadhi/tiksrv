@@ -44,7 +44,7 @@ class config final {
         return values_.end();
     }
 
-    bool has(config_key key);
+    bool has(config_key key) const;
     const boost::program_options::variable_value &
          operator[](config_key key) const;
     void parse_argv(int argc, const char *const argv[]);

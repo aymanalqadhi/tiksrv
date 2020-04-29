@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 project(tiksrv_app)
 
 # Files
-set(SOURCE_FILES src/config.cpp)
+set(SOURCE_FILES src/config.cpp src/app.cpp)
 
 # Targets
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
