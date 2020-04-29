@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
 
         ts::log::add_sink<spdlog::sinks::stderr_color_sink_st>(
             ts::log::log_level::trace);
+        ts::log::global_level(ts::log::log_level::trace);
 
         tiksrv_app app {conf};
         app.run();
