@@ -50,8 +50,8 @@ void tcp_server::accept_next() {
         return;
     }
 
-    auto client_ptr =
-        std::make_shared<tcp_client>(current_client_id_.fetch_add(1), io_);
+    auto client_ptr = std::make_shared<tcp_client>(
+        current_client_id_.fetch_add(1), io_, handler_);
 
     acceptor_.async_accept(client_ptr->socket(),
                            boost::bind(&tcp_server::handle_accept, this,

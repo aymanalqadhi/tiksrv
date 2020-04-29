@@ -17,7 +17,10 @@ namespace ts::net {
 
 class tcp_server final {
   public:
-    tcp_server(std::uint16_t port, std::uint32_t backlog, bool ipv6 = false)
+    tcp_server(std::uint16_t       port,
+               std::uint32_t       backlog,
+               tcp_client_handler &handler,
+               bool                ipv6 = false)
         : current_client_id_ {0},
           backlog_ {backlog},
           running_ {false},
@@ -25,6 +28,7 @@ class tcp_server final {
               io_,
               {ipv6 ? boost::asio::ip::tcp::v6() : boost::asio::ip::tcp::v4(),
                port}},
+          handler_ {handler},
           logger_ {"tcp_server"} {
     }
 
@@ -47,7 +51,8 @@ class tcp_server final {
     boost::asio::io_context        io_;
     boost::asio::ip::tcp::acceptor acceptor_;
 
-    ts::log::logger logger_;
+    ts::log::logger     logger_;
+    tcp_client_handler &handler_;
 }; // namespace ts::net
 
 } // namespace ts::net
