@@ -10,3 +10,6 @@
 [submodule "src/lib/Unity"]
 	path = src/lib/Unity
 	url = https://github.com/ThrowTheSwitch/Unity
+[submodule "src/lib/spdlog"]
+	path = src/lib/spdlog
+	url = https://github.com/gabime/spdlog
