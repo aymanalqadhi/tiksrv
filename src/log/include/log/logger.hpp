@@ -13,6 +13,8 @@ namespace ts::log {
 class logger {
   public:
     logger(const std::string &name) : logger_ {name, main_sink()} {
+        logger_.set_level(
+            static_cast<spdlog::level::level_enum>(global_level()));
     }
 
     template <typename... TArg>
