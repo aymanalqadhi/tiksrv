@@ -1,5 +1,8 @@
 #include "app/app.hpp"
 #include "app/config.hpp"
+#include "log/core.hpp"
+
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 #include <filesystem>
 #include <iostream>
@@ -27,6 +30,9 @@ int main(int argc, char *argv[]) {
             std::filesystem::exists(config_path)) {
             conf.parse_config_file(config_path);
         }
+
+        ts::log::add_sink<spdlog::sinks::stderr_color_sink_st>(
+            ts::log::log_level::trace);
 
         tiksrv_app app {conf};
         app.run();
