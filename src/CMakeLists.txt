@@ -12,11 +12,12 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 set(LIBRARY_OUTPUT_PATH lib)
 
 # Sub directories inclusion
+add_subdirectory(app)
 add_subdirectory(main)
 
 # Final executable
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:tiksrv_main>)
-target_link_libraries(${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} tiksrv_app)
 
 # Install
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
