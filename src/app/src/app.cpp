@@ -12,7 +12,8 @@
 #include <stdexcept>
 
 using boost::system::error_code;
-using ts::net::tcp_client;
+
+using client_tr = std::shared_ptr<ts::net::tcp_client>;
 
 namespace ts::app {
 
@@ -33,13 +34,18 @@ void tiksrv_app::run() {
     }
 }
 
-void tiksrv_app::on_error(tcp_client &client, const error_code &err) {
-    logger_.warn("An error occured to client #{}: {}", client.id(),
+void tiksrv_app::on_error(client_tr client, const error_code &err) {
+    logger_.warn("An error occured to client #{}: {}", client->id(),
                  err.message());
 }
 
-void tiksrv_app::on_close(ts::net::tcp_client &client) {
-    logger_.info("Client #{} has lost connection", client.id());
+void tiksrv_app::on_close(client_tr client) {
+    logger_.info("Client #{} has lost connection", client->id());
+}
+
+void tiksrv_app::on_request(client_ptr client, ts::net::request &&req) {
+    logger_.fatal("REQUEST FROM {}:{}",
+                  client->endpoint().address().to_string());
 }
 
 } // namespace ts::app

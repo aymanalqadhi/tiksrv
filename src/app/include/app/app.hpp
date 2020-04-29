@@ -4,17 +4,21 @@
 #include "app/config.hpp"
 
 #include "log/logger.hpp"
+#include "net/message.hpp"
 #include "net/tcp_client.hpp"
 #include "net/tcp_server.hpp"
 
 #include <boost/system/error_code.hpp>
 
 #include <cstdint>
+#include <memory>
 
 namespace ts::app {
 
 class tiksrv_app final : public ts::net::tcp_client_handler {
   public:
+    using client_ptr = std::shared_ptr<ts::net::tcp_client>;
+
     tiksrv_app(const config &conf)
         : conf_ {conf},
           logger_ {"app"},
@@ -24,9 +28,10 @@ class tiksrv_app final : public ts::net::tcp_client_handler {
 
     void run();
 
-    void on_error(ts::net::tcp_client &            client,
-                  const boost::system::error_code &err) override;
-    void on_close(ts::net::tcp_client &client) override;
+    void on_error(client_ptr                       client,
+                  const boost::system::error_code &err) final override;
+    void on_close(client_ptr client) final override;
+    void on_request(client_ptr client, ts::net::request &&req) final override;
 
   private:
     void initialize();
