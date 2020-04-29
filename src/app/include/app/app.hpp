@@ -1,19 +1,25 @@
-#ifndef APP_APP_HPP
-#define APP_APP_HPP
+#ifndef TIKSRV_APP_APP_HPP
+#define TIKSRV_APP_APP_HPP
 
 #include "app/config.hpp"
+
+#include "log/logger.hpp"
 
 namespace ts::app {
 
 class tiksrv_app final {
   public:
-    tiksrv_app(const config &conf) : conf_ {conf} {
+    tiksrv_app(const config &conf) : conf_ {conf}, logger_ {"app"} {
     }
 
     void run();
 
   private:
-    const config &conf_;
+    void initialize();
+
+  private:
+    const config &  conf_;
+    ts::log::logger logger_;
 };
 
 } // namespace ts::app
