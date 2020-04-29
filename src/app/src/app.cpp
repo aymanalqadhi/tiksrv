@@ -8,6 +8,7 @@
 
 #include <boost/system/error_code.hpp>
 
+#include <atomic>
 #include <iostream>
 #include <stdexcept>
 
@@ -33,19 +34,35 @@ void tiksrv_app::run() {
         throw std::runtime_error {"Could not start application"};
     }
 }
+void tiksrv_app::on_accept(std::shared_ptr<ts::net::tcp_client> client) {
+    logger_.fatal("GOT CONNECTION");
+
+    client->start();
+    sessions_.insert(std::make_pair(client->id(), session {std::move(client)}));
+}
 
 void tiksrv_app::on_error(client_tr client, const error_code &err) {
     logger_.warn("An error occured to client #{}: {}", client->id(),
                  err.message());
+    on_close(client);
 }
 
 void tiksrv_app::on_close(client_tr client) {
     logger_.info("Client #{} has lost connection", client->id());
+
+    if (client->state() != ts::net::read_state::closed) {
+        client->stop();
+    }
+
+    sessions_.erase(client->id());
 }
 
 void tiksrv_app::on_request(client_ptr client, ts::net::request &&req) {
-    logger_.fatal("REQUEST FROM {}:{}",
-                  client->endpoint().address().to_string());
+    logger_.trace("New message from #{}:", client->id());
+    logger_.trace("[+] Command: {:X}", req.header().command.value());
+    logger_.trace("[+] Flags: {:X}", req.header().flags.value());
+        logger_.trace("[+] Tag: {:X}", req.header().tag.value());
+    logger_.trace("[+] Body Length: {:X}", req.header().body_size.value());
 }
 
 } // namespace ts::app

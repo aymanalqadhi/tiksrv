@@ -2,6 +2,7 @@
 #define TIKSRV_APP_APP_HPP
 
 #include "app/config.hpp"
+#include "app/session.hpp"
 
 #include "log/logger.hpp"
 #include "net/message.hpp"
@@ -12,10 +13,12 @@
 
 #include <cstdint>
 #include <memory>
+#include <unordered_map>
 
 namespace ts::app {
 
-class tiksrv_app final : public ts::net::tcp_client_handler {
+class tiksrv_app final : public ts::net::tcp_server_handler,
+                         public ts::net::tcp_client_handler {
   public:
     using client_ptr = std::shared_ptr<ts::net::tcp_client>;
 
@@ -23,11 +26,13 @@ class tiksrv_app final : public ts::net::tcp_client_handler {
         : conf_ {conf},
           logger_ {"app"},
           server_ {conf[config_key::listen_port].as<std::uint16_t>(),
-                   conf[config_key::liten_backlog].as<std::uint32_t>(), *this} {
+                   conf[config_key::liten_backlog].as<std::uint32_t>(), *this,
+                   *this} {
     }
 
     void run();
 
+    void on_accept(std::shared_ptr<ts::net::tcp_client> client) final override;
     void on_error(client_ptr                       client,
                   const boost::system::error_code &err) final override;
     void on_close(client_ptr client) final override;
@@ -40,6 +45,8 @@ class tiksrv_app final : public ts::net::tcp_client_handler {
     const config &      conf_;
     ts::log::logger     logger_;
     ts::net::tcp_server server_;
+
+    std::unordered_map<std::uint32_t, session> sessions_;
 };
 
 } // namespace ts::app
