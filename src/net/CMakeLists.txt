@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 project(tiksrv_net)
 
 # Files
-set(SOURCE_FILES)
+set(SOURCE_FILES src/tcp_server.cpp)
 
 # Targets
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
@@ -13,7 +13,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 # Dependencies
 find_package(Boost COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} tiksrv_log ${Boost_LIBRARIES})
 
 # Install destination
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
