@@ -9,8 +9,9 @@
 namespace {
 
 std::shared_ptr<spdlog::sinks::dist_sink_st> main_sink {nullptr};
+ts::log::log_level                           level;
 
-}
+} // namespace
 
 namespace ts::log {
 
@@ -24,6 +25,14 @@ void add_sink(spdlog::sink_ptr sink) {
 
 std::shared_ptr<spdlog::sinks::dist_sink_st> &main_sink() {
     return ::main_sink;
+}
+
+log_level global_level() {
+    return ::level;
+}
+
+void global_level(log_level level) {
+    ::level = level;
 }
 
 } // namespace ts::log

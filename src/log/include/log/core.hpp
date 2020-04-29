@@ -21,14 +21,17 @@ enum class log_level : int {
 
 void add_sink(spdlog::sink_ptr sink);
 
-std::shared_ptr<spdlog::sinks::dist_sink_st> &main_sink();
-
 template <typename T, typename... TArgs>
 inline void add_sink(log_level level, TArgs... args) {
     auto ptr = std::make_shared<T>(args...);
     ptr->set_level(static_cast<spdlog::level::level_enum>(level));
     add_sink(std::move(ptr));
 }
+
+std::shared_ptr<spdlog::sinks::dist_sink_st> &main_sink();
+
+log_level global_level();
+void      global_level(log_level level);
 
 } // namespace ts::log
 
