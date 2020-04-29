@@ -4,7 +4,10 @@ cmake_minimum_required(VERSION 3.10)
 project(tiksrv_net)
 
 # Files
-set(SOURCE_FILES src/tcp_server.cpp)
+set(SOURCE_FILES src/tcp_server.cpp
+                 src/tcp_client.cpp
+                 src/message.cpp
+                 src/read_state_machine.cpp)
 
 # Targets
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
