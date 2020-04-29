@@ -15,11 +15,17 @@
 
 namespace ts::net {
 
+class tcp_server_handler {
+  public:
+    virtual void on_accept(std::shared_ptr<tcp_client> client) = 0;
+};
+
 class tcp_server final {
   public:
     tcp_server(std::uint16_t       port,
                std::uint32_t       backlog,
-               tcp_client_handler &handler,
+               tcp_server_handler &server_handler,
+               tcp_client_handler &clients_handler,
                bool                ipv6 = false)
         : current_client_id_ {0},
           backlog_ {backlog},
@@ -28,7 +34,8 @@ class tcp_server final {
               io_,
               {ipv6 ? boost::asio::ip::tcp::v6() : boost::asio::ip::tcp::v4(),
                port}},
-          handler_ {handler},
+          clients_handler_ {clients_handler},
+          server_handler_ {server_handler},
           logger_ {"tcp_server"} {
     }
 
@@ -52,7 +59,8 @@ class tcp_server final {
     boost::asio::ip::tcp::acceptor acceptor_;
 
     ts::log::logger     logger_;
-    tcp_client_handler &handler_;
+    tcp_server_handler &server_handler_;
+    tcp_client_handler &clients_handler_;
 }; // namespace ts::net
 
 } // namespace ts::net

@@ -51,7 +51,7 @@ void tcp_server::accept_next() {
     }
 
     auto client_ptr = std::make_shared<tcp_client>(
-        current_client_id_.fetch_add(1), io_, handler_);
+        current_client_id_.fetch_add(1), io_, clients_handler_);
 
     acceptor_.async_accept(client_ptr->socket(),
                            boost::bind(&tcp_server::handle_accept, this,
@@ -61,8 +61,12 @@ void tcp_server::accept_next() {
 
 void tcp_server::handle_accept(std::shared_ptr<tcp_client> client,
                                const error_code &          err) {
-    logger_.fatal("NEW CONNECTION FROM {}",
-                  client->socket().remote_endpoint().address().to_string());
+    if (err) {
+        logger_.error("Server error: {}", err.message());
+    } else {
+        server_handler_.on_accept(std::move(client));
+    }
+
     accept_next();
 }
 
