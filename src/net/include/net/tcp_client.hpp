@@ -10,9 +10,9 @@
 #include <boost/system/error_code.hpp>
 
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <memory>
-#include <deque>
 
 namespace ts::net {
 
@@ -45,7 +45,12 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
 
     void enqueue_response(std::shared_ptr<response> resp);
     void send_enqueued();
+
     void respond(std::shared_ptr<response> resp);
+    void respond(const std::string &str, std::uint32_t code, std::uint32_t tag);
+    void respond(const std::string &str, std::uint32_t tag);
+    void respond(std::uint32_t code, std::uint32_t tag);
+    void respond(response_code code, std::uint32_t tag);
 
     inline const std::uint32_t &id() const noexcept {
         return id_;
@@ -69,11 +74,11 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
     void send_next(std::shared_ptr<response> resp);
 
   private:
-    std::uint32_t                          id_;
-    boost::asio::ip::tcp::socket           sock_;
-    tcp_client_handler &                   handler_;
+    std::uint32_t                         id_;
+    boost::asio::ip::tcp::socket          sock_;
+    tcp_client_handler &                  handler_;
     std::deque<std::shared_ptr<response>> send_queue_;
-    ts::log::logger &                      logger_;
+    ts::log::logger &                     logger_;
 };
 
 } // namespace ts::net

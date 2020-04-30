@@ -11,6 +11,7 @@
 #include <memory>
 #include <sstream>
 #include <string_view>
+#include <cstdint>
 
 using boost::asio::transfer_exactly;
 using boost::asio::placeholders::bytes_transferred;
@@ -123,6 +124,32 @@ void tcp_client::respond(std::shared_ptr<response> resp) {
         enqueue_response(std::move(resp));
         send_enqueued();
     }
+}
+
+void tcp_client::respond(const std::string &str,
+                         std::uint32_t      code,
+                         std::uint32_t      tag) {
+    auto resp_ptr = std::make_shared<ts::net::response>();
+
+    resp_ptr->code(code);
+    resp_ptr->flags(0x00U);
+    resp_ptr->tag(tag);
+    resp_ptr->body(str);
+    ;
+
+    respond(std::move(resp_ptr));
+}
+
+void tcp_client::respond(const std::string &str, std::uint32_t tag) {
+    respond(str, 0x00u, tag);
+}
+
+void tcp_client::respond(std::uint32_t code, std::uint32_t tag) {
+    respond({}, code, tag);
+}
+
+void tcp_client::respond(response_code code, std::uint32_t tag) {
+    respond(static_cast<std::uint32_t>(code), tag);
 }
 
 } // namespace ts::net
