@@ -14,6 +14,7 @@ namespace ts::config {
 enum class config_key : std::uint32_t {
     listen_port,
     liten_backlog,
+    plugins_path,
     config_file,
     help,
     version
@@ -55,6 +56,7 @@ class config final {
     struct defaults {
         static constexpr auto listen_port   = 3434u;
         static constexpr auto liten_backlog = 100u;
+        static constexpr auto plugins_path  = "plugins";
         static constexpr auto config_file   = "tiksrv.cfg";
     };
 
@@ -68,6 +70,6 @@ class config final {
     boost::program_options::options_description desc_;
 };
 
-} // namespace ts::app
+} // namespace ts::config
 
 #endif

@@ -10,8 +10,8 @@ namespace po = boost::program_options;
 
 namespace {
 
-constexpr std::array config_string_keys {"port", "backlog", "config", "help",
-                                         "version"};
+constexpr std::array config_string_keys {"port",   "backlog", "plugins",
+                                         "config", "help",    "version"};
 
 } // namespace
 
@@ -26,6 +26,10 @@ config::config() : desc_ {"Allowed Options"} {
         "backlog,b",
         po::value<std::uint32_t>()->default_value(defaults::liten_backlog),
         "The maximum number in the listening queue");
+    desc_.add_options()(
+        "plugins",
+        po::value<std::string>()->default_value(defaults::plugins_path),
+        "The path from which to load the application plugins");
     desc_.add_options()(
         "config,c",
         po::value<std::string>()->default_value(defaults::config_file),
@@ -57,4 +61,4 @@ auto config::from_argv(int argc, const char *const argv[]) -> config {
     return ret;
 }
 
-} // namespace ts::app
+} // namespace ts::config
