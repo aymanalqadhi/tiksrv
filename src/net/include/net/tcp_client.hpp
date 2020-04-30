@@ -4,8 +4,10 @@
 #include "net/message.hpp"
 #include "net/read_state_machine.hpp"
 
-#include "boost/asio/ip/tcp.hpp"
-#include "boost/system/error_code.hpp"
+#include "log/logger.hpp"
+
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <cstdint>
 #include <functional>
@@ -28,10 +30,13 @@ class tcp_client_handler {
 class tcp_client final : public std::enable_shared_from_this<tcp_client>,
                          public read_state_machine {
   public:
+    static constexpr auto max_allowed_body_size = 0x4000UL;
+
     tcp_client(std::uint32_t            id,
                boost::asio::io_context &io,
-               tcp_client_handler &     handler)
-        : id_ {id}, sock_ {io}, handler_ {handler} {
+               tcp_client_handler &     handler,
+               ts::log::logger &        logger)
+        : id_ {id}, sock_ {io}, handler_ {handler}, logger_ {logger} {
     }
 
     void start();
@@ -43,6 +48,10 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
 
     inline auto &socket() noexcept {
         return sock_;
+    }
+
+    inline auto endpoint() const noexcept {
+        return sock_.remote_endpoint();
     }
 
   protected:
@@ -57,6 +66,7 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
     std::uint32_t                id_;
     boost::asio::ip::tcp::socket sock_;
     tcp_client_handler &         handler_;
+    ts::log::logger &            logger_;
 };
 
 } // namespace ts::net
