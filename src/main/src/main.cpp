@@ -1,5 +1,5 @@
 #include "app/app.hpp"
-#include "app/config.hpp"
+#include "config/config.hpp"
 #include "log/core.hpp"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
@@ -7,9 +7,9 @@
 #include <filesystem>
 #include <iostream>
 
-using ts::app::config;
-using ts::app::config_key;
 using ts::app::tiksrv_app;
+using ts::config::config;
+using ts::config::config_key;
 
 auto main(int argc, char *argv[]) -> int {
     try {

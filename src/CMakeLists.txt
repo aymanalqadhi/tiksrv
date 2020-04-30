@@ -19,6 +19,7 @@ add_subdirectory(main)
 add_subdirectory(app)
 add_subdirectory(net)
 add_subdirectory(log)
+add_subdirectory(config)
 add_subdirectory(lib)
 
 # Final executable

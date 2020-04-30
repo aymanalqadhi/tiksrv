@@ -9,7 +9,9 @@ set(HEADER_FILE)
 
 # Targets
 add_library(${PROJECT_NAME} OBJECT ${SOURCE_FILES} ${HEADER_FILE})
-target_link_libraries(${PROJECT_NAME} tiksrv_app)
+target_link_libraries(${PROJECT_NAME} tiksrv_config
+                                      tiksrv_log
+                                      tiksrv_app)
 
 # Install destination
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)

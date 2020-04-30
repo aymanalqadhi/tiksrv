@@ -1,4 +1,4 @@
-#include "app/config.hpp"
+#include "config/config.hpp"
 
 #include <boost/program_options.hpp>
 
@@ -15,7 +15,7 @@ constexpr std::array config_string_keys {"port", "backlog", "config", "help",
 
 } // namespace
 
-namespace ts::app {
+namespace ts::config {
 
 config::config() : desc_ {"Allowed Options"} {
     desc_.add_options()(

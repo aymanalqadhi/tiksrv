@@ -1,5 +1,5 @@
-#ifndef TIKSRV_APP_CONFIG_HPP
-#define TIKSRV_APP_CONFIG_HPP
+#ifndef TIKSRV_CONFIG_CONFIG_HPP
+#define TIKSRV_CONFIG_CONFIG_HPP
 
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-namespace ts::app {
+namespace ts::config {
 
 enum class config_key : std::uint32_t {
     listen_port,

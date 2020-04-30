@@ -1,9 +1,9 @@
 #ifndef TIKSRV_APP_APP_HPP
 #define TIKSRV_APP_APP_HPP
 
-#include "app/config.hpp"
 #include "app/session.hpp"
 
+#include "config/config.hpp"
 #include "log/logger.hpp"
 #include "net/message.hpp"
 #include "net/tcp_client.hpp"
@@ -22,12 +22,13 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
   public:
     using client_ptr = std::shared_ptr<ts::net::tcp_client>;
 
-    tiksrv_app(const config &conf)
+    tiksrv_app(const ts::config::config &conf)
         : conf_ {conf},
           logger_ {"app"},
-          server_ {conf[config_key::listen_port].as<std::uint16_t>(),
-                   conf[config_key::liten_backlog].as<std::uint32_t>(), *this,
-                   *this} {
+          server_ {
+              conf[ts::config::config_key::listen_port].as<std::uint16_t>(),
+              conf[ts::config::config_key::liten_backlog].as<std::uint32_t>(),
+              *this, *this} {
     }
 
     void run();
@@ -42,7 +43,7 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
     void initialize();
 
   private:
-    const config &      conf_;
+    const ts::config::config &      conf_;
     ts::log::logger     logger_;
     ts::net::tcp_server server_;
 
