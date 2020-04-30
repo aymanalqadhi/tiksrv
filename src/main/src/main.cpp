@@ -11,7 +11,7 @@ using ts::app::config;
 using ts::app::config_key;
 using ts::app::tiksrv_app;
 
-int main(int argc, char *argv[]) {
+auto main(int argc, char *argv[]) -> int {
     try {
         auto conf = config::from_argv(argc, argv);
 

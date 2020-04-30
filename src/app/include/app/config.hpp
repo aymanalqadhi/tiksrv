@@ -44,13 +44,13 @@ class config final {
         return values_.end();
     }
 
-    bool has(config_key key) const;
+    auto has(config_key key) const -> bool;
     const boost::program_options::variable_value &
          operator[](config_key key) const;
     void parse_argv(int argc, const char *const argv[]);
     void parse_config_file(std::string_view path);
 
-    static config from_argv(int argc, const char *const argv[]);
+    static auto from_argv(int argc, const char *const argv[]) -> config;
 
     struct defaults {
         static constexpr auto listen_port   = 3434u;

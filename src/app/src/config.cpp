@@ -43,7 +43,7 @@ void config::parse_config_file(std::string_view path) {
     po::store(po::parse_config_file(path.data(), desc_), values_);
 }
 
-bool config::has(config_key key) const {
+auto config::has(config_key key) const -> bool {
     return has(::config_string_keys[static_cast<std::uint32_t>(key)]);
 }
 
@@ -51,7 +51,7 @@ const po::variable_value &config::operator[](config_key key) const {
     return operator[](::config_string_keys[static_cast<std::uint32_t>(key)]);
 }
 
-config config::from_argv(int argc, const char *const argv[]) {
+auto config::from_argv(int argc, const char *const argv[]) -> config {
     config ret {};
     ret.parse_argv(argc, argv);
     return ret;

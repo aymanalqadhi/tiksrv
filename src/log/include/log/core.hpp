@@ -30,8 +30,8 @@ inline void add_sink(log_level level, TArgs... args) {
 
 std::shared_ptr<spdlog::sinks::dist_sink_st> &main_sink();
 
-log_level global_level();
-void      global_level(log_level level);
+auto global_level() -> log_level;
+void global_level(log_level level);
 
 } // namespace ts::log
 

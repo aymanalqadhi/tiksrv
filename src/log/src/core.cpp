@@ -23,11 +23,11 @@ void add_sink(spdlog::sink_ptr sink) {
     ::main_sink->add_sink(std::move(sink));
 }
 
-std::shared_ptr<spdlog::sinks::dist_sink_st> &main_sink() {
+auto main_sink() -> std::shared_ptr<spdlog::sinks::dist_sink_st> & {
     return ::main_sink;
 }
 
-log_level global_level() {
+auto global_level() -> log_level {
     return ::level;
 }
 
