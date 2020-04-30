@@ -2,6 +2,8 @@
 
 #include <boost/asio/error.hpp>
 
+#include <string_view>
+
 namespace ts::net {
 
 void read_state_machine::handle_read(std::size_t                      nread,
