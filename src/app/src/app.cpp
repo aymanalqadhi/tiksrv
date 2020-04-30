@@ -1,5 +1,6 @@
 #include "app/app.hpp"
 
+#include "interop/plugin_loader.hpp"
 #include "log/core.hpp"
 #include "log/logger.hpp"
 #include "net/tcp_client.hpp"
@@ -13,6 +14,7 @@
 #include <stdexcept>
 
 using boost::system::error_code;
+using ts::config::config_key;
 
 using client_tr = std::shared_ptr<ts::net::tcp_client>;
 
@@ -20,6 +22,28 @@ namespace ts::app {
 
 void tiksrv_app::initialize() {
     logger_.info("Initializing application");
+
+    logger_.info("Loading plugins");
+    load_plugins();
+}
+
+void tiksrv_app::load_plugins() {
+    auto plugins_path = conf_[config_key::plugins_path].as<std::string>();
+    auto loader       = ts::interop::plugin_loader {};
+
+    logger_.debug("Loading plugins from path: {}", plugins_path);
+    auto plugins = loader.load_all(plugins_path);
+
+    for (const auto &plugin : plugins) {
+        logger_.debug("Loading commands from plugin `{}'", plugin->name());
+        plugin->export_commands([this](auto key, auto command) {
+            logger_.debug("Loading command #{:x}: {}", key, command->name());
+            commands_.insert(
+                std::make_pair(std::move(key), std::move(command)));
+        });
+    }
+
+    plugins_ = std::move(plugins);
 }
 
 void tiksrv_app::run() {
@@ -52,7 +76,7 @@ void tiksrv_app::on_error(client_tr client, const error_code &err) {
     on_close(client);
 }
 
-void tiksrv_app::on_close(client_tr client) {
+void tiksrv_app::on_close(client_ptr client) {
     logger_.info("Client #{} has lost connection", client->id());
 
     if (client->state() != ts::net::read_state::closed) {

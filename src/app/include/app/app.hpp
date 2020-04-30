@@ -2,6 +2,8 @@
 #define TIKSRV_APP_APP_HPP
 
 #include "config/config.hpp"
+#include "interop/plugin.hpp"
+#include "interop/plugin_loader.hpp"
 #include "log/logger.hpp"
 #include "net/message.hpp"
 #include "net/tcp_client.hpp"
@@ -38,6 +40,7 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
     void on_request(client_ptr client, ts::net::request &&req) final override;
 
   private:
+    void load_plugins();
     void initialize();
 
   private:
@@ -47,6 +50,9 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
 
     std::unordered_map<std::uint32_t, std::shared_ptr<ts::net::tcp_client>>
         clients_;
+
+    std::vector<ts::interop::plugin_wrapper>                       plugins_;
+    std::map<std::uint32_t, std::unique_ptr<ts::interop::command>> commands_;
 };
 
 } // namespace ts::app
