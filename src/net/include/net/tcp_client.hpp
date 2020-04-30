@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <deque>
 
 namespace ts::net {
 
@@ -42,6 +43,10 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
     void start();
     void stop();
 
+    void enqueue_response(std::shared_ptr<response> resp);
+    void send_enqueued();
+    void respond(std::shared_ptr<response> resp);
+
     inline const std::uint32_t &id() const noexcept {
         return id_;
     }
@@ -50,7 +55,7 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
         return sock_;
     }
 
-    inline auto endpoint() const noexcept {
+    inline auto endpoint() const {
         return sock_.remote_endpoint();
     }
 
@@ -61,12 +66,15 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
 
   private:
     void read_next(std::size_t n);
+    void send_next(std::shared_ptr<response> resp);
+    void handle_send(std::size_t sent, const boost::system::error_code &err);
 
   private:
-    std::uint32_t                id_;
-    boost::asio::ip::tcp::socket sock_;
-    tcp_client_handler &         handler_;
-    ts::log::logger &            logger_;
+    std::uint32_t                          id_;
+    boost::asio::ip::tcp::socket           sock_;
+    tcp_client_handler &                   handler_;
+    std::deque<std::shared_ptr<response>> send_queue_;
+    ts::log::logger &                      logger_;
 };
 
 } // namespace ts::net
