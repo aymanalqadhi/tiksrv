@@ -1,8 +1,6 @@
 #ifndef TIKSRV_APP_APP_HPP
 #define TIKSRV_APP_APP_HPP
 
-#include "app/session.hpp"
-
 #include "config/config.hpp"
 #include "log/logger.hpp"
 #include "net/message.hpp"
@@ -43,11 +41,12 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
     void initialize();
 
   private:
-    const ts::config::config &      conf_;
-    ts::log::logger     logger_;
-    ts::net::tcp_server server_;
+    const ts::config::config &conf_;
+    ts::log::logger           logger_;
+    ts::net::tcp_server       server_;
 
-    std::unordered_map<std::uint32_t, session> sessions_;
+    std::unordered_map<std::uint32_t, std::shared_ptr<ts::net::tcp_client>>
+        clients_;
 };
 
 } // namespace ts::app
