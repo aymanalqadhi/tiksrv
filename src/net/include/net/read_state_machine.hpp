@@ -62,9 +62,8 @@ class read_state_machine {
     }
 
   protected:
-    void handle_read(std::size_t                      nread,
-                     std::string_view                 buf,
-                     const boost::system::error_code &err);
+    void handle_read(const boost::system::error_code &err,
+                     std::string_view                 buf);
 
     virtual void on_reading_header(std::string_view data)       = 0;
     virtual void on_reading_body(std::string_view data)         = 0;

@@ -67,7 +67,6 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
   private:
     void read_next(std::size_t n);
     void send_next(std::shared_ptr<response> resp);
-    void handle_send(std::size_t sent, const boost::system::error_code &err);
 
   private:
     std::uint32_t                          id_;

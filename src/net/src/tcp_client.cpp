@@ -3,7 +3,6 @@
 #include <boost/asio/completion_condition.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/asio/read.hpp>
-#include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <array>
@@ -25,9 +24,9 @@ void tcp_client::read_next(std::size_t n) {
 
     boost::asio::async_read(
         sock_, boost::asio::buffer(context().buffer(), n), transfer_exactly(n),
-        boost::bind(&tcp_client::handle_read, shared_from_this(),
-                    bytes_transferred,
-                    std::string_view {context().buffer().c_str(), n}, error));
+        [this](const auto &err, auto nread) {
+            handle_read(err, {context().buffer().c_str(), nread});
+        });
 }
 
 void tcp_client::start() {
@@ -94,9 +93,14 @@ void tcp_client::send_next(std::shared_ptr<response> resp) {
     std::array<boost::asio::const_buffer, 2> send_buffers {
         boost::asio::buffer(header_buf), boost::asio::buffer(resp->body())};
 
-    sock_.async_send(send_buffers,
-                     boost::bind(&tcp_client::handle_send, shared_from_this(),
-                                 bytes_transferred, error));
+    sock_.async_send(send_buffers, [this](const auto &err, auto sent) {
+        if (err) {
+            on_error(err);
+            return;
+        }
+
+        send_enqueued();
+    });
 }
 
 void tcp_client::enqueue_response(std::shared_ptr<response> resp) {
@@ -119,17 +123,6 @@ void tcp_client::respond(std::shared_ptr<response> resp) {
         enqueue_response(std::move(resp));
         send_enqueued();
     }
-}
-
-void tcp_client::handle_send([[maybe_unused]] std::size_t     sent,
-                             const boost::system::error_code &err) {
-    if (err) {
-        on_error(err);
-        return;
-    }
-
-    if (sock_.is_open())
-    send_enqueued();
 }
 
 } // namespace ts::net

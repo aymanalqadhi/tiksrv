@@ -49,8 +49,6 @@ class tcp_server final {
 
   private:
     void accept_next();
-    void handle_accept(std::shared_ptr<tcp_client>      client,
-                       const boost::system::error_code &err);
 
     std::atomic_uint32_t current_client_id_;
     std::uint32_t        backlog_;
