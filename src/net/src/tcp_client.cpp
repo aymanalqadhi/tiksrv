@@ -6,31 +6,31 @@
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <cassert>
 #include <cstring>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 
 using boost::asio::transfer_exactly;
 using boost::asio::placeholders::bytes_transferred;
 using boost::asio::placeholders::error;
 
+#include <spdlog/fmt/bin_to_hex.h>
 namespace ts::net {
 
 void tcp_client::read_next(std::size_t n) {
-    if (context().buffer.size() < n) {
-        context().buffer.resize(n);
-    }
+    context().resize(n);
 
     boost::asio::async_read(
-        sock_, boost::asio::buffer(context().buffer, n), transfer_exactly(n),
+        sock_, boost::asio::buffer(context().buffer(), n), transfer_exactly(n),
         boost::bind(&tcp_client::handle_read, shared_from_this(),
-                    bytes_transferred, context().buffer, error));
+                    bytes_transferred,
+                    std::string_view {context().buffer().c_str(), n}, error));
 }
 
 void tcp_client::start() {
-    if (state() != read_state::idle) {
-        throw std::runtime_error {"Client already started"};
-    }
+    assert(state() == read_state::idle);
 
     state(read_state::reading_header);
     read_next(request_header::size);
@@ -46,22 +46,33 @@ void tcp_client::stop() {
 }
 
 void tcp_client::on_reading_header(std::string_view data) {
-    if (data.size() != request_header::size) {
-        throw std::runtime_error {"Invalid header size"};
+    assert(data.size() == request_header::size);
+
+    context().header().parse(data.data(), data.size());
+
+    if (context().header().body_size > max_allowed_body_size) {
+        logger_.warn(
+            "Client #{} exceeded the message size limit (sent: {}, limit: {})",
+            id_, context().header().body_size, max_allowed_body_size);
+        state(read_state::closed);
+        handler_.on_close(shared_from_this());
+        return;
     }
 
-    std::memcpy(reinterpret_cast<void *>(&context().header),
-                reinterpret_cast<const void *>(context().buffer.c_str()),
-                request_header::size);
-
-    state(read_state::reading_body);
-    read_next(context().header.body_size.value());
+    if (context().header().body_size > 0) {
+        state(read_state::reading_body);
+        read_next(context().header().body_size);
+    } else {
+        handler_.on_request(
+            shared_from_this(),
+            {std::move(context().header()), std::move(context().buffer())});
+        read_next(request_header::size);
+    }
 }
 
 void tcp_client::on_reading_body(std::string_view data) {
-    handler_.on_request(shared_from_this(), {std::move(context().header),
-                                             std::move(context().buffer)});
-    context().reinit();
+    handler_.on_request(shared_from_this(), {std::move(context().header()),
+                                             std::move(context().buffer())});
 
     state(read_state::reading_header);
     read_next(request_header::size);
