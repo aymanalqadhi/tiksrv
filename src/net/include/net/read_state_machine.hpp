@@ -6,6 +6,9 @@
 #include <boost/system/error_code.hpp>
 
 #include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -14,14 +17,31 @@ namespace ts::net {
 
 enum class read_state { idle, reading_header, reading_body, closed };
 
-struct read_context {
-    std::string    buffer;
-    request_header header;
-
-    inline void reinit() {
-        buffer = {};
-        header = {};
+class read_context final {
+  public:
+    read_context() : header_ {} {
     }
+
+    inline request_header &header() {
+        return header_;
+    }
+
+    inline std::string &buffer() noexcept {
+        return buffer_;
+    }
+
+    inline std::size_t size() const noexcept {
+        return buffer_.size();
+    }
+
+    inline void resize(std::size_t n) {
+        buffer_ = {};
+        buffer_.resize(n);
+    }
+
+  private:
+    request_header header_;
+    std::string    buffer_;
 };
 
 class read_state_machine {
