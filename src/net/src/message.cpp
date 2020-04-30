@@ -1,21 +1,34 @@
 #include "net/message.hpp"
 
-#include <boost/endian/buffers.hpp>
+#include <boost/endian.hpp>
 
 #include <array>
+#include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <type_traits>
+
+namespace {
+
+template <typename T>
+inline void extract_number(const char **buf, T &out) {
+    std::memcpy(reinterpret_cast<void *>(&out),
+                reinterpret_cast<const void *>(*buf), sizeof(T));
+    boost::endian::big_to_native_inplace(out);
+    *buf += sizeof(T);
+}
+
+} // namespace
 
 namespace ts::net {
 
-request_header
-request_header::parse(const std::array<std::uint8_t, size> &buf) {
-    request_header ret {};
+void request_header::parse(const char *buf, std::size_t len) {
+    assert(len >= request_header::size);
 
-    std::memcpy(reinterpret_cast<void *>(&ret), buf.data(), buf.size());
-    ret.body_size.value();
-
-    return ret;
+    ::extract_number(&buf, command);
+    ::extract_number(&buf, flags);
+    ::extract_number(&buf, tag);
+    ::extract_number(&buf, body_size);
 }
 
 } // namespace ts::net
