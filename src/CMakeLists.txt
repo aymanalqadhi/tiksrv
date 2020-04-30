@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 project(tiksrv)
 
 # Project Options
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
 # Options
@@ -17,9 +18,12 @@ set(LIBRARY_OUTPUT_PATH lib)
 # Sub directories inclusion
 add_subdirectory(main)
 add_subdirectory(app)
+add_subdirectory(interop)
 add_subdirectory(net)
 add_subdirectory(log)
 add_subdirectory(config)
+
+add_subdirectory(plugins)
 add_subdirectory(lib)
 
 # Final executable
