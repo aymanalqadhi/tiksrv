@@ -48,7 +48,7 @@ void tcp_client::stop() {
 void tcp_client::on_reading_header(std::string_view data) {
     assert(data.size() == request_header::size);
 
-    context().header().parse(data.data(), data.size());
+    context().header().decode(data.data(), data.size());
 
     if (context().header().body_size > max_allowed_body_size) {
         logger_.warn(

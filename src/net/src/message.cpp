@@ -22,7 +22,7 @@ inline void extract_number(const char **buf, T &out) {
 
 namespace ts::net {
 
-void request_header::parse(const char *buf, std::size_t len) {
+void request_header::decode(const char *buf, std::size_t len) {
     assert(len >= request_header::size);
 
     ::extract_number(&buf, command);

@@ -17,14 +17,14 @@ struct request_header {
     std::uint32_t tag;
     std::uint32_t body_size;
 
-    void parse(const char *buf, std::size_t len);
+    void decode(const char *buf, std::size_t len);
 
-    inline void parse(const std::array<std::uint8_t, size>& buf) {
-        parse(reinterpret_cast<const char *>(buf.data()), buf.size());
+    inline void decode(const std::array<std::uint8_t, size>& buf) {
+        decode(reinterpret_cast<const char *>(buf.data()), buf.size());
     }
 
     inline void parse(const std::string& buf) {
-        parse(buf.c_str(), buf.size());
+        decode(buf.c_str(), buf.size());
     }
 };
 
