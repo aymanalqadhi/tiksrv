@@ -47,7 +47,7 @@ auto config::has(config_key key) const -> bool {
     return has(::config_string_keys[static_cast<std::uint32_t>(key)]);
 }
 
-const po::variable_value &config::operator[](config_key key) const {
+auto config::operator[](config_key key) const -> const po::variable_value & {
     return operator[](::config_string_keys[static_cast<std::uint32_t>(key)]);
 }
 

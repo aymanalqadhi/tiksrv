@@ -27,8 +27,8 @@ class config final {
         return values_.count(key) > 0;
     }
 
-    inline const boost::program_options::variable_value &
-    operator[](const std::string &key) const {
+    inline auto operator[](const std::string &key) const
+        -> const boost::program_options::variable_value & {
         return values_[key];
     }
 
