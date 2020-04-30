@@ -92,6 +92,16 @@ void tiksrv_app::on_request(client_ptr client, ts::net::request &&req) {
     logger_.trace("[+] Flags: 0x{:08X}", req.header().flags);
     logger_.trace("[+] Tag: 0x{:08X}", req.header().tag);
     logger_.trace("[+] Body Length: 0x{:08X}", req.header().body_size);
+
+    if (auto itr = commands_.find(req.header().command);
+        itr != commands_.end()) {
+        (*itr->second)(client, std::move(req));
+    } else {
+        logger_.warn("Client #{} has requested a non-existent command {:#8x}",
+                     client->id(), req.header().command);
+        client->respond(ts::net::response_code::unknown_command,
+                        req.header().tag);
+    }
 }
 
 } // namespace ts::app
