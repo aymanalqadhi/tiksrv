@@ -36,7 +36,8 @@ class tcp_server final {
                port}},
           clients_handler_ {clients_handler},
           server_handler_ {server_handler},
-          logger_ {"tcp_server"} {
+          logger_ {"tcp_server"},
+          clients_logger_ {"tcp_client"} {
     }
 
     ~tcp_server() {
@@ -58,7 +59,7 @@ class tcp_server final {
     boost::asio::io_context        io_;
     boost::asio::ip::tcp::acceptor acceptor_;
 
-    ts::log::logger     logger_;
+    ts::log::logger     logger_, clients_logger_;
     tcp_server_handler &server_handler_;
     tcp_client_handler &clients_handler_;
 }; // namespace ts::net

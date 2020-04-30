@@ -1,5 +1,7 @@
 #include "net/tcp_server.hpp"
 
+#include "spdlog/fmt/ostr.h"
+
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/placeholders.hpp>
@@ -20,12 +22,10 @@ void tcp_server::start() {
         throw std::runtime_error {"Server is already started"};
     }
 
-    const auto &ep = acceptor_.local_endpoint();
+    logger_.debug("Starting server on {} with {} backlog",
+                  acceptor_.local_endpoint(), backlog_);
+
     acceptor_.listen(backlog_);
-
-    logger_.debug("Starting server on {}:{} with {} backlog",
-                  ep.address().to_string(), ep.port(), backlog_);
-
     running_.store(true);
     accept_next();
 
@@ -50,9 +50,9 @@ void tcp_server::accept_next() {
         return;
     }
 
-    auto client_ptr = std::make_shared<tcp_client>(
-        current_client_id_.fetch_add(1), io_, clients_handler_);
-
+    auto client_ptr =
+        std::make_shared<tcp_client>(current_client_id_.fetch_add(1), io_,
+                                     clients_handler_, clients_logger_);
     acceptor_.async_accept(client_ptr->socket(),
                            boost::bind(&tcp_server::handle_accept, this,
                                        client_ptr,
