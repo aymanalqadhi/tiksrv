@@ -6,10 +6,11 @@
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <array>
 #include <cassert>
 #include <cstring>
+#include <memory>
 #include <sstream>
-#include <stdexcept>
 #include <string_view>
 
 using boost::asio::transfer_exactly;
@@ -84,6 +85,51 @@ void tcp_client::on_error(const boost::system::error_code &err) {
     } else {
         handler_.on_error(shared_from_this(), err);
     }
+}
+
+void tcp_client::send_next(std::shared_ptr<response> resp) {
+    std::array<std::uint8_t, response_header::size> header_buf {};
+    resp->header().encode(header_buf);
+
+    std::array<boost::asio::const_buffer, 2> send_buffers {
+        boost::asio::buffer(header_buf), boost::asio::buffer(resp->body())};
+
+    sock_.async_send(send_buffers,
+                     boost::bind(&tcp_client::handle_send, shared_from_this(),
+                                 bytes_transferred, error));
+}
+
+void tcp_client::enqueue_response(std::shared_ptr<response> resp) {
+    send_queue_.push_back(std::move(resp));
+}
+
+void tcp_client::send_enqueued() {
+    if (send_queue_.empty()) {
+        return;
+    }
+
+    send_next(send_queue_.front());
+    send_queue_.pop_front();
+}
+
+void tcp_client::respond(std::shared_ptr<response> resp) {
+    if (send_queue_.empty()) {
+        send_next(std::move(resp));
+    } else {
+        enqueue_response(std::move(resp));
+        send_enqueued();
+    }
+}
+
+void tcp_client::handle_send([[maybe_unused]] std::size_t     sent,
+                             const boost::system::error_code &err) {
+    if (err) {
+        on_error(err);
+        return;
+    }
+
+    if (sock_.is_open())
+    send_enqueued();
 }
 
 } // namespace ts::net
