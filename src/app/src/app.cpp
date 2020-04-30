@@ -35,11 +35,16 @@ void tiksrv_app::run() {
     }
 }
 void tiksrv_app::on_accept(std::shared_ptr<ts::net::tcp_client> client) {
-    logger_.info("Got connection from {} and was assigned #{}",
-                 client->endpoint(), client->id());
-
-    client->start();
-    sessions_.insert(std::make_pair(client->id(), session {std::move(client)}));
+    try {
+        logger_.info("Got connection from {} and was assigned #{}",
+                     client->endpoint(), client->id());
+        client->start();
+        sessions_.insert(
+            std::make_pair(client->id(), session {std::move(client)}));
+    } catch (const std::exception &ex) {
+        logger_.warn("An error occrued while accepting client #{}: {}",
+                     client->id(), ex.what());
+    }
 }
 
 void tiksrv_app::on_error(client_tr client, const error_code &err) {
