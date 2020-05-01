@@ -8,6 +8,7 @@
 #include "net/message.hpp"
 #include "net/tcp_client.hpp"
 #include "net/tcp_server.hpp"
+#include "services/services_manager.hpp"
 
 #include <boost/asio/io_context.hpp>
 #include <boost/system/error_code.hpp>
@@ -31,7 +32,8 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
               io_,
               conf[ts::config::config_key::listen_port].as<std::uint16_t>(),
               conf[ts::config::config_key::liten_backlog].as<std::uint32_t>(),
-              *this, *this} {
+              *this, *this},
+          services_manager_ {conf, io_} {
     }
 
     void run();
@@ -50,8 +52,9 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
     const ts::config::config &conf_;
     boost::asio::io_context   io_;
 
-    ts::log::logger     logger_;
-    ts::net::tcp_server server_;
+    ts::log::logger                logger_;
+    ts::net::tcp_server            server_;
+    ts::services::services_manager services_manager_;
 
     std::unordered_map<std::uint32_t, std::shared_ptr<ts::net::tcp_client>>
         clients_;
