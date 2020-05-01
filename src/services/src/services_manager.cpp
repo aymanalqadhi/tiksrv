@@ -7,8 +7,6 @@
 namespace ts::services {
 
 void services_manager::initialize() {
-    logger_.info("Initializing services");
-
     if (state_.load() != services_manager_state::uninitialized) {
         throw std::runtime_error {"Service have been already initialized"};
     }
