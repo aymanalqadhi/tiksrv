@@ -23,6 +23,9 @@ namespace ts::app {
 void tiksrv_app::initialize() {
     logger_.info("Initializing application");
 
+    logger_.info("Initializing services");
+    services_manager_.initialize();
+
     logger_.info("Loading plugins");
     load_plugins();
 }
@@ -35,26 +38,26 @@ void tiksrv_app::load_plugins() {
     auto plugins = loader.load_all(plugins_path);
 
     for (auto itr = plugins.begin(); itr != plugins.end(); ++itr) {
-        logger_.debug("Initializing plugin `{}'", (*itr)->name());
-
         try {
+            logger_.debug("Initializing plugin `{}'", (*itr)->name());
             (*itr)->initialize(services_manager_);
+
+            logger_.debug("Loading commands from plugin `{}'", (*itr)->name());
+            (*itr)->export_commands(
+                [this](std::uint16_t type, std::uint16_t key,
+                       std::unique_ptr<ts::interop::command> &&command) {
+                    logger_.debug("Loaded command {:#04x}:{:#04x}: {}", type,
+                                  key, command->name());
+                    auto id = (type << 16) | (key & 0xFFFF);
+                    commands_.insert(
+                        std::make_pair(std::move(id), std::move(command)));
+                });
         } catch (const std::exception &ex) {
-            logger_.warn("Could not initialize plugin `{}'", (*itr)->name());
+            logger_.warn("Could not initialize plugin `{}': {}", (*itr)->name(),
+                         ex.what());
             plugins.erase(itr);
             continue;
         }
-
-        logger_.debug("Loading commands from plugin `{}'", (*itr)->name());
-        (*itr)->export_commands(
-            [this](std::uint16_t type, std::uint16_t key,
-                   std::unique_ptr<ts::interop::command> &&command) {
-                logger_.debug("Loaded command {:#04x}:{:#04x}: {}", type, key,
-                              command->name());
-                auto id = (type << 16) | (key & 0xFFFF);
-                commands_.insert(
-                    std::make_pair(std::move(id), std::move(command)));
-            });
     }
 
     plugins_ = std::move(plugins);
