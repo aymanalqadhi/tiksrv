@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.10)
 project(eztik)
 
 # Files
-set(SOURCE_FILES src/eztik_plugin.cpp)
+set(SOURCE_FILES src/eztik_plugin.cpp
+                 src/routeros_sentence.cpp)
 
 # Targets
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
