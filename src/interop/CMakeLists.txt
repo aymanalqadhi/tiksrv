@@ -13,7 +13,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 # Dependencies
 find_package(Boost COMPONENTS system filesystem REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} tiksrv_net ${Boost_LIBRARIES} dl)
+target_link_libraries(${PROJECT_NAME} tiksrv_services
+                                      tiksrv_net
+                                      ${Boost_LIBRARIES}
+                                      dl)
 
 # Install destination
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
