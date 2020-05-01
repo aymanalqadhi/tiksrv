@@ -13,3 +13,6 @@
 [submodule "src/lib/spdlog"]
 	path = src/lib/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "src/lib/fmt"]
+	path = src/lib/fmt
+	url = https://github.com/fmtlib/fmt
