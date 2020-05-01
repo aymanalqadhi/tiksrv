@@ -25,7 +25,8 @@ class services_manager final {
         : conf_ {conf},
           io_ {io},
           state_ {services_manager_state::uninitialized},
-          logger_ {"services_manager"} {
+          logger_ {"services_manager"},
+          plugins_logger_ {"plugins"} {
     }
 
     inline auto config() const noexcept -> const ts::config::config & {
@@ -34,6 +35,10 @@ class services_manager final {
 
     inline auto io_context() noexcept -> boost::asio::io_context & {
         return io_;
+    }
+
+    inline auto logger() noexcept -> ts::log::logger & {
+        return plugins_logger_;
     }
 
     template <typename T, typename = std::enable_if<is_service<T>::value>>
@@ -65,7 +70,7 @@ class services_manager final {
     std::map<std::string, std::shared_ptr<service>> services_;
 
     std::atomic<services_manager_state> state_;
-    ts::log::logger                     logger_;
+    ts::log::logger                     logger_, plugins_logger_;
 };
 
 } // namespace ts::services
