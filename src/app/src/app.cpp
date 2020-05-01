@@ -39,7 +39,7 @@ void tiksrv_app::load_plugins() {
         plugin->export_commands(
             [this](std::uint16_t type, std::uint16_t key,
                    std::unique_ptr<ts::interop::command> &&command) {
-                logger_.debug("Loading command {:#04x}:{:#04x}: {}", type, key,
+                logger_.debug("Loaded command {:#04x}:{:#04x}: {}", type, key,
                               command->name());
                 auto id = (type << 16) | (key & 0xFFFF);
                 commands_.insert(
