@@ -13,6 +13,9 @@ namespace ts::interop {
 
 class plugin {
   public:
+    using export_func = std::function<void(
+        std::uint16_t, std::uint16_t, std::unique_ptr<command>)>;
+
     virtual ~plugin() {
     }
 
@@ -20,9 +23,7 @@ class plugin {
     virtual auto author() const noexcept -> const std::string &  = 0;
     virtual auto version() const noexcept -> const std::string & = 0;
 
-    virtual void export_commands(
-        std::function<void(std::uint32_t, std::unique_ptr<command>)> export_cb)
-        const noexcept = 0;
+    virtual void export_commands(export_func export_cb) const noexcept = 0;
 };
 
 } // namespace ts::interop

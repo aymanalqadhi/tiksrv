@@ -36,11 +36,15 @@ void tiksrv_app::load_plugins() {
 
     for (const auto &plugin : plugins) {
         logger_.debug("Loading commands from plugin `{}'", plugin->name());
-        plugin->export_commands([this](auto key, auto command) {
-            logger_.debug("Loading command #{:x}: {}", key, command->name());
-            commands_.insert(
-                std::make_pair(std::move(key), std::move(command)));
-        });
+        plugin->export_commands(
+            [this](std::uint16_t type, std::uint16_t key,
+                   std::unique_ptr<ts::interop::command> &&command) {
+                logger_.debug("Loading command {:#04x}:{:#04x}: {}", type, key,
+                              command->name());
+                auto id = (type << 16) | (key & 0xFFFF);
+                commands_.insert(
+                    std::make_pair(std::move(id), std::move(command)));
+            });
     }
 
     plugins_ = std::move(plugins);
@@ -97,7 +101,7 @@ void tiksrv_app::on_request(client_ptr client, ts::net::request &&req) {
         itr != commands_.end()) {
         (*itr->second)(client, std::move(req));
     } else {
-        logger_.warn("Client #{} has requested a non-existent command {:#8x}",
+        logger_.warn("Client #{} has requested a non-existent command {:#08x}",
                      client->id(), req.header().command);
         client->respond(ts::net::response_code::unknown_command,
                         req.header().tag);

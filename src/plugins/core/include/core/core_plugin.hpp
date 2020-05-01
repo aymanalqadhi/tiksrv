@@ -9,10 +9,12 @@
 
 namespace ts::plugins::core {
 
-enum class plugin_command : std::uint16_t { echo = 0x0000UL };
+enum class plugin_command : std::uint16_t { echo = 0x0000U };
 
 class BOOST_SYMBOL_VISIBLE core_plugin final : public ts::interop::plugin {
   public:
+    static constexpr std::uint16_t commands_type = 0x00U;
+
     core_plugin()
         : name_ {"Core Plugin"},
           author_ {"Ayman Al-Qadhi"},
@@ -31,10 +33,7 @@ class BOOST_SYMBOL_VISIBLE core_plugin final : public ts::interop::plugin {
         return version_;
     }
 
-    void export_commands(
-        std::function<void(std::uint32_t,
-                           std::unique_ptr<ts::interop::command>)> export_cb)
-        const noexcept override;
+    void export_commands(export_func export_cb) const noexcept override;
 
     static std::unique_ptr<plugin> create() {
         return std::make_unique<ts::plugins::core::core_plugin>();
