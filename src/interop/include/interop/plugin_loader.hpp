@@ -4,8 +4,8 @@
 #include "interop/plugin.hpp"
 #include "log/logger.hpp"
 
-#include <boost/function.hpp>
 #include <boost/dll/shared_library.hpp>
+#include <boost/function.hpp>
 
 #include <functional>
 #include <vector>
@@ -15,16 +15,16 @@ namespace ts::interop {
 constexpr auto plugin_factory_sym = "create_plugin";
 
 typedef std::unique_ptr<plugin>(plugin_create_t)();
-using plugin_factory  = std::function<plugin_create_t>;
+using plugin_factory = std::function<plugin_create_t>;
 
 struct plugin_wrapper final {
     plugin_wrapper(plugin_factory &&factory) : factory_ {std::move(factory)} {
         if ((plugin_ = factory_()) == nullptr) {
-            throw std::runtime_error{"Invalid plugin: factory returned null"};
+            throw std::runtime_error {"Invalid plugin: factory returned null"};
         }
     }
 
-    auto operator->() const -> const plugin * {
+    auto operator->() -> plugin * {
         return plugin_.get();
     }
 
