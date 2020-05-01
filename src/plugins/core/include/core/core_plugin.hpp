@@ -2,6 +2,8 @@
 #define TIKSRV_PLUGINS_CORE_CORE_PLUGIN_HPP
 
 #include "interop/plugin.hpp"
+#include "log/logger.hpp"
+#include "services/services_manager.hpp"
 
 #include <boost/dll/alias.hpp>
 
@@ -18,7 +20,8 @@ class BOOST_SYMBOL_VISIBLE core_plugin final : public ts::interop::plugin {
     core_plugin()
         : name_ {"Core Plugin"},
           author_ {"Ayman Al-Qadhi"},
-          version_ {"0.1 ALPHA"} {
+          version_ {"0.1 ALPHA"},
+          logger_ {"core_plugin"} {
     }
 
     auto name() const noexcept -> const std::string & override {
@@ -33,6 +36,9 @@ class BOOST_SYMBOL_VISIBLE core_plugin final : public ts::interop::plugin {
         return version_;
     }
 
+    void initialize(ts::services::services_manager &services_manager)
+        const noexcept override;
+
     void export_commands(export_func export_cb) const noexcept override;
 
     static std::unique_ptr<plugin> create() {
@@ -43,6 +49,8 @@ class BOOST_SYMBOL_VISIBLE core_plugin final : public ts::interop::plugin {
     std::string name_;
     std::string author_;
     std::string version_;
+
+    ts::log::logger logger_;
 };
 
 BOOST_DLL_ALIAS(ts::plugins::core::core_plugin::create, create_plugin)
