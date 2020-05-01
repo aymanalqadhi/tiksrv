@@ -34,9 +34,19 @@ void tiksrv_app::load_plugins() {
     logger_.debug("Loading plugins from path: {}", plugins_path);
     auto plugins = loader.load_all(plugins_path);
 
-    for (const auto &plugin : plugins) {
-        logger_.debug("Loading commands from plugin `{}'", plugin->name());
-        plugin->export_commands(
+    for (auto itr = plugins.begin(); itr != plugins.end(); ++itr) {
+        logger_.debug("Initializing plugin `{}'", (*itr)->name());
+
+        try {
+            (*itr)->initialize(services_manager_);
+        } catch (const std::exception &ex) {
+            logger_.warn("Could not initialize plugin `{}'", (*itr)->name());
+            plugins.erase(itr);
+            continue;
+        }
+
+        logger_.debug("Loading commands from plugin `{}'", (*itr)->name());
+        (*itr)->export_commands(
             [this](std::uint16_t type, std::uint16_t key,
                    std::unique_ptr<ts::interop::command> &&command) {
                 logger_.debug("Loaded command {:#04x}:{:#04x}: {}", type, key,
