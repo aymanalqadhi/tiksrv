@@ -36,4 +36,15 @@ void api::close() {
     sock_.close();
 }
 
+void api::start() {
+    assert(sock_.is_open());
+    assert(!running_.load());
+
+    handler_.on_response({""});
+}
+
+void api::stop() {
+    assert(running_.load());
+}
+
 } // namespace eztik::routeros
