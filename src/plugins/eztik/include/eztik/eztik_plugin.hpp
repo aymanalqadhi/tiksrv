@@ -6,6 +6,7 @@
 #include "config/config.hpp"
 #include "interop/plugin.hpp"
 #include "log/logger.hpp"
+#include "services/hooks_manager.hpp"
 #include "services/services_manager.hpp"
 
 #include <boost/asio/io_context.hpp>
@@ -25,14 +26,15 @@ class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
   public:
     static constexpr std::uint16_t commands_type = 0x0001U;
 
-    eztik_plugin(const ts::config::config &conf,
-                 ts::log::logger &         logger,
-                 boost::asio::io_context & io)
+    eztik_plugin(const ts::config::config &                   conf,
+                 ts::log::logger &                            logger,
+                 boost::asio::io_context &                    io,
+                 std::shared_ptr<ts::services::hooks_manager> hooks_manager)
         : name_ {"ezTik"},
           author_ {"Ayman Al-Qadhi"},
           version_ {"0.1 ALPHA"},
           logger_ {logger},
-          sessions_service_ {conf, io, logger} {
+          sessions_service_ {conf, io, logger, std::move(hooks_manager)} {
     }
 
     auto name() const noexcept -> const std::string & override {
@@ -51,8 +53,14 @@ class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
 
     static std::unique_ptr<plugin>
     create(ts::services::services_manager &svcs) {
+        if (!svcs.has<ts::services::hooks_manager>()) {
+            throw std::runtime_error {
+                "Hooks manager service is required for this plugin"};
+        }
+
         return std::make_unique<eztik::eztik_plugin>(
-            svcs.config(), svcs.logger(), svcs.io_context());
+            svcs.config(), svcs.logger(), svcs.io_context(),
+            svcs.get<ts::services::hooks_manager>());
     }
 
   private:
