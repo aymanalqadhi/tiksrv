@@ -30,16 +30,14 @@ class config_manager : public service {
 
     template <typename T>
     inline void add_option(const std::string &opt) {
-        desc_.add_options(opt,
-                          boost::program_options::value<T>()->required(false));
+        desc_.add_options()(opt.c_str(), boost::program_options::value<T>());
     }
 
     template <typename T>
     inline void add_option(const std::string &opt, const T &def) {
-        desc_.add_options(
-            opt,
-            boost::program_options::value<T>()->required(false)->default_value(
-                def));
+        desc_.add_options()(
+            opt.c_str(),
+            boost::program_options::value<T>()->default_value(def));
     }
 
     inline auto options() noexcept
