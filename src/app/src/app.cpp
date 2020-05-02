@@ -24,6 +24,8 @@ void tiksrv_app::initialize() {
     logger_.info("Initializing application");
 
     logger_.info("Initializing services");
+
+    services_manager_.register_service(hooks_manager_);
     services_manager_.initialize();
 
     logger_.info("Loading plugins");
@@ -82,6 +84,8 @@ void tiksrv_app::on_accept(std::shared_ptr<ts::net::tcp_client> client) {
         logger_.warn("An error occrued while accepting client #{}: {}",
                      client->id(), ex.what());
     }
+
+    hooks_manager_->run_hooks(ts::services::hooks_group::connection, client);
 }
 
 void tiksrv_app::on_error(client_tr client, const error_code &err) {
@@ -91,6 +95,8 @@ void tiksrv_app::on_error(client_tr client, const error_code &err) {
 }
 
 void tiksrv_app::on_close(client_ptr client) {
+    hooks_manager_->run_hooks(ts::services::hooks_group::disconnection, client);
+
     logger_.info("Client #{} has lost connection", client->id());
 
     if (client->state() != ts::net::read_state::closed) {
