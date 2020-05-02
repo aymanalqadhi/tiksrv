@@ -36,10 +36,10 @@ class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
         return version_;
     }
 
-    void initialize(ts::services::services_manager &svcs) noexcept override;
     void export_commands(export_func export_cb) const noexcept override;
 
-    static std::unique_ptr<plugin> create() {
+    static std::unique_ptr<plugin>
+    create(ts::services::services_manager &svcs) {
         return std::make_unique<eztik::eztik_plugin>();
     }
 
