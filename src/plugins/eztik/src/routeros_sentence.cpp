@@ -65,16 +65,12 @@ inline void encode_param(const std::string &        key,
 
 namespace eztik::routeros {
 
-std::vector<std::uint8_t> sentence::encode() {
-    std::vector<std::uint8_t> outbuf {};
-
+void sentence::encode(std::vector<std::uint8_t> &outbuf) const {
     encode_word(command_, outbuf);
     for (const auto &param : params_) {
         ::encode_param(param.first, param.second, outbuf);
     }
     outbuf.push_back(0x00);
-
-    return outbuf;
 }
 
 } // namespace eztik::routeros
