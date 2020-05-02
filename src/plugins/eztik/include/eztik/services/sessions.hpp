@@ -5,11 +5,13 @@
 
 #include "config/config.hpp"
 #include "log/logger.hpp"
+#include "services/hooks_manager.hpp"
 
 #include <boost/asio/io_context.hpp>
 
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <unordered_map>
 
 namespace eztik::services {
@@ -41,10 +43,15 @@ class session final {
 
 class sessions_service final {
   public:
-    sessions_service(const ts::config::config &conf,
-                     boost::asio::io_context & io,
-                     ts::log::logger &         logger)
-        : conf_ {conf}, io_ {io}, logger_ {logger} {
+    sessions_service(const ts::config::config &                   conf,
+                     boost::asio::io_context &                    io,
+                     ts::log::logger &                            logger,
+                     std::shared_ptr<ts::services::hooks_manager> hooks_manager)
+        : conf_ {conf},
+          io_ {io},
+          logger_ {logger},
+          hooks_manager_ {std::move(hooks_manager)} {
+        setup_hooks();
     }
 
     inline auto has(std::uint32_t id) const noexcept -> bool {
@@ -60,9 +67,13 @@ class sessions_service final {
                 std::function<void(std::shared_ptr<session>)> cb);
 
   private:
-    const ts::config::config &conf_;
-    boost::asio::io_context & io_;
-    ts::log::logger &         logger_;
+    void setup_hooks();
+
+  private:
+    const ts::config::config &                   conf_;
+    boost::asio::io_context &                    io_;
+    ts::log::logger &                            logger_;
+    std::shared_ptr<ts::services::hooks_manager> hooks_manager_;
 
     std::unordered_map<std::uint32_t, std::shared_ptr<session>> sessions_;
 };

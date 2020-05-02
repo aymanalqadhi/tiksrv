@@ -3,11 +3,15 @@
 #include "eztik/config.hpp"
 #include "eztik/routeros/api.hpp"
 
+#include "net/tcp_client.hpp"
+#include "services/hooks_manager.hpp"
+
 #include "spdlog/fmt/ostr.h"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <any>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -16,6 +20,19 @@ using boost::asio::ip::tcp;
 using boost::system::error_code;
 
 namespace eztik::services {
+
+void sessions_service::setup_hooks() {
+    hooks_manager_->register_hook(
+        ts::services::hooks_group::disconnection, [this](std::any data) {
+            auto client =
+                std::any_cast<std::shared_ptr<ts::net::tcp_client>>(data);
+
+            if (sessions_.contains(client->id())) {
+                logger_.debug("Deleting session #{}", client->id());
+                sessions_.erase(client->id());
+            }
+        });
+}
 
 void sessions_service::create(
     std::uint32_t id, std::function<void(std::shared_ptr<session>)> cb) {
