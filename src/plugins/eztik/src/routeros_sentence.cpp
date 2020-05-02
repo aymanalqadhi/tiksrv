@@ -11,20 +11,11 @@ namespace {
 
 template <typename T, std::size_t size = sizeof(T)>
 inline void append_uint(const T &val, std::vector<std::uint8_t> &buf) {
-    static_assert(size >= 1 && size <= 4);
+    static_assert(size >= 1 && size <= 4 && size <= sizeof(T));
 
-    constexpr auto offset = 8 * (size - 1);
-
-    if constexpr (std::endian::native == std::endian::big) {
-        buf.push_back(val & 0xFF);
-        if constexpr (size - 1 > 0) {
-            append_uint<T, size - 1>(val >> 8, buf);
-        }
-    } else {
-        buf.push_back((val >> offset) & 0xFF);
-        if constexpr (size - 1 > 0) {
-            append_uint<T, size - 1>(val, buf);
-        }
+    buf.push_back((val >> (8 * (size - 1))) & 0xFF);
+    if constexpr (size - 1 > 0) {
+        append_uint<T, size - 1>(val, buf);
     }
 }
 
