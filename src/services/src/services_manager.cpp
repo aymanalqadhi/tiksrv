@@ -17,6 +17,7 @@ void services_manager::initialize() {
         try {
             logger_.debug("Initializing service `{} ({})'",
                           svc.second->display_name(), svc.first);
+            svc.second->initialize();
         } catch (const std::exception &ex) {
             if (svc.second->is_required()) {
                 throw std::runtime_error {
