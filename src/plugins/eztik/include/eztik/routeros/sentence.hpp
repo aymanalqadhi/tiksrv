@@ -15,7 +15,12 @@ class sentence {
     sentence(std::string command) : command_ {std::move(command)} {
     }
 
-    const std::string &command() const noexcept {
+    sentence(sentence &&rt) {
+        command_ = std::move(rt.command_);
+        params_  = std::move(rt.params_);
+    }
+
+    auto command() const noexcept -> const std::string & {
         return command_;
     }
 
@@ -50,7 +55,7 @@ class sentence {
         return params_.erase(idx);
     }
 
-    std::vector<std::uint8_t> encode();
+    void encode(std::vector<std::uint8_t> &outbuf) const;
 
   private:
     std::string                                  command_;
