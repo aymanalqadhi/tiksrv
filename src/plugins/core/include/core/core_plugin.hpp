@@ -34,7 +34,7 @@ class BOOST_SYMBOL_VISIBLE core_plugin final : public ts::interop::plugin {
         return version_;
     }
 
-    void export_commands(export_func export_cb) const noexcept override;
+    void export_commands(export_func export_cb) noexcept override;
 
     static std::unique_ptr<plugin>
     create(ts::services::services_manager &svcs) {
