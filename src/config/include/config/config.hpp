@@ -49,7 +49,12 @@ class config final {
     const boost::program_options::variable_value &
          operator[](config_key key) const;
     void parse_argv(int argc, const char *const argv[]);
-    void parse_config_file(std::string_view path);
+    void parse_config_file(std::string_view                             path,
+                           boost::program_options::options_description &desc);
+
+    inline void parse_config_file(std::string_view path) {
+        parse_config_file(path, desc_);
+    }
 
     static auto from_argv(int argc, const char *const argv[]) -> config;
 
