@@ -36,8 +36,12 @@ void tiksrv_app::initialize() {
     logger_.info("Loading configuration");
     if (auto config_path = conf_[config_key::config_file].as<std::string>();
         std::filesystem::exists(config_path)) {
-        conf_.parse_config_file(config_path);
-        conf_.parse_config_file(config_path, config_manager_->options());
+        try {
+            conf_.parse_config_file(config_path);
+            conf_.parse_config_file(config_path, config_manager_->options());
+        } catch (const std::exception &ex) {
+            logger_.warn("Could not parse configuration file: {}", ex.what());
+        }
     }
 }
 
