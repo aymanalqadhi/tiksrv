@@ -35,13 +35,10 @@ void tiksrv_app::load_plugins() {
     auto loader       = ts::interop::plugin_loader {};
 
     logger_.debug("Loading plugins from path: {}", plugins_path);
-    auto plugins = loader.load_all(plugins_path);
+    auto plugins = loader.load_all(plugins_path, services_manager_);
 
     for (auto itr = plugins.begin(); itr != plugins.end(); ++itr) {
         try {
-            logger_.debug("Initializing plugin `{}'", (*itr)->name());
-            (*itr)->initialize(services_manager_);
-
             logger_.debug("Loading commands from plugin `{}'", (*itr)->name());
             (*itr)->export_commands(
                 [this](std::uint16_t type, std::uint16_t key,

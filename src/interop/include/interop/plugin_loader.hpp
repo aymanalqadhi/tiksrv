@@ -14,27 +14,23 @@ namespace ts::interop {
 
 constexpr auto plugin_factory_sym = "create_plugin";
 
-typedef std::unique_ptr<plugin>(plugin_create_t)();
+typedef std::unique_ptr<plugin>(plugin_create_t)(
+    ts::services::services_manager &);
 using plugin_factory = std::function<plugin_create_t>;
 
 struct plugin_wrapper final {
-    plugin_wrapper(plugin_factory &&factory) : factory_ {std::move(factory)} {
-        if ((plugin_ = factory_()) == nullptr) {
-            throw std::runtime_error {"Invalid plugin: factory returned null"};
-        }
+    plugin_wrapper(std::unique_ptr<plugin> &&   plug,
+                   boost::dll::shared_library &&handle)
+        : plugin_ {std::move(plug)}, handle_ {std::move(handle)} {
     }
 
     auto operator->() -> plugin * {
         return plugin_.get();
     }
 
-    auto operator()() {
-        return factory_();
-    }
-
   private:
-    plugin_factory          factory_;
-    std::unique_ptr<plugin> plugin_;
+    boost::dll::shared_library handle_;
+    std::unique_ptr<plugin>    plugin_;
 };
 
 class plugin_loader final {
@@ -42,8 +38,11 @@ class plugin_loader final {
     plugin_loader() : logger_ {"plugin_loader"} {
     }
 
-    auto load(const std::string &filename) -> plugin_wrapper;
-    auto load_all(const std::string &dirname) -> std::vector<plugin_wrapper>;
+    auto load(const std::string &filename, ts::services::services_manager &svcs)
+        -> plugin_wrapper;
+    auto load_all(const std::string &             dirname,
+                  ts::services::services_manager &svcs)
+        -> std::vector<plugin_wrapper>;
 
   private:
     ts::log::logger logger_;

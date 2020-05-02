@@ -1,22 +1,27 @@
 #include "interop/plugin.hpp"
 #include "interop/plugin_loader.hpp"
 
+#include "services/services_manager.hpp"
+
 #include <boost/dll/import.hpp>
 #include <boost/dll/import_mangled.hpp>
 #include <boost/dll/shared_library.hpp>
 
 #include <filesystem>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace ts::interop {
 
-auto plugin_loader::load(const std::string &filename) -> plugin_wrapper {
+auto plugin_loader::load(const std::string &             filename,
+                         ts::services::services_manager &svcs)
+    -> plugin_wrapper {
 
-    plugin_factory factory =
-        boost::dll::import_alias<plugin_create_t>(filename, plugin_factory_sym);
-    auto wrapper = plugin_wrapper {std::move(factory)};
+    auto handle  = boost::dll::shared_library {filename};
+    auto factory = handle.get_alias<plugin_create_t>(plugin_factory_sym);
+    auto wrapper = plugin_wrapper {factory(svcs), std::move(handle)};
 
     logger_.debug("Loaded plugin `{}'", filename);
     logger_.debug("Plugin name: {}", wrapper->name());
@@ -26,7 +31,8 @@ auto plugin_loader::load(const std::string &filename) -> plugin_wrapper {
     return wrapper;
 }
 
-auto plugin_loader::load_all(const std::string &dirname)
+auto plugin_loader::load_all(const std::string &             dirname,
+                             ts::services::services_manager &svcs)
     -> std::vector<plugin_wrapper> {
     std::vector<plugin_wrapper> ret {};
 
@@ -41,7 +47,7 @@ auto plugin_loader::load_all(const std::string &dirname)
         }
 
         try {
-            ret.push_back(load(entry.path()));
+            ret.push_back(load(entry.path(), svcs));
         } catch (const std::exception &ex) {
             logger_.warn("Could not load plugin `{}': {}",
                          entry.path().string(), ex.what());

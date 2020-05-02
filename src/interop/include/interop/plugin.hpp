@@ -25,7 +25,6 @@ class plugin {
     virtual auto author() const noexcept -> const std::string &  = 0;
     virtual auto version() const noexcept -> const std::string & = 0;
 
-    virtual void initialize(ts::services::services_manager &svcs) noexcept = 0;
     virtual void export_commands(export_func export_cb) const noexcept     = 0;
 };
 
