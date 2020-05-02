@@ -45,7 +45,7 @@ void config::parse_argv(int argc, const char *const argv[]) {
 
 void config::parse_config_file(
     std::string_view path, boost::program_options::options_description &desc) {
-    po::store(po::parse_config_file(path.data(), desc), values_);
+    po::store(po::parse_config_file(path.data(), desc, true), values_);
 }
 
 auto config::has(config_key key) const -> bool {
