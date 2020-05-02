@@ -2,6 +2,7 @@
 #define EZTIK_SERVICES_SESSIONS_HPP
 
 #include "eztik/routeros/api.hpp"
+#include "eztik/routeros/sentence.hpp"
 
 #include "config/config.hpp"
 #include "log/logger.hpp"
@@ -16,16 +17,16 @@
 
 namespace eztik::services {
 
-class session final {
+class session final : public eztik::routeros::api_handler {
   public:
+    session(boost::asio::io_context &io) : api_ {io, *this} {
+    }
+
     explicit session(eztik::routeros::api &&api) : api_ {std::move(api)} {
         assert(api_.is_open());
     }
 
     session(session &&rh) : id_ {rh.id_}, api_ {std::move(rh.api_)} {
-    }
-
-    session(boost::asio::io_context &io) : api_ {io} {
     }
 
     inline auto id() const noexcept -> std::uint32_t {
@@ -35,6 +36,10 @@ class session final {
     inline auto api() noexcept -> eztik::routeros::api & {
         return api_;
     }
+
+    void on_error(const boost::system::error_code &err) override;
+    void on_close() override;
+    void on_response(const eztik::routeros::sentence &resp) override;
 
   private:
     std::uint32_t        id_;

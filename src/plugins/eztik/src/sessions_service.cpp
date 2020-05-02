@@ -21,6 +21,18 @@ using boost::system::error_code;
 
 namespace eztik::services {
 
+void session::on_error(const boost::system::error_code &err) {
+    std::cout << "API ERROR: " << err.message() << std::endl;
+}
+
+void session::on_close() {
+    std::cout << "API CLOSED" << std::endl;
+}
+
+void session::on_response(const eztik::routeros::sentence &resp) {
+    std::cout << "API RESPONSE" << std::endl;
+}
+
 void sessions_service::setup_hooks() {
     hooks_manager_->register_hook(
         ts::services::hooks_group::disconnection, [this](std::any data) {
@@ -63,6 +75,7 @@ void sessions_service::create(
             cb(nullptr);
         } else {
             cb(s);
+            s->api().start();
             sessions_.emplace(std::make_pair(id, std::move(s)));
         }
     });
