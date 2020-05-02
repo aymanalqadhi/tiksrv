@@ -26,11 +26,6 @@ auto main(int argc, char *argv[]) -> int {
             return EXIT_SUCCESS;
         }
 
-        if (auto config_path = conf[config_key::config_file].as<std::string>();
-            std::filesystem::exists(config_path)) {
-            conf.parse_config_file(config_path);
-        }
-
         ts::log::add_sink<spdlog::sinks::stderr_color_sink_st>(
             ts::log::log_level::trace);
         ts::log::global_level(ts::log::log_level::trace);
