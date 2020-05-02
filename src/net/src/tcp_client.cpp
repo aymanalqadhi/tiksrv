@@ -7,11 +7,11 @@
 
 #include <array>
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <sstream>
 #include <string_view>
-#include <cstdint>
 
 using boost::asio::transfer_exactly;
 using boost::asio::placeholders::bytes_transferred;
