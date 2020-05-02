@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.10)
 project(tiksrv_services)
 
 # Files
-set(SOURCE_FILES src/services_manager.cpp)
+set(SOURCE_FILES src/services_manager.cpp
+                 src/hooks_manager.cpp)
 
 # Targets
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
