@@ -4,8 +4,10 @@
 namespace eztik {
 
 struct config_keys {
-    static constexpr auto ros_ip       = "eztik.ros_ip";
-    static constexpr auto ros_api_port = "eztik.ros_api_port";
+    static constexpr auto ros_ip           = "eztik.ros_ip";
+    static constexpr auto ros_api_port     = "eztik.ros_api_port";
+    static constexpr auto ros_api_user     = "eztik.ros_user";
+    static constexpr auto ros_api_password = "eztik.ros_password";
 };
 
 struct config_defaults {
