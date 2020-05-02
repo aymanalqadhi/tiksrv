@@ -1,6 +1,8 @@
+#include "eztik/config.hpp"
 #include "eztik/eztik_plugin.hpp"
 
 #include "eztik/commands/api_open.hpp"
+#include "services/config_manager.hpp"
 
 #include <functional>
 #include <memory>
@@ -22,6 +24,18 @@ void eztik_plugin::export_commands(export_func export_cb) noexcept {
                    sessions_service_);
 
 #undef EXPORT_COMMAND
+}
+
+void eztik_plugin::setup_config(
+    std::shared_ptr<ts::services::config_manager> config_manager) {
+    config_manager->add_option<std::string>(config_keys::ros_ip,
+                                            config_defaults::ros_ip);
+    config_manager->add_option<std::uint16_t>(config_keys::ros_api_port,
+                                              config_defaults::ros_api_port);
+    config_manager->add_option<std::string>(config_keys::ros_api_user,
+                                            config_defaults::ros_api_user);
+    config_manager->add_option<std::string>(config_keys::ros_api_password,
+                                            config_defaults::ros_api_password);
 }
 
 } // namespace eztik
