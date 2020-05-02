@@ -5,6 +5,7 @@ project(tiksrv)
 
 # Project Options
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_FLAGS -rdynamic)
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
 # Options
