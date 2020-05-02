@@ -5,7 +5,10 @@ project(eztik)
 
 # Files
 set(SOURCE_FILES src/eztik_plugin.cpp
-                 src/routeros_sentence.cpp)
+                 src/routeros_api.cpp
+                 src/routeros_sentence.cpp
+                 src/sessions_service.cpp
+                 src/api_open_command.cpp)
 
 # Targets
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
