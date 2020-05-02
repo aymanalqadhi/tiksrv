@@ -1,9 +1,14 @@
 #ifndef EZTIK_EZTIK_PLUGIN_HPP
 #define EZTIK_EZTIK_PLUGIN_HPP
 
+#include "eztik/services/sessions.hpp"
+
+#include "config/config.hpp"
 #include "interop/plugin.hpp"
+#include "log/logger.hpp"
 #include "services/services_manager.hpp"
 
+#include <boost/asio/io_context.hpp>
 #include <boost/dll/alias.hpp>
 
 #include <memory>
@@ -18,10 +23,16 @@ enum class eztik_command : std::uint16_t {
 
 class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
   public:
-    static constexpr std::uint16_t commands_type = 0x01U;
+    static constexpr std::uint16_t commands_type = 0x0001U;
 
-    eztik_plugin()
-        : name_ {"ezTik"}, author_ {"Ayman Al-Qadhi"}, version_ {"0.1 ALPHA"} {
+    eztik_plugin(const ts::config::config &conf,
+                 ts::log::logger &         logger,
+                 boost::asio::io_context & io)
+        : name_ {"ezTik"},
+          author_ {"Ayman Al-Qadhi"},
+          version_ {"0.1 ALPHA"},
+          logger_ {logger},
+          sessions_service_ {conf, io, logger} {
     }
 
     auto name() const noexcept -> const std::string & override {
@@ -36,17 +47,21 @@ class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
         return version_;
     }
 
-    void export_commands(export_func export_cb) const noexcept override;
+    void export_commands(export_func export_cb) noexcept override;
 
     static std::unique_ptr<plugin>
     create(ts::services::services_manager &svcs) {
-        return std::make_unique<eztik::eztik_plugin>();
+        return std::make_unique<eztik::eztik_plugin>(
+            svcs.config(), svcs.logger(), svcs.io_context());
     }
 
   private:
     std::string name_;
     std::string author_;
     std::string version_;
+
+    ts::log::logger &                 logger_;
+    eztik::services::sessions_service sessions_service_;
 };
 
 BOOST_DLL_ALIAS(eztik::eztik_plugin::create, create_plugin)
