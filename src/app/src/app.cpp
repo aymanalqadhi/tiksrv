@@ -10,6 +10,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <atomic>
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 
@@ -25,11 +26,19 @@ void tiksrv_app::initialize() {
 
     logger_.info("Initializing services");
 
+    services_manager_.register_service(config_manager_);
     services_manager_.register_service(hooks_manager_);
     services_manager_.initialize();
 
     logger_.info("Loading plugins");
     load_plugins();
+
+    logger_.info("Loading configuration");
+    if (auto config_path = conf_[config_key::config_file].as<std::string>();
+        std::filesystem::exists(config_path)) {
+        conf_.parse_config_file(config_path);
+        conf_.parse_config_file(config_path, config_manager_->options());
+    }
 }
 
 void tiksrv_app::load_plugins() {
