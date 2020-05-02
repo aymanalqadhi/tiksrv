@@ -9,9 +9,6 @@ namespace commands = ts::plugins::core::commands;
 
 namespace ts::plugins::core {
 
-void core_plugin::initialize(ts::services::services_manager &svcs) noexcept {
-}
-
 void core_plugin::export_commands(export_func export_cb) const noexcept {
 
 #define EXPORT_COMMAND(type, id, ...)                                          \
