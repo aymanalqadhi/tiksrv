@@ -35,6 +35,10 @@ class sessions_service final : public eztik::session_handler {
         return sessions_.contains(id);
     }
 
+    inline auto has_ready(std::uint32_t id) const noexcept -> bool {
+        return has(id) && sessions_.at(id)->is_ready();
+    }
+
     inline auto operator[](std::uint32_t id) noexcept
         -> std::shared_ptr<session> {
         return sessions_[id];
