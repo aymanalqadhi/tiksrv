@@ -108,17 +108,14 @@ response_sentence::response_sentence(const sentence &s) {
 
     std::smatch param_match {};
 
-    for (auto itr = s.begin() + 1; itr != s.end(); ++itr) {
-        if (::is_valid_param(*itr)) {
-            ::extract_param(*itr, param_match);
+    for (const auto &word : s) {
+        if (::is_valid_param(word)) {
+            ::extract_param(word, param_match);
             params_.emplace(
                 std::make_pair(param_match[1].str(), param_match[2].str()));
-            for (const auto &match : param_match) {
-                assert(match.matched);
-            }
-        } else if (::is_valid_tag(*itr)) {
+        } else if (::is_valid_tag(word)) {
             assert(!tagged_);
-            tag_    = ::extract_tag(*itr);
+            tag_    = ::extract_tag(word);
             tagged_ = true;
         }
     }
