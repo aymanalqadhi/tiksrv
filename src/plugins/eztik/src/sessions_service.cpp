@@ -34,8 +34,9 @@ void sessions_service::setup_hooks() {
         });
 }
 
-void sessions_service::create(
-    std::uint32_t id, std::function<void(std::shared_ptr<session>)> cb) {
+void sessions_service::create(std::uint32_t    id,
+                              session_open_cb  open_cb,
+                              session_close_cb close_cb) {
 
     assert(!has(id));
 
@@ -59,9 +60,10 @@ void sessions_service::create(
     }
 
     auto s = std::make_shared<session>(id, io_, logger_, *this);
-    sessions_.emplace(std::make_pair(id, s));
+    sessions_.emplace(
+        std::make_pair(id, std::make_pair(s, std::move(close_cb))));
 
-    s->api().open(ip, port, [id, s, this, cb](const error_code &err) {
+    s->api().open(ip, port, [id, s, this, open_cb](const error_code &err) {
         if (!sessions_.contains(id)) {
             return;
         }
@@ -70,10 +72,10 @@ void sessions_service::create(
 
         if (err) {
             logger_.debug("Could not open session: {}", err.message());
-            cb(nullptr);
+            open_cb(nullptr);
             sessions_.erase(id);
         } else {
-            cb(s);
+            open_cb(s);
             s->api().start();
             s->set_ready();
         }
@@ -82,9 +84,13 @@ void sessions_service::create(
 
 void sessions_service::close(std::uint32_t id) {
     assert(has(id));
-    assert(sessions_[id]->id() == id);
+    assert(operator[](id)->id() == id);
 
     logger_.info("Session #{} was closed", id);
+
+    auto &to_remove = sessions_[id];
+
+    to_remove.second(std::move(to_remove.first));
     sessions_.erase(id);
 }
 
