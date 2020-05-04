@@ -1,9 +1,12 @@
 #include "eztik/routeros/sentence.hpp"
 
 #include <boost/endian.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <algorithm>
 #include <cstdint>
+#include <regex>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -40,28 +43,85 @@ inline void encode_word(const std::string &        word,
     std::copy(word.begin(), word.end(), std::back_inserter(buf));
 }
 
-inline void encode_param(const std::string &        key,
-                         const std::string &        value,
-                         std::vector<std::uint8_t> &buf) {
-    encode_length(key.size() + value.size() + 2, buf);
+std::regex param_pattern {R"(=([^=]+)=(.*))", std::regex::extended};
+std::regex tag_pattern {R"(\.tag=([0-9]+))", std::regex::extended};
 
-    buf.push_back('=');
-    std::copy(key.begin(), key.end(), std::back_inserter(buf));
-    buf.push_back('=');
+inline auto is_valid_param(const std::string &str) -> bool {
+    return std::regex_match(str, param_pattern);
+}
 
-    std::copy(value.begin(), value.end(), std::back_inserter(buf));
+inline auto is_valid_tag(const std::string &str) -> bool {
+    return std::regex_match(str, tag_pattern);
+}
+
+inline void extract_param(const std::string &str, std::smatch &matches) {
+    assert(is_valid_param(str));
+
+    std::regex_match(str, matches, param_pattern);
+
+    assert(matches.size() == 3);
+}
+
+inline std::uint32_t extract_tag(const std::string &str) {
+    assert(is_valid_tag(str));
+
+    std::uint32_t tag {};
+    std::smatch   matches {};
+
+    std::regex_match(str, matches, tag_pattern);
+    assert(matches.size() == 2);
+
+    return boost::lexical_cast<std::uint32_t>(matches[1].str());
 }
 
 } // namespace
 
 namespace eztik::routeros {
 
-void sentence::encode(std::vector<std::uint8_t> &outbuf) const {
-    encode_word(command_, outbuf);
-    for (const auto &param : params_) {
-        ::encode_param(param.first, param.second, outbuf);
+void sentence::encode(std::vector<std::uint8_t> &vec) const {
+    for (const auto &word : words_) {
+        ::encode_word(word, vec);
     }
-    outbuf.push_back(0x00);
+    vec.push_back(0x00);
+}
+
+auto response_sentence::is_valid_response(const sentence &s) -> bool {
+    return s.size() > 0 && s[0][0] == '!';
+}
+
+response_sentence::response_sentence(const sentence &s) {
+    assert(is_valid_response(s));
+
+    auto type_str = s[0];
+
+    if (type_str == "!done") {
+        type_ = response_sentence_type::normal;
+    } else if (type_str == "!re") {
+        type_ = response_sentence_type::data;
+    } else if (type_str == "!trap") {
+        type_ = response_sentence_type::trap;
+    } else if (type_str == "!fatal") {
+        type_ = response_sentence_type::fatal;
+    } else {
+        throw std::runtime_error {"Invalid response type"};
+    }
+
+    std::smatch param_match {};
+
+    for (auto itr = s.begin() + 1; itr != s.end(); ++itr) {
+        if (::is_valid_param(*itr)) {
+            ::extract_param(*itr, param_match);
+            params_.emplace(
+                std::make_pair(param_match[1].str(), param_match[2].str()));
+            for (const auto &match : param_match) {
+                assert(match.matched);
+            }
+        } else if (::is_valid_tag(*itr)) {
+            assert(!tagged_);
+            tag_    = ::extract_tag(*itr);
+            tagged_ = true;
+        }
+    }
 }
 
 } // namespace eztik::routeros
