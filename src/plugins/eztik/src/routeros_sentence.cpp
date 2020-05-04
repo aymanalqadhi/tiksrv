@@ -94,14 +94,16 @@ response_sentence::response_sentence(const sentence &s) {
 
     auto type_str = s[0];
 
+    if (type_str == "!fatal") {
+        throw std::runtime_error {s.size() > 1 ? s[1] : "Unknown error"};
+    }
+
     if (type_str == "!done") {
         type_ = response_sentence_type::normal;
     } else if (type_str == "!re") {
         type_ = response_sentence_type::data;
     } else if (type_str == "!trap") {
         type_ = response_sentence_type::trap;
-    } else if (type_str == "!fatal") {
-        type_ = response_sentence_type::fatal;
     } else {
         throw std::runtime_error {"Invalid response type"};
     }
