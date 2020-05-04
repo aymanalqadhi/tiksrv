@@ -87,8 +87,9 @@ struct response final {
 enum class response_code : std::uint32_t {
     success         = 0,
     unknown_command = 1,
-    unauthorized    = 2,
-    unknown_error   = 3
+    invalid_request = 2,
+    empty_request   = 3,
+    unknown_error   = 4
 };
 
 static_assert(sizeof(request_header) == request_header::size);
