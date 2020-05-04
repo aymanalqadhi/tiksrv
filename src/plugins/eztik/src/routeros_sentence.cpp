@@ -62,7 +62,7 @@ inline void extract_param(const std::string &str, std::smatch &matches) {
     assert(matches.size() == 3);
 }
 
-inline std::uint32_t extract_tag(const std::string &str) {
+inline auto extract_tag(const std::string &str) -> std::uint32_t {
     assert(is_valid_tag(str));
 
     std::uint32_t tag {};
