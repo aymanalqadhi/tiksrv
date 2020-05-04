@@ -11,7 +11,8 @@ enum class response_code : std::uint16_t {
     ros_session_open_failed  = 0x0000,
     ros_session_close_failed = 0x0001,
     ros_session_already_open = 0x0002,
-    ros_session_not_open     = 0x0003
+    ros_session_not_open     = 0x0003,
+    ros_session_closed       = 0x0004
 };
 
 constexpr std::uint32_t make_response_code(response_code code) {
