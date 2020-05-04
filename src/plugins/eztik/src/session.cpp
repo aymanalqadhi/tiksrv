@@ -56,7 +56,7 @@ void session::on_response(const eztik::routeros::sentence &sen) {
         }
 
     } catch (const std::exception &ex) {
-        logger_.error("Response error: {}", ex.what());
+        logger_.error("Session #{} response error: {}", id_, ex.what());
         on_close();
     }
 }
