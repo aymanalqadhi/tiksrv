@@ -2,6 +2,7 @@
 
 #include <boost/asio/error.hpp>
 
+#include <cassert>
 #include <string_view>
 
 namespace eztik::routeros {
@@ -17,22 +18,14 @@ void api_read_state_machine::handle_read(const boost::system::error_code &err,
         return;
     }
 
-    if (buf.size() == 0) {
-        on_error(boost::asio::error::eof);
-        return;
-    }
+    assert(buf.size() > 0);
 
-    switch (state_) {
-    case read_state::reading_length:
+    if (state_ == read_state::reading_length) {
         on_reading_length(std::move(buf));
-        break;
-
-    case read_state::reading_word:
+    } else if (state_ == read_state::reading_word) {
         on_reading_word(std::move(buf));
-        break;
-
-    default:
-        break;
+    } else {
+        throw std::runtime_error{"Invalid API state"};
     }
 }
 
