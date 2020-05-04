@@ -22,8 +22,6 @@ void api_send_command::execute(client_ptr client, ts::net::request &&req) {
     /// TODO:
     /// COMPLETE IMPLEMENTATION
     ///
-    auto session = sessions_svc_[client->id()];
-
     std::vector<std::string> words {};
 
     auto body = req.body();
@@ -31,10 +29,9 @@ void api_send_command::execute(client_ptr client, ts::net::request &&req) {
 
     eztik::routeros::request_sentence sent {body, req.header().tag};
 
-    session->send(
+    session_->send(
         sent,
-        [this](const error_code &err, eztik::session &s,
-               response_sentence &&resp) {
+        [this](const error_code &err, session &s, response_sentence &&resp) {
             logger_.fatal("{}", err.message());
             for (const auto &p : resp) {
                 logger_.fatal("{} ===> {}", p.first, p.second);
