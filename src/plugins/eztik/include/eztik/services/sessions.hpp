@@ -2,7 +2,7 @@
 #define EZTIK_SERVICES_SESSIONS_HPP
 
 #include "eztik/routeros/api.hpp"
-#include "eztik/routeros/sentence.hpp"
+#include "eztik/session.hpp"
 
 #include "config/config.hpp"
 #include "log/logger.hpp"
@@ -13,40 +13,12 @@
 #include <cstdint>
 #include <map>
 #include <memory>
-#include <unordered_map>
 
 namespace eztik::services {
 
-class session final : public eztik::routeros::api_handler {
-  public:
-    session(boost::asio::io_context &io) : api_ {io, *this} {
-    }
+class session_handler;
 
-    explicit session(eztik::routeros::api &&api) : api_ {std::move(api)} {
-        assert(api_.is_open());
-    }
-
-    session(session &&rh) : id_ {rh.id_}, api_ {std::move(rh.api_)} {
-    }
-
-    inline auto id() const noexcept -> std::uint32_t {
-        return id_;
-    }
-
-    inline auto api() noexcept -> eztik::routeros::api & {
-        return api_;
-    }
-
-    void on_error(const boost::system::error_code &err) override;
-    void on_close() override;
-    void on_response(const eztik::routeros::sentence &resp) override;
-
-  private:
-    std::uint32_t        id_;
-    eztik::routeros::api api_;
-};
-
-class sessions_service final {
+class sessions_service final : public eztik::session_handler {
   public:
     sessions_service(const ts::config::config &                   conf,
                      boost::asio::io_context &                    io,
@@ -71,6 +43,11 @@ class sessions_service final {
     void create(std::uint32_t                                 id,
                 std::function<void(std::shared_ptr<session>)> cb);
 
+    void close(std::uint32_t id);
+
+  public:
+    void on_close(const eztik::session& s) override;
+
   private:
     void setup_hooks();
 
@@ -80,7 +57,7 @@ class sessions_service final {
     ts::log::logger &                            logger_;
     std::shared_ptr<ts::services::hooks_manager> hooks_manager_;
 
-    std::unordered_map<std::uint32_t, std::shared_ptr<session>> sessions_;
+    std::map<std::uint32_t, std::shared_ptr<eztik::session>> sessions_;
 };
 
 } // namespace eztik::services
