@@ -5,6 +5,8 @@
 
 #include "net/message.hpp"
 
+using rc = eztik::response_code;
+
 namespace eztik::commands {
 
 void api_open_command::execute(client_ptr client, ts::net::request &&req) {
@@ -12,8 +14,7 @@ void api_open_command::execute(client_ptr client, ts::net::request &&req) {
         logger_.warn(
             "Client #{} with an already open session has requested a new one",
             client->id());
-        client->respond(eztik::make_response_code(
-                            eztik::response_code::ros_session_already_open),
+        client->respond(eztik::make_response_code(rc::ros_session_already_open),
                         req.header().tag);
     } else if (sessions_svc_.has(client->id())) {
         logger_.warn("Client #{} sent multiple session opening requests",
@@ -22,7 +23,8 @@ void api_open_command::execute(client_ptr client, ts::net::request &&req) {
                         req.header().tag);
     } else {
         sessions_svc_.create(
-            client->id(), [this, client, tag = req.header().tag](auto session) {
+            client->id(),
+            [this, client, tag = req.header().tag](auto session) {
                 if (session) {
                     logger_.info(
                         "A new session was opened successfully for client #{}",
@@ -32,10 +34,13 @@ void api_open_command::execute(client_ptr client, ts::net::request &&req) {
                     logger_.error("Could not open session for client #{}",
                                   client->id());
                     client->respond(
-                        eztik::make_response_code(
-                            eztik::response_code::ros_session_open_failed),
+                        eztik::make_response_code(rc::ros_session_open_failed),
                         tag);
                 }
+            },
+            [client, tag = req.header().tag](auto session) {
+                client->respond(
+                    eztik::make_response_code(rc::ros_session_closed), tag);
             });
     }
 }
