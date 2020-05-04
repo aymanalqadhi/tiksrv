@@ -85,7 +85,7 @@ class request_sentence final : public sentence {
     std::uint32_t tag_;
 };
 
-enum response_sentence_type { normal, trap, data, fatal };
+enum response_sentence_type { normal, trap, data };
 
 class response_sentence final {
   public:
