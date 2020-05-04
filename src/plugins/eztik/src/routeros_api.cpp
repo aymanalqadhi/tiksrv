@@ -63,6 +63,10 @@ void api::stop() {
 }
 
 void api::read_next(std::size_t n) {
+    if (!is_open()) {
+        return;
+    }
+
     context().buffer().resize(n);
 
     boost::asio::async_read(
