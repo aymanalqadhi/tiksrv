@@ -135,7 +135,6 @@ void tcp_client::respond(const std::string &str,
     resp_ptr->flags(0x00U);
     resp_ptr->tag(tag);
     resp_ptr->body(str);
-    ;
 
     respond(std::move(resp_ptr));
 }
