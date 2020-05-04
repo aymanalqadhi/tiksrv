@@ -59,14 +59,23 @@ void sessions_service::create(
     }
 
     auto s = std::make_shared<session>(id, io_, logger_, *this);
+    sessions_.emplace(std::make_pair(id, s));
+
     s->api().open(ip, port, [id, s, this, cb](const error_code &err) {
+        if (!sessions_.contains(id)) {
+            return;
+        }
+
+        assert(!s->is_ready());
+
         if (err) {
             logger_.debug("Could not open session: {}", err.message());
             cb(nullptr);
+            sessions_.erase(id);
         } else {
             cb(s);
             s->api().start();
-            sessions_.emplace(std::make_pair(id, std::move(s)));
+            s->set_ready();
         }
     });
 }
@@ -79,7 +88,7 @@ void sessions_service::close(std::uint32_t id) {
     sessions_.erase(id);
 }
 
-void sessions_service::on_close(const session& s) {
+void sessions_service::on_close(const session &s) {
     assert(has(s.id()));
     close(s.id());
 }
