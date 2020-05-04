@@ -39,12 +39,6 @@ void api_send_command::execute(client_ptr client, ts::net::request &&req) {
     auto body = req.body();
     body.erase(0, 4);
 
-    if (words.size() == 0) {
-        client->respond(ts::net::response_code::invalid_request,
-                        req.header().tag);
-        return;
-    }
-
     eztik::routeros::request_sentence sent {body, req.header().tag};
 
     session->send(
