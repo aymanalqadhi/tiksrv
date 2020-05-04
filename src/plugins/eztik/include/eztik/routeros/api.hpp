@@ -67,7 +67,6 @@ class api final : public api_read_state_machine {
     void read_next_word();
 
   private:
-    std::vector<std::uint8_t>    buffer_;
     boost::asio::ip::tcp::socket sock_;
     api_handler &                handler_;
 };

@@ -4,6 +4,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/asio/read.hpp>
+#include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <cassert>
@@ -31,10 +32,12 @@ void api::open(const std::string &    host,
 void api::send(const request_sentence &s, const send_handler &cb) {
     assert(is_open());
 
-    buffer_.clear();
-    s.encode(buffer_);
+    auto buf = std::make_shared<std::vector<std::uint8_t>>();
+    s.encode(*buf);
 
-    sock_.async_send(boost::asio::buffer(buffer_), cb);
+    sock_.async_send(
+        boost::asio::buffer(*buf),
+        [this, cb, buf](const auto &err, const auto &sent) { cb(err, sent); });
 }
 
 void api::close() {
