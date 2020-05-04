@@ -21,18 +21,6 @@ using boost::system::error_code;
 
 namespace eztik::services {
 
-void session::on_error(const boost::system::error_code &err) {
-    std::cout << "API ERROR: " << err.message() << std::endl;
-}
-
-void session::on_close() {
-    std::cout << "API CLOSED" << std::endl;
-}
-
-void session::on_response(const eztik::routeros::sentence &resp) {
-    std::cout << "API RESPONSE" << std::endl;
-}
-
 void sessions_service::setup_hooks() {
     hooks_manager_->register_hook(
         ts::services::hooks_group::disconnection, [this](std::any data) {
@@ -48,6 +36,8 @@ void sessions_service::setup_hooks() {
 
 void sessions_service::create(
     std::uint32_t id, std::function<void(std::shared_ptr<session>)> cb) {
+
+    assert(!has(id));
 
     std::string   ip;
     std::uint16_t port;
@@ -68,7 +58,7 @@ void sessions_service::create(
         port = conf_[eztik::config_keys::ros_api_port].as<decltype(port)>();
     }
 
-    auto s = std::make_shared<session>(io_);
+    auto s = std::make_shared<session>(id, io_, logger_, *this);
     s->api().open(ip, port, [id, s, this, cb](const error_code &err) {
         if (err) {
             logger_.debug("Could not open session: {}", err.message());
@@ -79,6 +69,19 @@ void sessions_service::create(
             sessions_.emplace(std::make_pair(id, std::move(s)));
         }
     });
+}
+
+void sessions_service::close(std::uint32_t id) {
+    assert(has(id));
+    assert(sessions_[id]->id() == id);
+
+    logger_.info("Session #{} was closed", id);
+    sessions_.erase(id);
+}
+
+void sessions_service::on_close(const session& s) {
+    assert(has(s.id()));
+    close(s.id());
 }
 
 } // namespace eztik::services
