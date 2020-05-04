@@ -17,7 +17,7 @@ using eztik::routeros::response_sentence;
 
 namespace eztik::commands {
 
-void api_send_command::operator()(client_ptr client, ts::net::request &&req) {
+void api_send_command::execute(client_ptr client, ts::net::request &&req) {
     if (!sessions_svc_.has(client->id())) {
         logger_.warn(
             "Client #{} with no open sessions tried to send an API message",

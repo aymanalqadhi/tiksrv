@@ -6,7 +6,7 @@
 
 namespace eztik::commands {
 
-void api_open_command::operator()(client_ptr client, ts::net::request &&req) {
+void api_open_command::execute(client_ptr client, ts::net::request &&req) {
     if (sessions_svc_.has(client->id())) {
         logger_.warn(
             "Client #{} with an already open session has requested a new one",

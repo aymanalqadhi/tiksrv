@@ -6,7 +6,7 @@
 
 namespace ts::plugins::core::commands {
 
-void echo_command::operator()(client_ptr client, ts::net::request &&req) {
+void echo_command::execute(client_ptr client, ts::net::request &&req) {
     client->respond(req.body(), req.header().tag);
 }
 

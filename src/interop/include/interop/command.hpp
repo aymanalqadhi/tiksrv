@@ -14,8 +14,12 @@ class command {
     virtual ~command() {
     }
 
-    virtual auto name() const noexcept -> const std::string &          = 0;
-    virtual void operator()(client_ptr client, ts::net::request &&req) = 0;
+    virtual auto name() const noexcept -> const std::string &       = 0;
+    virtual void execute(client_ptr client, ts::net::request &&req) = 0;
+
+    virtual void operator()(client_ptr client, ts::net::request &&req) {
+        execute(std::move(client), std::move(req));
+    }
 };
 
 } // namespace ts::interop

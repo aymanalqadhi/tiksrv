@@ -25,7 +25,7 @@ class api_open_command final : public ts::interop::command {
         return name_;
     }
 
-    void operator()(client_ptr client, ts::net::request &&req) override;
+    void execute(client_ptr client, ts::net::request &&req) override;
 
   private:
     std::string name_;
