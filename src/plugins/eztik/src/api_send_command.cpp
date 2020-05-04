@@ -18,16 +18,6 @@ using eztik::routeros::response_sentence;
 namespace eztik::commands {
 
 void api_send_command::execute(client_ptr client, ts::net::request &&req) {
-    if (!sessions_svc_.has(client->id())) {
-        logger_.warn(
-            "Client #{} with no open sessions tried to send an API message",
-            client->id());
-        client->respond(eztik::make_response_code(
-                            eztik::response_code::ros_session_not_open),
-                        req.header().tag);
-        return;
-    }
-
     ///
     /// TODO:
     /// COMPLETE IMPLEMENTATION
