@@ -53,7 +53,11 @@ class session final : public eztik::routeros::api_handler {
             boost::asio::io_context &io,
             ts::log::logger &        logger,
             session_handler &        handler)
-        : id_ {id}, api_ {io, *this}, logger_ {logger}, handler_ {handler} {
+        : id_ {id},
+          api_ {io, *this},
+          logger_ {logger},
+          handler_ {handler},
+          ready_ {false} {
     }
 
     inline auto id() const noexcept -> std::uint32_t {
@@ -76,6 +80,15 @@ class session final : public eztik::routeros::api_handler {
         return read_cbs_.contains(tag);
     }
 
+    inline auto is_ready() const noexcept -> bool {
+        return ready_;
+    }
+
+    inline void set_ready() {
+        assert(!ready_);
+        ready_ = true;
+    }
+
   public:
     void on_error(const boost::system::error_code &err) override;
     void on_close() override;
@@ -87,6 +100,7 @@ class session final : public eztik::routeros::api_handler {
     ts::log::logger &    logger_;
     session_handler &    handler_;
 
+    bool                                                     ready_;
     std::unordered_map<std::uint32_t, session_read_callback> read_cbs_;
 };
 

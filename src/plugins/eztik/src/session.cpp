@@ -64,6 +64,8 @@ void session::on_response(const eztik::routeros::sentence &sen) {
 void session::send(const eztik::routeros::request_sentence &sen,
                    session_read_callback::callback &&       cb,
                    bool                                     permanent) {
+    assert(ready_);
+
     api_.send(sen, [this, tag = sen.tag(), permanent, cb](const auto &err,
                                                           auto sent) mutable {
         if (err) {
@@ -79,6 +81,7 @@ void session::send(const eztik::routeros::request_sentence &sen,
 void session::add_read_callback(std::uint32_t                     tag,
                                 session_read_callback::callback &&cb,
                                 bool                              permanent) {
+    assert(ready_);
     assert(!read_cbs_.contains(tag));
 
     read_cbs_.emplace(
