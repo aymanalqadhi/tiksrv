@@ -2,6 +2,7 @@
 #include "eztik/eztik_plugin.hpp"
 
 #include "eztik/commands/api_open.hpp"
+#include "eztik/commands/api_send.hpp"
 #include "services/config_manager.hpp"
 
 #include <functional>
@@ -21,6 +22,8 @@ void eztik_plugin::export_commands(export_func export_cb) noexcept {
     } while (0)
 
     EXPORT_COMMAND(commands::api_open_command, eztik_command::api_open, logger_,
+                   sessions_service_);
+    EXPORT_COMMAND(commands::api_send_command, eztik_command::api_send, logger_,
                    sessions_service_);
 
 #undef EXPORT_COMMAND
