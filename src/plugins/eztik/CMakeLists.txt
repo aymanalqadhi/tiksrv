@@ -10,6 +10,7 @@ set(SOURCE_FILES src/eztik_plugin.cpp
                  src/routeros_sentence.cpp
                  src/session.cpp
                  src/sessions_service.cpp
+                 src/session_required_command.cpp
                  src/api_open_command.cpp
                  src/api_send_command.cpp)
 
