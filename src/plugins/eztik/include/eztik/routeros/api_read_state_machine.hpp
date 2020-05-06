@@ -57,7 +57,7 @@ class read_context final {
 
 class api_read_state_machine {
   public:
-    api_read_state_machine() : state_ {read_state::idle} {
+    api_read_state_machine() : state_ {read_state::closed} {
     }
 
     inline const read_state &state() const noexcept {
