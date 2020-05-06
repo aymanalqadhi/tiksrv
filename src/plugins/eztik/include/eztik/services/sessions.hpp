@@ -9,8 +9,10 @@
 #include "services/hooks_manager.hpp"
 
 #include <boost/asio/io_context.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <memory>
 
@@ -19,7 +21,8 @@ namespace eztik::services {
 class session_handler;
 
 class sessions_service final : public eztik::session_handler {
-    using session_open_cb  = std::function<void(std::shared_ptr<session>)>;
+    using session_open_cb  = std::function<void(
+        const boost::system::error_code &, std::shared_ptr<session>)>;
     using session_close_cb = std::function<void(std::shared_ptr<session>)>;
 
   public:

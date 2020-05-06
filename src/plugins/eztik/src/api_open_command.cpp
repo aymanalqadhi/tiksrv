@@ -24,15 +24,16 @@ void api_open_command::execute(client_ptr client, ts::net::request &&req) {
     } else {
         sessions_svc_.create(
             client->id(),
-            [this, client, tag = req.header().tag](auto session) {
+            [this, client, tag = req.header().tag](const auto &err,
+                                                   auto        session) {
                 if (session) {
                     logger_.info(
                         "A new session was opened successfully for client #{}",
                         client->id());
                     client->respond(ts::net::response_code::success, tag);
                 } else {
-                    logger_.error("Could not open session for client #{}",
-                                  client->id());
+                    logger_.error("Could not open session for client #{}: {}",
+                                  client->id(), err.message());
                     client->respond(
                         eztik::make_response_code(rc::ros_session_open_failed),
                         tag);
