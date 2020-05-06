@@ -37,27 +37,13 @@ void sessions_service::setup_hooks() {
 void sessions_service::create(std::uint32_t    id,
                               session_open_cb  open_cb,
                               session_close_cb close_cb) {
-
     assert(!has(id));
 
     std::string   ip;
     std::uint16_t port;
 
-    if (!conf_.has(eztik::config_keys::ros_ip)) {
-        logger_.warn("No RouterOS IP was configured, defaulting to {}",
-                     eztik::config_defaults::ros_ip);
-        ip = eztik::config_defaults::ros_ip;
-    } else {
-        ip = conf_[eztik::config_keys::ros_ip].as<decltype(ip)>();
-    }
-
-    if (!conf_.has(eztik::config_keys::ros_api_port)) {
-        logger_.warn("No RouterOS API port was configured, defaulting to {}",
-                     eztik::config_defaults::ros_api_port);
-        port = eztik::config_defaults::ros_api_port;
-    } else {
-        port = conf_[eztik::config_keys::ros_api_port].as<decltype(port)>();
-    }
+    ip   = conf_[eztik::config_keys::ros_ip].as<decltype(ip)>();
+    port = conf_[eztik::config_keys::ros_api_port].as<decltype(port)>();
 
     auto s = std::make_shared<session>(id, io_, logger_, *this);
     sessions_.emplace(
@@ -71,13 +57,10 @@ void sessions_service::create(std::uint32_t    id,
         assert(!s->is_ready());
 
         if (err) {
-            logger_.debug("Could not open session: {}", err.message());
-            open_cb(nullptr);
             sessions_.erase(id);
+            open_cb(err, nullptr);
         } else {
-            open_cb(s);
-            s->api().start();
-            s->set_ready();
+            open_cb(err, s);
         }
     });
 }
@@ -95,7 +78,6 @@ void sessions_service::close(std::uint32_t id) {
 }
 
 void sessions_service::on_close(const session &s) {
-    assert(has(s.id()));
     close(s.id());
 }
 
