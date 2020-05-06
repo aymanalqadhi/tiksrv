@@ -7,11 +7,9 @@
 #include "log/logger.hpp"
 
 #include <boost/asio/io_context.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <cstdint>
-#include <functional>
-#include <memory>
-#include <unordered_map>
 
 namespace eztik {
 
@@ -22,31 +20,6 @@ class session_handler {
     virtual void on_close(const session &s) = 0;
 };
 
-class session_read_callback final {
-    using response   = eztik::routeros::response_sentence;
-    using error_code = boost::system::error_code;
-
-  public:
-    using callback =
-        std::function<void(const error_code &, session &, response &&)>;
-
-    session_read_callback(callback &&cb, bool permanent = false)
-        : cb_ {std::move(cb)}, permanent_ {permanent} {
-    }
-
-    inline void operator()(const error_code &err, session &s, response &&resp) {
-        cb_(err, s, std::move(resp));
-    }
-
-    auto is_permanent() const noexcept {
-        return permanent_;
-    }
-
-  private:
-    callback cb_;
-    bool     permanent_;
-};
-
 class session final : public eztik::routeros::api_handler {
   public:
     session(std::uint32_t            id,
@@ -54,13 +27,12 @@ class session final : public eztik::routeros::api_handler {
             ts::log::logger &        logger,
             session_handler &        handler)
         : id_ {id},
-          api_ {io, *this},
+          api_ {id, io, logger, *this},
           logger_ {logger},
-          handler_ {handler},
-          ready_ {false} {
+          handler_ {handler} {
     }
 
-    inline auto id() const noexcept -> std::uint32_t {
+    inline auto id() const noexcept -> const std::uint32_t & {
         return id_;
     }
 
@@ -68,40 +40,18 @@ class session final : public eztik::routeros::api_handler {
         return api_;
     }
 
-    void send(const eztik::routeros::request_sentence &sen,
-              session_read_callback::callback &&       cb,
-              bool                                     permanent = false);
-
-    void add_read_callback(std::uint32_t                     tag,
-                           session_read_callback::callback &&cb,
-                           bool                              permanent);
-
-    inline auto has_read_callback(std::uint32_t tag) const noexcept -> bool {
-        return read_cbs_.contains(tag);
-    }
-
     inline auto is_ready() const noexcept -> bool {
-        return ready_;
-    }
-
-    inline void set_ready() {
-        assert(!ready_);
-        ready_ = true;
+        return api_.is_ready();
     }
 
   public:
     void on_error(const boost::system::error_code &err) override;
-    void on_close() override;
-    void on_response(const eztik::routeros::sentence &resp) override;
 
   private:
     std::uint32_t        id_;
     eztik::routeros::api api_;
     ts::log::logger &    logger_;
     session_handler &    handler_;
-
-    bool                                                     ready_;
-    std::unordered_map<std::uint32_t, session_read_callback> read_cbs_;
 };
 
 } // namespace eztik

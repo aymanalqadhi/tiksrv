@@ -18,32 +18,53 @@ namespace ip = boost::asio::ip;
 
 namespace eztik::routeros {
 
-void api::open(const std::string &    host,
-               std::uint16_t          port,
-               const connect_handler &cb) {
+void api::open(const std::string &host,
+               std::uint16_t      port,
+               connect_handler && cb) {
     try {
         ip::tcp::endpoint ep {ip::make_address(host), port};
-        sock_.async_connect(ep, cb);
+        sock_.async_connect(ep, [this, cb {std::move(cb)}](const auto &err) {
+            cb(err);
+
+            if (!err) {
+                state(read_state::idle);
+                start();
+            }
+        });
     } catch (...) {
-        cb(boost::asio::error::bad_descriptor);
+        cb(boost::asio::error::address_family_not_supported);
     }
 }
 
-void api::send(const request_sentence &s, const send_handler &cb) {
-    assert(is_open());
+void api::send(const eztik::routeros::request_sentence &sen,
+               api_read_callback::callback &&           cb,
+               bool                                     permanent) {
+    assert(is_ready());
 
     auto buf = std::make_shared<std::vector<std::uint8_t>>();
-    s.encode(*buf);
+    sen.encode(*buf);
 
     sock_.async_send(
         boost::asio::buffer(*buf),
-        [this, cb, buf](const auto &err, const auto &sent) { cb(err, sent); });
+        [this, cb {std::move(cb)}, buf, tag = sen.tag(),
+         permanent](const auto &err, const auto &sent) mutable {
+            if (err) {
+                cb(err, *this, {});
+                close();
+            } else {
+                read_cbs_.emplace(std::make_pair(
+                    tag, api_read_callback(std::move(cb), permanent)));
+            }
+        });
 }
 
 void api::close() {
+    assert(state() != read_state::closed);
+
     if (sock_.is_open()) {
         sock_.close();
     }
+
     state(read_state::closed);
 }
 
@@ -54,16 +75,8 @@ void api::start() {
     read_next_word();
 }
 
-void api::stop() {
-    if (state() == read_state::closed) {
-        return;
-    }
-
-    close();
-}
-
 void api::read_next(std::size_t n) {
-    if (!is_open()) {
+    if (!is_ready()) {
         return;
     }
 
@@ -95,7 +108,7 @@ void api::on_reading_length(std::string_view data) {
     std::uint8_t mbytes {};
 
     if (fbyte == 0) {
-        handler_.on_response(context().current_sentence());
+        handle_response(context().current_sentence());
         context().current_sentence().clear();
 
         state(read_state::idle);
@@ -107,11 +120,14 @@ void api::on_reading_length(std::string_view data) {
         } else if ((fbyte & 0xE0) == 0xC0) {
             fbyte &= ~0xE0;
             mbytes = 2;
-        } else {
-            if ((fbyte & 0xF0) == 0xE0) {
-                fbyte &= ~0xF0;
-            }
+        } else if ((fbyte & 0xF0) == 0xE0) {
+            fbyte &= ~0xF0;
             mbytes = 3;
+        } else if (fbyte == 0xF0) {
+            mbytes = 4;
+        } else {
+            on_error(boost::asio::error::message_size);
+            return;
         }
 
         boost::asio::async_read(
@@ -148,7 +164,49 @@ void api::on_reading_word(std::string_view data) {
 }
 
 void api::on_error(const boost::system::error_code &err) {
+    close();
     handler_.on_error(err);
+}
+
+void api::handle_response(const sentence &s) {
+    try {
+        if (!eztik::routeros::response_sentence::is_valid_response(s)) {
+            throw std::runtime_error {"Invalid response"};
+        }
+
+        eztik::routeros::response_sentence resp {s};
+
+        if (!resp.is_tagged()) {
+            logger_.warn("API connection for session #{} is discarding an "
+                         "untagged response",
+                         id_);
+            return;
+        }
+
+        if (!read_cbs_.contains(resp.tag())) {
+            logger_.warn("API connection for session #{} is discarding a "
+                         "response with tag #{} with no associated callback",
+                         id_, resp.tag());
+            return;
+        }
+
+        if (!resp.is_tagged() || !read_cbs_.contains(resp.tag())) {
+            logger_.fatal("Discarding response");
+            return;
+        }
+
+        auto cb_itr = read_cbs_.find(resp.tag());
+        cb_itr->second({}, *this, std::move(resp));
+
+        if (!cb_itr->second.is_permanent()) {
+            read_cbs_.erase(cb_itr);
+        }
+
+    } catch (const std::exception &ex) {
+        logger_.error("API connection for session #{} error: {}", id_,
+                      ex.what());
+        on_error(boost::asio::error::invalid_argument);
+    }
 }
 
 } // namespace eztik::routeros
