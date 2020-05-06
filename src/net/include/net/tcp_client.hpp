@@ -11,7 +11,6 @@
 
 #include <cstdint>
 #include <deque>
-#include <functional>
 #include <memory>
 
 namespace ts::net {
