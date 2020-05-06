@@ -37,7 +37,8 @@ class config_manager : public service {
     inline void add_option(const std::string &opt, const T &def) {
         desc_.add_options()(
             opt.c_str(),
-            boost::program_options::value<T>()->default_value(def));
+            boost::program_options::value<std::decay_t<T>>()->default_value(
+                def));
     }
 
     inline auto options() noexcept
