@@ -19,6 +19,8 @@
 using boost::asio::ip::tcp;
 using boost::system::error_code;
 
+using keys = eztik::config_keys;
+
 namespace eztik::services {
 
 void sessions_service::setup_hooks() {
@@ -39,30 +41,42 @@ void sessions_service::create(std::uint32_t    id,
                               session_close_cb close_cb) {
     assert(!has(id));
 
-    std::string   ip;
-    std::uint16_t port;
-
-    ip   = conf_[eztik::config_keys::ros_ip].as<decltype(ip)>();
-    port = conf_[eztik::config_keys::ros_api_port].as<decltype(port)>();
+    auto ip   = conf_[keys::ros_ip].as<std::string>();
+    auto port = conf_[keys::ros_api_port].as<std::uint16_t>();
 
     auto s = std::make_shared<session>(id, io_, logger_, *this);
     sessions_.emplace(
         std::make_pair(id, std::make_pair(s, std::move(close_cb))));
 
-    s->api().open(ip, port, [id, s, this, open_cb](const error_code &err) {
-        if (!sessions_.contains(id)) {
-            return;
-        }
+    s->api().open(
+        ip, port,
+        [id, s {std::move(s)}, this,
+         cb {std::move(open_cb)}](const error_code &err) {
+            if (!sessions_.contains(id)) {
+                return;
+            }
 
-        assert(!s->is_ready());
+            if (err) {
+                assert(!s->is_ready());
+                sessions_.erase(id);
+                cb(err, nullptr);
+            } else {
+                assert(s->is_ready());
 
-        if (err) {
-            sessions_.erase(id);
-            open_cb(err, nullptr);
-        } else {
-            open_cb(err, s);
-        }
-    });
+                auto user     = conf_[keys::ros_api_user].as<std::string>();
+                auto password = conf_[keys::ros_api_password].as<std::string>();
+
+                s->api().login(
+                    std::move(user), std::move(password),
+                    [this, s {std::move(s)}, cb {std::move(cb)}](bool success) {
+                        if (!success) {
+                            cb(boost::asio::error::connection_refused, nullptr);
+                        } else {
+                            cb({}, std::move(s));
+                        }
+                    });
+            }
+        });
 }
 
 void sessions_service::close(std::uint32_t id) {
