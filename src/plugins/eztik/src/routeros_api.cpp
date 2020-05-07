@@ -1,4 +1,5 @@
 #include "eztik/routeros/api.hpp"
+#include "eztik/routeros/util.hpp"
 
 #include <boost/asio/error.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -24,16 +25,26 @@ void api::open(const std::string &host,
     try {
         ip::tcp::endpoint ep {ip::make_address(host), port};
         sock_.async_connect(ep, [this, cb {std::move(cb)}](const auto &err) {
-            cb(err);
-
             if (!err) {
                 state(read_state::idle);
                 start();
             }
+
+            cb(err);
         });
     } catch (...) {
         cb(boost::asio::error::address_family_not_supported);
     }
+}
+
+void api::close() {
+    assert(state() != read_state::closed);
+
+    if (sock_.is_open()) {
+        sock_.close();
+    }
+
+    state(read_state::closed);
 }
 
 void api::send(const eztik::routeros::request_sentence &sen,
@@ -58,14 +69,53 @@ void api::send(const eztik::routeros::request_sentence &sen,
         });
 }
 
-void api::close() {
-    assert(state() != read_state::closed);
+void api::login(const std::string &username,
+                const std::string &password,
+                login_handler &&   cb) {
+    request_sentence req {"/login"};
 
-    if (sock_.is_open()) {
-        sock_.close();
-    }
+    send(req, [this, username, password,
+               cb {std::move(cb)}](const auto &err, auto &api, auto &&resp) {
+        if (err) {
+            logger_.error("Session #{} API connection login error: {}", id_,
+                          err.message());
+            cb(false);
+            return;
+        }
 
-    state(read_state::closed);
+        if (resp.type() != response_sentence_type::normal || !resp.has("ret") ||
+            resp["ret"].size() != md5_size * 2) {
+            logger_.error(
+                "Invalid login response for session #{} API connection", id_);
+            cb(false);
+            return;
+        }
+
+        request_sentence req {"/login"};
+        req.push_param("name", username);
+        req.push_param("response", "00{}",
+                       hash_password(password, resp["ret"]));
+
+        send(req, [this, cb {std::move(cb)}](const auto &err, auto &api,
+                                             auto &&resp) {
+            if (err) {
+                logger_.error("Session #{} API connection login error: {}", id_,
+                              err.message());
+                cb(false);
+                return;
+            }
+
+            if (resp.type() != response_sentence_type::normal) {
+                logger_.error(
+                    "API connection of session #{} was unable to login: {}",
+                    id_, resp["message"]);
+                cb(false);
+                return;
+            }
+
+            cb(true);
+        });
+    });
 }
 
 void api::start() {

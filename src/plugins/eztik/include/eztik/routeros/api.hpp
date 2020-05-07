@@ -50,11 +50,12 @@ class api_read_callback final {
 class api final : public api_read_state_machine {
     using connect_handler =
         std::function<void(const boost::system::error_code &)>;
-    using send_handler = std::function<void(const boost::system::error_code &,
+    using send_handler  = std::function<void(const boost::system::error_code &,
                                             const std::size_t &)>;
+    using login_handler = std::function<void(bool)>;
 
   public:
-    api(const std::uint32_t &    id,
+    api(const std::uint32_t      id,
         boost::asio::io_context &io,
         ts::log::logger &        logger,
         api_handler &            handler)
@@ -62,12 +63,6 @@ class api final : public api_read_state_machine {
     }
 
     api(const api &rh) = delete;
-
-    ~api() {
-        if (sock_.is_open()) {
-            sock_.close();
-        }
-    }
 
     void
     open(const std::string &host, std::uint16_t port, connect_handler &&cb);
@@ -77,6 +72,10 @@ class api final : public api_read_state_machine {
     void send(const eztik::routeros::request_sentence &sen,
               api_read_callback::callback &&           cb,
               bool                                     permanent = false);
+
+    void login(const std::string &username,
+               const std::string &password,
+               login_handler &&   cb);
 
     inline auto is_ready() const noexcept -> bool {
         return sock_.is_open() && state() != read_state::closed;
@@ -94,7 +93,7 @@ class api final : public api_read_state_machine {
     void handle_response(const sentence &s);
 
   private:
-    const std::uint32_t &        id_;
+    const std::uint32_t          id_;
     boost::asio::ip::tcp::socket sock_;
     ts::log::logger &            logger_;
     api_handler &                handler_;
