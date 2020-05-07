@@ -5,6 +5,7 @@ project(eztik)
 
 # Files
 set(SOURCE_FILES src/eztik_plugin.cpp
+                 src/error.cpp
                  src/routeros_api.cpp
                  src/routeros_api_read_state_machine.cpp
                  src/routeros_util.cpp

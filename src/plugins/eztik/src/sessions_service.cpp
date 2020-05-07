@@ -31,7 +31,7 @@ void sessions_service::setup_hooks() {
 
             if (sessions_.contains(client->id())) {
                 logger_.debug("Deleting session #{}", client->id());
-                sessions_.erase(client->id());
+                close(client->id());
             }
         });
 }
