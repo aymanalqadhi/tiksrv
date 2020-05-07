@@ -58,27 +58,30 @@ class sentence {
 class request_sentence final : public sentence {
   public:
     request_sentence(std::string command, std::uint32_t tag) : tag_ {tag} {
-        sentence::push(command);
-        sentence::push(".tag={}", tag);
+        push(command);
+        push(".tag={}", tag);
     }
+
+    request_sentence(std::string command);
 
     inline auto tag() const noexcept -> std::uint32_t {
         return tag_;
     }
 
-    inline void push(std::string key, std::string value) noexcept {
+    inline void push_param(std::string key, std::string value) noexcept {
         sentence::push("={}={}", std::move(key), std::move(value));
     }
 
     template <typename T>
-    inline void push(std::string key, const T &value) noexcept {
-        push(std::move(key), std::to_string(value));
+    inline void push_param(std::string key, const T &value) noexcept {
+        push_param(std::move(key), std::to_string(value));
     }
 
     template <typename... TArg>
-    inline void
-    push(std::string key, const char *fmt, const TArg &... args) noexcept {
-        push(std::move(key), fmt::format(fmt, args...));
+    inline void push_param(std::string key,
+                           const char *fmt,
+                           const TArg &... args) noexcept {
+        push_param(std::move(key), fmt::format(fmt, args...));
     }
 
   private:
