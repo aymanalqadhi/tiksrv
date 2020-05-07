@@ -32,6 +32,10 @@ class session final : public eztik::routeros::api_handler {
           handler_ {handler} {
     }
 
+    ~session() {
+        api_.close();
+    }
+
     inline auto id() const noexcept -> const std::uint32_t & {
         return id_;
     }
