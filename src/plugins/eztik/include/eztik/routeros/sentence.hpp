@@ -62,8 +62,6 @@ class request_sentence final : public sentence {
         push(".tag={}", tag);
     }
 
-    request_sentence(std::string command);
-
     inline auto tag() const noexcept -> std::uint32_t {
         return tag_;
     }

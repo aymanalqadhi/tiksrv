@@ -72,7 +72,7 @@ void api::send(const eztik::routeros::request_sentence &sen,
 void api::login(const std::string &username,
                 const std::string &password,
                 login_handler &&   cb) {
-    request_sentence req {"/login"};
+    auto req = make_request("/login");
 
     send(req, [this, username, password,
                cb {std::move(cb)}](const auto &err, auto &api, auto &&resp) {
@@ -91,7 +91,7 @@ void api::login(const std::string &username,
             return;
         }
 
-        request_sentence req {"/login"};
+        auto req = make_request("/login");
         req.push_param("name", username);
         req.push_param("response", "00{}",
                        hash_password(password, resp["ret"]));

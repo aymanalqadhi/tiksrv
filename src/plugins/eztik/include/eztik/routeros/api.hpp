@@ -59,7 +59,11 @@ class api final : public api_read_state_machine {
         boost::asio::io_context &io,
         ts::log::logger &        logger,
         api_handler &            handler)
-        : id_ {id}, sock_ {io}, logger_ {logger}, handler_ {handler} {
+        : id_ {id},
+          sock_ {io},
+          logger_ {logger},
+          handler_ {handler},
+          current_tag_ {0} {
     }
 
     api(const api &rh) = delete;
@@ -76,6 +80,11 @@ class api final : public api_read_state_machine {
     void login(const std::string &username,
                const std::string &password,
                login_handler &&   cb);
+
+    inline auto make_request(std::string command)->request_sentence {
+        request_sentence ret{std::move(command), current_tag_++};
+        return ret;
+    }
 
     inline auto is_ready() const noexcept -> bool {
         return sock_.is_open() && state() != read_state::closed;
@@ -97,6 +106,7 @@ class api final : public api_read_state_machine {
     boost::asio::ip::tcp::socket sock_;
     ts::log::logger &            logger_;
     api_handler &                handler_;
+    std::uint32_t                current_tag_;
 
     std::unordered_map<std::uint32_t, api_read_callback> read_cbs_;
 };
