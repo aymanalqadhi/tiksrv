@@ -12,6 +12,8 @@
 
 namespace {
 
+std::uint32_t current_tag {0};
+
 template <typename T, std::size_t size = sizeof(T)>
 inline void append_uint(const T &val, std::vector<std::uint8_t> &buf) {
     static_assert(size >= 1 && size <= 4 && size <= sizeof(T));
@@ -83,6 +85,10 @@ void sentence::encode(std::vector<std::uint8_t> &vec) const {
         ::encode_word(word, vec);
     }
     vec.push_back(0x00);
+}
+
+request_sentence::request_sentence(std::string command)
+    : request_sentence {std::move(command), ::current_tag++} {
 }
 
 auto response_sentence::is_valid_response(const sentence &s) -> bool {
