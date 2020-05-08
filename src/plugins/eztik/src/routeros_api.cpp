@@ -32,7 +32,7 @@ void api::open(const std::string &host,
             cb(err);
         });
     } catch (...) {
-        cb(boost::asio::error::address_family_not_supported);
+        cb(eztik::error_code::invalid_endpoint_address);
     }
 }
 
@@ -49,7 +49,7 @@ void api::close() {
 void api::send(const eztik::routeros::request_sentence &sen,
                api_read_callback::callback &&           cb,
                bool                                     permanent) {
-    assert(is_ready());
+    assert(is_open());
 
     auto buf = std::make_shared<std::vector<std::uint8_t>>();
     sen.encode(*buf);
@@ -76,17 +76,13 @@ void api::login(const std::string &username,
     send(req, [this, username, password,
                cb {std::move(cb)}](const auto &err, auto &api, auto &&resp) {
         if (err) {
-            logger_.error("Session #{} API connection login error: {}", id_,
-                          err.message());
-            cb(false);
+            cb(err);
             return;
         }
 
         if (resp.type() != response_sentence_type::normal || !resp.has("ret") ||
             resp["ret"].size() != md5_size * 2) {
-            logger_.error(
-                "Invalid login response for session #{} API connection", id_);
-            cb(false);
+            cb(eztik::error_code::invalid_response);
             return;
         }
 
@@ -98,21 +94,17 @@ void api::login(const std::string &username,
         send(req, [this, cb {std::move(cb)}](const auto &err, auto &api,
                                              auto &&resp) {
             if (err) {
-                logger_.error("Session #{} API connection login error: {}", id_,
-                              err.message());
-                cb(false);
+                cb(err);
                 return;
             }
 
             if (resp.type() != response_sentence_type::normal) {
-                logger_.error(
-                    "API connection of session #{} was unable to login: {}",
-                    id_, resp["message"]);
-                cb(false);
+                cb(eztik::error_code::invalid_login_credentials);
                 return;
             }
 
-            cb(true);
+            logged_in_ = true;
+            cb(eztik::error_code::success);
         });
     });
 }
@@ -125,7 +117,7 @@ void api::start() {
 }
 
 void api::read_next(std::size_t n) {
-    if (!is_ready()) {
+    if (!is_open()) {
         return;
     }
 
@@ -213,8 +205,11 @@ void api::on_reading_word(std::string_view data) {
 }
 
 void api::on_error(const boost::system::error_code &err) {
-    close();
     handler_.on_error(err);
+
+    if (is_open()) {
+        close();
+    }
 }
 
 void api::handle_response(const sentence &s) {
@@ -224,12 +219,14 @@ void api::handle_response(const sentence &s) {
             return;
         }
 
+        if (s.size() <= 1) {
+            return; // empty response
+        }
+
         eztik::routeros::response_sentence resp {s};
 
         if (!resp.is_tagged()) {
-            logger_.warn("API connection for session #{} is discarding an "
-                         "untagged response",
-                         id_);
+            on_error(eztik::error_code::untagged_response);
             return;
         }
 
