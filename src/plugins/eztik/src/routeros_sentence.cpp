@@ -89,7 +89,7 @@ auto response_sentence::is_valid_response(const sentence &s) -> bool {
     return s.size() > 0 && s[0][0] == '!';
 }
 
-response_sentence::response_sentence(const sentence &s) {
+response_sentence::response_sentence(const sentence &s) : tagged_{false} {
     assert(is_valid_response(s));
 
     auto type_str = s[0];
