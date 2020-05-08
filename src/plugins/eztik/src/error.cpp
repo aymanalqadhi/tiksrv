@@ -14,10 +14,14 @@ auto eztik_error_category::message(int c) const -> std::string {
     switch (static_cast<eztik::error_code>(c)) {
     case eztik::error_code::success:
         return "Success";
+    case eztik::error_code::invalid_endpoint_address:
+        return "Invalid endpoint address";
     case eztik::error_code::invalid_response:
         return "Invalid response";
     case eztik::error_code::fatal_response:
         return "Fatal response";
+    case eztik::error_code::untagged_response:
+        return "Untagged response";
     case eztik::error_code::invalid_response_tag:
         return "Invalid response tag";
     case eztik::error_code::invalid_login_credentials:

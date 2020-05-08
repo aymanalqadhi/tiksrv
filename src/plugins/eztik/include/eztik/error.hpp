@@ -26,10 +26,12 @@ class eztik_error_category : public boost::system::error_category {
 
 enum class error_code {
     success                   = 0,
-    invalid_response          = 1,
-    fatal_response            = 2,
-    invalid_response_tag      = 3,
-    invalid_login_credentials = 4,
+    invalid_endpoint_address  = 1,
+    invalid_response          = 2,
+    fatal_response            = 3,
+    untagged_response         = 4,
+    invalid_response_tag      = 5,
+    invalid_login_credentials = 6,
 };
 
 auto eztik_error_category() -> const boost::system::error_category &;
