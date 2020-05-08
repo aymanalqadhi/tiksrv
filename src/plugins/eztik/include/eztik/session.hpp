@@ -45,7 +45,7 @@ class session final : public eztik::routeros::api_handler {
     }
 
     inline auto is_ready() const noexcept -> bool {
-        return api_.is_ready();
+        return api_.is_open();
     }
 
   public:

@@ -50,16 +50,18 @@ class api_read_callback final {
 class api final : public api_read_state_machine {
     using connect_handler =
         std::function<void(const boost::system::error_code &)>;
-    using send_handler  = std::function<void(const boost::system::error_code &,
+    using send_handler = std::function<void(const boost::system::error_code &,
                                             const std::size_t &)>;
-    using login_handler = std::function<void(bool)>;
+    using login_handler =
+        std::function<void(const boost::system::error_code &)>;
 
   public:
-    api(const std::uint32_t      id,
+    api(std::uint32_t            id,
         boost::asio::io_context &io,
         ts::log::logger &        logger,
         api_handler &            handler)
         : id_ {id},
+          logged_in_ {false},
           sock_ {io},
           logger_ {logger},
           handler_ {handler},
@@ -81,13 +83,17 @@ class api final : public api_read_state_machine {
                const std::string &password,
                login_handler &&   cb);
 
-    inline auto make_request(std::string command)->request_sentence {
-        request_sentence ret{std::move(command), current_tag_++};
+    inline auto make_request(std::string command) -> request_sentence {
+        request_sentence ret {std::move(command), current_tag_++};
         return ret;
     }
 
-    inline auto is_ready() const noexcept -> bool {
+    inline auto is_open() const noexcept -> bool {
         return sock_.is_open() && state() != read_state::closed;
+    }
+
+    inline auto is_logged_in() const noexcept -> bool {
+        return logged_in_;
     }
 
     void on_reading_length(std::string_view data) override;
@@ -102,7 +108,8 @@ class api final : public api_read_state_machine {
     void handle_response(const sentence &s);
 
   private:
-    const std::uint32_t          id_;
+    std::uint32_t                id_;
+    bool                         logged_in_;
     boost::asio::ip::tcp::socket sock_;
     ts::log::logger &            logger_;
     api_handler &                handler_;
