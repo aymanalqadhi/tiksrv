@@ -101,7 +101,9 @@ void sessions_service::close(std::uint32_t id) {
 }
 
 void sessions_service::on_close(const session &s) {
-    close(s.id());
+    if (has(s.id())) {
+        close(s.id());
+    }
 }
 
 } // namespace eztik::services
