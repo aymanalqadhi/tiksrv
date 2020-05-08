@@ -128,6 +128,14 @@ class response_sentence final {
         return tag_;
     }
 
+    inline auto size() const noexcept -> std::size_t {
+        return params_.size();
+    }
+
+    inline auto empty() const noexcept -> bool {
+        return size() == 0;
+    }
+
     static auto is_valid_response(const sentence &s) -> bool;
 
   private:
