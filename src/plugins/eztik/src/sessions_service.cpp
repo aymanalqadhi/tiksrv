@@ -1,6 +1,7 @@
 #include "eztik/services/sessions.hpp"
 
 #include "eztik/config.hpp"
+#include "eztik/error.hpp"
 #include "eztik/routeros/api.hpp"
 
 #include "net/tcp_client.hpp"
@@ -50,15 +51,14 @@ void sessions_service::create(std::uint32_t    id,
 
     s->api().open(
         ip, port,
-        [id, s {std::move(s)}, this,
-         cb {std::move(open_cb)}](const error_code &err) {
-            if (!sessions_.contains(id)) {
+        [this, id, s {std::move(s)}, cb {std::move(open_cb)}](const auto &err) {
+            if (!has(id)) {
                 return;
             }
 
             if (err) {
                 assert(!s->is_ready());
-                sessions_.erase(id);
+                close(id);
                 cb(err, nullptr);
             } else {
                 assert(s->is_ready());
@@ -66,15 +66,21 @@ void sessions_service::create(std::uint32_t    id,
                 auto user     = conf_[keys::ros_api_user].as<std::string>();
                 auto password = conf_[keys::ros_api_password].as<std::string>();
 
-                s->api().login(
-                    std::move(user), std::move(password),
-                    [this, s {std::move(s)}, cb {std::move(cb)}](bool success) {
-                        if (!success) {
-                            cb(boost::asio::error::connection_refused, nullptr);
-                        } else {
-                            cb({}, std::move(s));
-                        }
-                    });
+                s->api().login(std::move(user), std::move(password),
+                               [this, id, s {std::move(s)},
+                                cb {std::move(cb)}](const auto &err) {
+                                   if (!has(id)) {
+                                       return;
+                                   }
+
+                                   if (err) {
+                                       close(id);
+                                       cb(err, nullptr);
+                                   } else {
+                                       cb(eztik::error_code::success,
+                                          std::move(s));
+                                   }
+                               });
             }
         });
 }
@@ -87,7 +93,10 @@ void sessions_service::close(std::uint32_t id) {
 
     auto &to_remove = sessions_[id];
 
-    to_remove.second(std::move(to_remove.first));
+    if (to_remove.first->is_ready()) {
+        to_remove.second(std::move(to_remove.first));
+    }
+
     sessions_.erase(id);
 }
 
