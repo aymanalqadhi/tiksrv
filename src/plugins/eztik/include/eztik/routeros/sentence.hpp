@@ -13,10 +13,6 @@ namespace eztik::routeros {
 
 class sentence {
   public:
-    inline auto size() const noexcept -> std::size_t {
-        return words_.size();
-    }
-
     inline auto operator[](std::size_t i) const noexcept
         -> const std::string & {
         return words_[i];
@@ -42,6 +38,14 @@ class sentence {
 
     inline void clear() {
         words_.clear();
+    }
+
+    inline auto size() const noexcept -> std::size_t {
+        return words_.size();
+    }
+
+    inline auto empty() const noexcept -> bool {
+        return size() == 0;
     }
 
     void encode(std::vector<std::uint8_t> &vec) const;
