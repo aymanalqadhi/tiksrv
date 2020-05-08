@@ -26,14 +26,7 @@ class session final : public eztik::routeros::api_handler {
             boost::asio::io_context &io,
             ts::log::logger &        logger,
             session_handler &        handler)
-        : id_ {id},
-          api_ {id, io, logger, *this},
-          logger_ {logger},
-          handler_ {handler} {
-    }
-
-    ~session() {
-        api_.close();
+        : id_ {id}, api_ {io, *this}, logger_ {logger}, handler_ {handler} {
     }
 
     inline auto id() const noexcept -> const std::uint32_t & {

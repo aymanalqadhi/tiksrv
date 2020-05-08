@@ -56,19 +56,17 @@ class api final : public api_read_state_machine {
         std::function<void(const boost::system::error_code &)>;
 
   public:
-    api(std::uint32_t            id,
-        boost::asio::io_context &io,
-        ts::log::logger &        logger,
-        api_handler &            handler)
-        : id_ {id},
-          logged_in_ {false},
-          sock_ {io},
-          logger_ {logger},
-          handler_ {handler},
-          current_tag_ {0} {
+    api(boost::asio::io_context &io, api_handler &handler)
+        : sock_ {io}, handler_ {handler}, logged_in_ {false}, current_tag_ {0} {
     }
 
     api(const api &rh) = delete;
+
+    ~api() {
+        if(is_open()) {
+            close();
+        }
+    }
 
     void
     open(const std::string &host, std::uint16_t port, connect_handler &&cb);
@@ -108,11 +106,9 @@ class api final : public api_read_state_machine {
     void handle_response(const sentence &s);
 
   private:
-    std::uint32_t                id_;
-    bool                         logged_in_;
     boost::asio::ip::tcp::socket sock_;
-    ts::log::logger &            logger_;
     api_handler &                handler_;
+    bool                         logged_in_;
     std::uint32_t                current_tag_;
 
     std::unordered_map<std::uint32_t, api_read_callback> read_cbs_;
