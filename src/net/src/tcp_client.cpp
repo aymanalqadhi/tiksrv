@@ -37,12 +37,13 @@ void tcp_client::start() {
     read_next(request_header::size);
 }
 
-void tcp_client::stop() {
-    if (state() == read_state::closed) {
-        return;
+void tcp_client::close() {
+    assert(state() != read_state::closed);
+
+    if (sock_.is_open()) {
+        sock_.close();
     }
 
-    sock_.close();
     state(read_state::closed);
 }
 

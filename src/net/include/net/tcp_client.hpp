@@ -40,7 +40,7 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
     }
 
     void start();
-    void stop();
+    void close();
 
     void enqueue_response(std::shared_ptr<response> resp);
     void send_enqueued();

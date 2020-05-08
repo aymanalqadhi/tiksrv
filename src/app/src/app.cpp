@@ -116,10 +116,8 @@ void tiksrv_app::on_close(client_ptr client) {
 
     logger_.info("Client #{} has lost connection", client->id());
 
-    if (client->state() != ts::net::read_state::closed) {
-        client->stop();
-    }
 
+    client->close();
     clients_.erase(client->id());
 }
 
