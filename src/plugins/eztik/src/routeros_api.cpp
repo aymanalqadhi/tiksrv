@@ -1,9 +1,10 @@
 #include "eztik/routeros/api.hpp"
 #include "eztik/routeros/util.hpp"
 
+#include "eztik/error.hpp"
+
 #include <boost/asio/error.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/placeholders.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/bind.hpp>
 #include <boost/system/error_code.hpp>
@@ -12,8 +13,6 @@
 #include <iostream>
 
 using boost::asio::transfer_exactly;
-using boost::asio::placeholders::bytes_transferred;
-using boost::asio::placeholders::error;
 
 namespace ip = boost::asio::ip;
 
@@ -221,7 +220,8 @@ void api::on_error(const boost::system::error_code &err) {
 void api::handle_response(const sentence &s) {
     try {
         if (!eztik::routeros::response_sentence::is_valid_response(s)) {
-            throw std::runtime_error {"Invalid response"};
+            on_error(eztik::error_code::invalid_response);
+            return;
         }
 
         eztik::routeros::response_sentence resp {s};
@@ -234,14 +234,7 @@ void api::handle_response(const sentence &s) {
         }
 
         if (!read_cbs_.contains(resp.tag())) {
-            logger_.warn("API connection for session #{} is discarding a "
-                         "response with tag #{} with no associated callback",
-                         id_, resp.tag());
-            return;
-        }
-
-        if (!resp.is_tagged() || !read_cbs_.contains(resp.tag())) {
-            logger_.fatal("Discarding response");
+            on_error(eztik::error_code::invalid_response_tag);
             return;
         }
 
@@ -253,9 +246,7 @@ void api::handle_response(const sentence &s) {
         }
 
     } catch (const std::exception &ex) {
-        logger_.error("API connection for session #{} error: {}", id_,
-                      ex.what());
-        on_error(boost::asio::error::invalid_argument);
+        on_error(eztik::error_code::fatal_response);
     }
 }
 
