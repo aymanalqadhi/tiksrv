@@ -63,6 +63,10 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
         return sock_.remote_endpoint();
     }
 
+    inline auto is_open() const noexcept {
+        return sock_.is_open() && state() != read_state::closed;
+    }
+
   protected:
     void on_reading_header(std::string_view data) final override;
     void on_reading_body(std::string_view data) final override;

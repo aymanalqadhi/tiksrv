@@ -25,7 +25,7 @@ void tcp_client::read_next(std::size_t n) {
 
     boost::asio::async_read(
         sock_, boost::asio::buffer(context().buffer(), n), transfer_exactly(n),
-        [this](const auto &err, auto nread) {
+        [this, self = shared_from_this()](const auto &err, auto nread) {
             handle_read(err, {context().buffer().c_str(), nread});
         });
 }
@@ -56,7 +56,7 @@ void tcp_client::on_reading_header(std::string_view data) {
         logger_.warn(
             "Client #{} exceeded the message size limit (sent: {}, limit: {})",
             id_, context().header().body_size, max_allowed_body_size);
-        state(read_state::closed);
+        close();
         handler_.on_close(shared_from_this());
         return;
     }
@@ -81,6 +81,8 @@ void tcp_client::on_reading_body(std::string_view data) {
 }
 
 void tcp_client::on_error(const boost::system::error_code &err) {
+    close();
+
     if (err == boost::asio::error::eof) {
         handler_.on_close(shared_from_this());
     } else {
@@ -96,6 +98,10 @@ void tcp_client::send_next(std::shared_ptr<response> resp) {
         boost::asio::buffer(header_buf), boost::asio::buffer(resp->body())};
 
     sock_.async_send(send_buffers, [this](const auto &err, auto sent) {
+        if (state() == read_state::closed) {
+            return;
+        }
+
         if (err) {
             on_error(err);
             return;
@@ -110,7 +116,7 @@ void tcp_client::enqueue_response(std::shared_ptr<response> resp) {
 }
 
 void tcp_client::send_enqueued() {
-    if (send_queue_.empty()) {
+    if (!is_open() || send_queue_.empty()) {
         return;
     }
 

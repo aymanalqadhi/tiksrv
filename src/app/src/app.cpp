@@ -96,7 +96,6 @@ void tiksrv_app::on_accept(std::shared_ptr<ts::net::tcp_client> client) {
         logger_.info("Got connection from {} and was assigned #{}",
                      client->endpoint(), client->id());
         client->start();
-        clients_.insert(std::make_pair(client->id(), client));
     } catch (const std::exception &ex) {
         logger_.warn("An error occrued while accepting client #{}: {}",
                      client->id(), ex.what());
@@ -113,12 +112,7 @@ void tiksrv_app::on_error(client_tr client, const error_code &err) {
 
 void tiksrv_app::on_close(client_ptr client) {
     hooks_manager_->run_hooks(ts::services::hooks_group::disconnection, client);
-
     logger_.info("Client #{} has lost connection", client->id());
-
-
-    client->close();
-    clients_.erase(client->id());
 }
 
 void tiksrv_app::on_request(client_ptr client, ts::net::request &&req) {

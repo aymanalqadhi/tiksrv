@@ -63,9 +63,6 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
     std::shared_ptr<ts::services::config_manager> config_manager_;
     std::shared_ptr<ts::services::hooks_manager>  hooks_manager_;
 
-    std::unordered_map<std::uint32_t, std::shared_ptr<ts::net::tcp_client>>
-        clients_;
-
     std::vector<ts::interop::plugin_wrapper>                       plugins_;
     std::map<std::uint32_t, std::unique_ptr<ts::interop::command>> commands_;
 };

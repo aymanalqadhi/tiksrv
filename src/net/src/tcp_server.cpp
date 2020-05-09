@@ -6,7 +6,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/placeholders.hpp>
 
-#include <stdexcept>
+#include <cassert>
 #include <string>
 
 namespace ip = boost::asio::ip;
@@ -17,9 +17,7 @@ using boost::system::error_code;
 namespace ts::net {
 
 void tcp_server::start() {
-    if (running_.load()) {
-        throw std::runtime_error {"Server is already started"};
-    }
+    assert(!running_.load());
 
     logger_.debug("Starting server on {} with {} backlog",
                   acceptor_.local_endpoint(), backlog_);
@@ -32,9 +30,7 @@ void tcp_server::start() {
 }
 
 void tcp_server::stop() {
-    if (!running_.load()) {
-        throw std::runtime_error {"Server is not running"};
-    }
+    assert(running_.load());
 
     acceptor_.cancel();
     acceptor_.close();
