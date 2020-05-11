@@ -81,21 +81,28 @@ void tcp_client::on_error(const boost::system::error_code &err) {
 void tcp_client::send_next() {
     assert(!send_queue_.empty());
 
-    auto resp = send_queue_.front();
-    resp->update_header_buffer();
+    auto &resp_pair = send_queue_.front();
+    resp_pair.first->update_header_buffer();
+
+    if (!is_open()) {
+        resp_pair.second(boost::asio::error::not_connected);
+        send_queue_.pop_front();
+        return;
+    }
 
     std::array<boost::asio::const_buffer, 2> send_buffers {
-        boost::asio::buffer(resp->header_buffer()),
-        boost::asio::buffer(resp->body())};
+        boost::asio::buffer(resp_pair.first->header_buffer()),
+        boost::asio::buffer(resp_pair.first->body())};
 
     sock_.async_send(send_buffers,
                      [self = shared_from_this()](const auto &err, auto sent) {
+                         self->send_queue_.front().second(err);
+                         self->send_queue_.pop_front();
+
                          if (err) {
                              self->on_error(err);
                              return;
                          }
-
-                         self->send_queue_.pop_front();
 
                          if (!self->send_queue_.empty()) {
                              self->send_next();
@@ -103,23 +110,26 @@ void tcp_client::send_next() {
                      });
 }
 
-void tcp_client::enqueue_response(std::shared_ptr<response> resp) {
-    send_queue_.push_back(std::move(resp));
+void tcp_client::enqueue_response(std::shared_ptr<response> resp,
+                                  send_handler &&           cb) {
+    send_queue_.push_back(std::make_pair(std::move(resp), std::move(cb)));
 
     if (!send_queue_.empty()) {
         send_next();
     }
 }
 
-void tcp_client::respond(std::shared_ptr<response> resp) {
-    io_.post([self = shared_from_this(), resp {std::move(resp)}] {
-        self->enqueue_response(std::move(resp));
+void tcp_client::respond(std::shared_ptr<response> resp, send_handler &&cb) {
+    io_.post([self = shared_from_this(), resp {std::move(resp)},
+              cb {std::move(cb)}]() mutable {
+        self->enqueue_response(std::move(resp), std::move(cb));
     });
 }
 
 void tcp_client::respond(const std::string &str,
                          std::uint32_t      code,
-                         std::uint32_t      tag) {
+                         std::uint32_t      tag,
+                         send_handler &&    cb) {
     auto resp_ptr = std::make_shared<ts::net::response>();
 
     resp_ptr->code(code);
@@ -127,19 +137,25 @@ void tcp_client::respond(const std::string &str,
     resp_ptr->tag(tag);
     resp_ptr->body(str);
 
-    respond(std::move(resp_ptr));
+    respond(std::move(resp_ptr), std::move(cb));
 }
 
-void tcp_client::respond(const std::string &str, std::uint32_t tag) {
-    respond(str, 0x00u, tag);
+void tcp_client::respond(const std::string &str,
+                         std::uint32_t      tag,
+                         send_handler &&    cb) {
+    respond(str, 0x00u, tag, std::move(cb));
 }
 
-void tcp_client::respond(std::uint32_t code, std::uint32_t tag) {
-    respond({}, code, tag);
+void tcp_client::respond(std::uint32_t  code,
+                         std::uint32_t  tag,
+                         send_handler &&cb) {
+    respond({}, code, tag, std::move(cb));
 }
 
-void tcp_client::respond(response_code code, std::uint32_t tag) {
-    respond(static_cast<std::uint32_t>(code), tag);
+void tcp_client::respond(response_code  code,
+                         std::uint32_t  tag,
+                         send_handler &&cb) {
+    respond(static_cast<std::uint32_t>(code), tag, std::move(cb));
 }
 
 } // namespace ts::net
