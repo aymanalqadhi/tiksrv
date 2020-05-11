@@ -50,21 +50,33 @@ struct response_header final {
     std::uint32_t tag;
     std::uint32_t body_size;
 
+  private:
+    friend class response;
+
     void encode(std::array<std::uint8_t, size> &buf);
 };
 
 struct response final {
-    response_header &header() noexcept {
+    auto header() noexcept -> response_header & {
         return header_;
     }
 
-    std::string &body() noexcept {
-        return body_;
+    auto header_buffer() noexcept
+        -> std::array<std::uint8_t, response_header::size> & {
+        return header_buf_;
+    }
+
+    void update_header_buffer() {
+        header_.encode(header_buf_);
+    }
+
+    auto body() noexcept -> std::string & {
+        return body_buf_;
     }
 
     void body(std::string value) noexcept {
-        body_             = std::move(value);
-        header_.body_size = body_.size();
+        body_buf_         = std::move(value);
+        header_.body_size = body_buf_.size();
     }
 
     void code(std::uint32_t value) noexcept {
@@ -81,7 +93,9 @@ struct response final {
 
   private:
     response_header header_;
-    std::string     body_;
+
+    std::array<std::uint8_t, response_header::size> header_buf_;
+    std::string                                     body_buf_;
 };
 
 enum class response_code : std::uint32_t {
