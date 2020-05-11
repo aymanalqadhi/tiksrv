@@ -1,6 +1,5 @@
 #include "net/tcp_client.hpp"
 
-#include <boost/asio/completion_condition.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/system/error_code.hpp>
@@ -13,7 +12,6 @@
 #include <sstream>
 #include <string_view>
 
-using boost::asio::transfer_exactly;
 using boost::asio::placeholders::bytes_transferred;
 using boost::asio::placeholders::error;
 
@@ -24,7 +22,7 @@ void tcp_client::read_next(std::size_t n) {
     context().resize(n);
 
     boost::asio::async_read(
-        sock_, boost::asio::buffer(context().buffer(), n), transfer_exactly(n),
+        sock_, boost::asio::buffer(context().buffer(), n),
         [this, self = shared_from_this()](const auto &err, auto nread) {
             handle_read(err, {context().buffer().c_str(), nread});
         });
@@ -40,9 +38,8 @@ void tcp_client::start() {
 void tcp_client::close() {
     assert(state() != read_state::closed);
 
-    if (sock_.is_open()) {
-        sock_.close();
-    }
+    sock_.shutdown(boost::asio::socket_base::shutdown_both);
+    sock_.close();
 
     state(read_state::closed);
 }
@@ -53,11 +50,7 @@ void tcp_client::on_reading_header(std::string_view data) {
     context().header().decode(data.data(), data.size());
 
     if (context().header().body_size > max_allowed_body_size) {
-        logger_.warn(
-            "Client #{} exceeded the message size limit (sent: {}, limit: {})",
-            id_, context().header().body_size, max_allowed_body_size);
-        close();
-        handler_.on_close(shared_from_this());
+        on_error(boost::asio::error::message_size);
         return;
     }
 
@@ -81,56 +74,47 @@ void tcp_client::on_reading_body(std::string_view data) {
 }
 
 void tcp_client::on_error(const boost::system::error_code &err) {
+    handler_.on_error(shared_from_this(), err);
     close();
-
-    if (err == boost::asio::error::eof) {
-        handler_.on_close(shared_from_this());
-    } else {
-        handler_.on_error(shared_from_this(), err);
-    }
 }
 
-void tcp_client::send_next(std::shared_ptr<response> resp) {
-    std::array<std::uint8_t, response_header::size> header_buf {};
-    resp->header().encode(header_buf);
+void tcp_client::send_next() {
+    assert(!send_queue_.empty());
+
+    auto resp = send_queue_.front();
+    resp->update_header_buffer();
 
     std::array<boost::asio::const_buffer, 2> send_buffers {
-        boost::asio::buffer(header_buf), boost::asio::buffer(resp->body())};
+        boost::asio::buffer(resp->header_buffer()),
+        boost::asio::buffer(resp->body())};
 
-    sock_.async_send(send_buffers, [this](const auto &err, auto sent) {
-        if (state() == read_state::closed) {
-            return;
-        }
+    sock_.async_send(send_buffers,
+                     [self = shared_from_this()](const auto &err, auto sent) {
+                         if (err) {
+                             self->on_error(err);
+                             return;
+                         }
 
-        if (err) {
-            on_error(err);
-            return;
-        }
+                         self->send_queue_.pop_front();
 
-        send_enqueued();
-    });
+                         if (!self->send_queue_.empty()) {
+                             self->send_next();
+                         }
+                     });
 }
 
 void tcp_client::enqueue_response(std::shared_ptr<response> resp) {
     send_queue_.push_back(std::move(resp));
-}
 
-void tcp_client::send_enqueued() {
-    if (!is_open() || send_queue_.empty()) {
-        return;
+    if (!send_queue_.empty()) {
+        send_next();
     }
-
-    send_next(send_queue_.front());
-    send_queue_.pop_front();
 }
 
 void tcp_client::respond(std::shared_ptr<response> resp) {
-    if (send_queue_.empty()) {
-        send_next(std::move(resp));
-    } else {
-        enqueue_response(std::move(resp));
-        send_enqueued();
-    }
+    io_.post([self = shared_from_this(), resp {std::move(resp)}] {
+        self->enqueue_response(std::move(resp));
+    });
 }
 
 void tcp_client::respond(const std::string &str,
