@@ -105,14 +105,14 @@ void tiksrv_app::on_accept(std::shared_ptr<ts::net::tcp_client> client) {
 }
 
 void tiksrv_app::on_error(client_tr client, const error_code &err) {
-    logger_.warn("An error occured to client #{}: {}", client->id(),
-                 err.message());
-    on_close(client);
-}
+    if (err == boost::asio::error::eof) {
+        logger_.info("Client #{} has lost connection", client->id());
+    } else {
+        logger_.warn("An error occured to client #{}: {}", client->id(),
+                     err.message());
+    }
 
-void tiksrv_app::on_close(client_ptr client) {
     hooks_manager_->run_hooks(ts::services::hooks_group::disconnection, client);
-    logger_.info("Client #{} has lost connection", client->id());
 }
 
 void tiksrv_app::on_request(client_ptr client, ts::net::request &&req) {
