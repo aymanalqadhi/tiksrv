@@ -35,7 +35,6 @@ class read_context final {
     }
 
     inline void resize(std::size_t n) {
-        buffer_ = {};
         buffer_.resize(n);
     }
 
