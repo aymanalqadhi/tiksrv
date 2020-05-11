@@ -23,7 +23,6 @@ class tcp_client_handler {
   public:
     virtual void on_error(client_ptr                       client,
                           const boost::system::error_code &err) = 0;
-    virtual void on_close(client_ptr client)                    = 0;
     virtual void on_request(client_ptr client, request &&req)   = 0;
 };
 
@@ -34,9 +33,8 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
 
     tcp_client(std::uint32_t            id,
                boost::asio::io_context &io,
-               tcp_client_handler &     handler,
-               ts::log::logger &        logger)
-        : id_ {id}, sock_ {io}, handler_ {handler}, logger_ {logger} {
+               tcp_client_handler &     handler)
+        : id_ {id}, io_ {io}, sock_ {io}, handler_ {handler} {
     }
 
     void start();
@@ -74,14 +72,14 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
 
   private:
     void read_next(std::size_t n);
-    void send_next(std::shared_ptr<response> resp);
+    void send_next();
 
   private:
     std::uint32_t                         id_;
+    boost::asio::io_context &             io_;
     boost::asio::ip::tcp::socket          sock_;
     tcp_client_handler &                  handler_;
     std::deque<std::shared_ptr<response>> send_queue_;
-    ts::log::logger &                     logger_;
 };
 
 } // namespace ts::net

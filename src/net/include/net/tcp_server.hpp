@@ -38,8 +38,7 @@ class tcp_server final {
           running_ {false},
           clients_handler_ {clients_handler},
           server_handler_ {server_handler},
-          logger_ {"tcp_server"},
-          clients_logger_ {"tcp_client"} {
+          logger_ {"tcp_server"} {
     }
 
     ~tcp_server() {
@@ -62,7 +61,7 @@ class tcp_server final {
     tcp_server_handler &server_handler_;
     tcp_client_handler &clients_handler_;
 
-    ts::log::logger logger_, clients_logger_;
+    ts::log::logger logger_;
 }; // namespace ts::net
 
 } // namespace ts::net

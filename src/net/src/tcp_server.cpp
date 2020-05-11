@@ -45,9 +45,8 @@ void tcp_server::accept_next() {
         return;
     }
 
-    auto client_ptr =
-        std::make_shared<tcp_client>(current_client_id_.fetch_add(1), io_,
-                                     clients_handler_, clients_logger_);
+    auto client_ptr = std::make_shared<tcp_client>(
+        current_client_id_.fetch_add(1), io_, clients_handler_);
     acceptor_.async_accept(
         client_ptr->socket(), [this, client_ptr](const auto &err) {
             if (err) {
