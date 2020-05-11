@@ -26,7 +26,6 @@ class eztik_error_category : public boost::system::error_category {
 
 enum class error_code {
     success                   = 0,
-    invalid_endpoint_address  = 1,
     invalid_response          = 2,
     fatal_response            = 3,
     untagged_response         = 4,

@@ -21,19 +21,24 @@ namespace eztik::routeros {
 void api::open(const std::string &host,
                std::uint16_t      port,
                connect_handler && cb) {
-    try {
-        ip::tcp::endpoint ep {ip::make_address(host), port};
-        sock_.async_connect(ep, [this, cb {std::move(cb)}](const auto &err) {
-            if (!err) {
-                state(read_state::idle);
-                start();
-            }
+    boost::system::error_code ec {};
 
-            cb(err);
-        });
-    } catch (...) {
-        cb(eztik::error_code::invalid_endpoint_address);
+    auto address = ip::address::from_string(host, ec);
+
+    if (ec) {
+        cb(ec);
+        return;
     }
+
+    ip::tcp::endpoint ep {std::move(address), port};
+    sock_.async_connect(ep, [this, cb {std::move(cb)}](const auto &err) {
+        if (!err) {
+            state(read_state::idle);
+            start();
+        }
+
+        cb(err);
+    });
 }
 
 void api::close() {
