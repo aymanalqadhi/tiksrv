@@ -9,6 +9,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <iostream>
 #include <cstdint>
 
 namespace eztik {
@@ -26,29 +27,40 @@ class session final : public eztik::routeros::api_handler {
             boost::asio::io_context &io,
             ts::log::logger &        logger,
             session_handler &        handler)
-        : id_ {id}, api_ {io, *this}, logger_ {logger}, handler_ {handler} {
+        : id_ {id},
+          api_ {eztik::routeros::api::create(io, *this)},
+          logger_ {logger},
+          handler_ {handler} {
+    }
+
+    ~session() {
+        if (api_->is_open()) {
+            api_->close();
+        }
     }
 
     inline auto id() const noexcept -> const std::uint32_t & {
         return id_;
     }
 
-    inline auto api() noexcept -> eztik::routeros::api & {
+    inline auto api() const noexcept
+        -> const std::shared_ptr<eztik::routeros::api> & {
         return api_;
     }
 
     inline auto is_ready() const noexcept -> bool {
-        return api_.is_open();
+        return api_->is_open() && api_->is_logged_in();
     }
 
   public:
     void on_error(const boost::system::error_code &err) override;
 
   private:
-    std::uint32_t        id_;
-    eztik::routeros::api api_;
-    ts::log::logger &    logger_;
-    session_handler &    handler_;
+    std::uint32_t    id_;
+    ts::log::logger &logger_;
+    session_handler &handler_;
+
+    std::shared_ptr<eztik::routeros::api> api_;
 };
 
 } // namespace eztik

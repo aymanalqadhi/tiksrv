@@ -49,38 +49,39 @@ void sessions_service::create(std::uint32_t    id,
     sessions_.emplace(
         std::make_pair(id, std::make_pair(s, std::move(close_cb))));
 
-    s->api().open(
-        ip, port,
-        [this, id, s {std::move(s)}, cb {std::move(open_cb)}](const auto &err) {
-            if (!has(id)) {
+    s->api()->open(
+        std::move(ip), port,
+        [this, s {std::move(s)}, cb {std::move(open_cb)}](const auto &err) {
+            assert(!s->is_ready());
+
+            if (!has(s->id())) {
                 return;
             }
 
             if (err) {
-                assert(!s->is_ready());
-                close(id);
+                close(s->id());
                 cb(err, nullptr);
             } else {
-                assert(s->is_ready());
-
                 auto user     = conf_[keys::ros_api_user].as<std::string>();
                 auto password = conf_[keys::ros_api_password].as<std::string>();
 
-                s->api().login(std::move(user), std::move(password),
-                               [this, id, s {std::move(s)},
-                                cb {std::move(cb)}](const auto &err) {
-                                   if (!has(id)) {
-                                       return;
-                                   }
+                s->api()->login(std::move(user), std::move(password),
+                                [this, s {std::move(s)},
+                                 cb {std::move(cb)}](const auto &err) {
+                                    if (!has(s->id())) {
+                                        return;
+                                    }
 
-                                   if (err) {
-                                       close(id);
-                                       cb(err, nullptr);
-                                   } else {
-                                       cb(eztik::error_code::success,
-                                          std::move(s));
-                                   }
-                               });
+                                    if (err) {
+                                        assert(!s->is_ready());
+                                        close(s->id());
+                                        cb(err, nullptr);
+                                    } else {
+                                        assert(s->is_ready());
+                                        cb(eztik::error_code::success,
+                                           std::move(s));
+                                    }
+                                });
             }
         });
 }
@@ -91,10 +92,10 @@ void sessions_service::close(std::uint32_t id) {
 
     logger_.info("Session #{} was closed", id);
 
-    auto &to_remove = sessions_[id];
+    auto &[session, close_cb] = sessions_[id];
 
-    if (to_remove.first->is_ready()) {
-        to_remove.second(std::move(to_remove.first));
+    if (session->is_ready()) {
+        close_cb(session);
     }
 
     sessions_.erase(id);
