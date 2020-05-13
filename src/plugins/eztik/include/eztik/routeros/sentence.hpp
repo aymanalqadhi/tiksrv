@@ -61,6 +61,11 @@ class sentence {
 
 class request_sentence final : public sentence {
   public:
+    request_sentence(std::string command, std::uint32_t tag) : tag_ {tag} {
+        push(command);
+        push(".tag={}", tag);
+    }
+
     inline auto tag() const noexcept -> std::uint32_t {
         return tag_;
     }
@@ -82,13 +87,6 @@ class request_sentence final : public sentence {
     }
 
   private:
-    friend class api;
-
-    request_sentence(std::string command, std::uint32_t tag) : tag_ {tag} {
-        push(command);
-        push(".tag={}", tag);
-    }
-
     std::uint32_t tag_;
 };
 
