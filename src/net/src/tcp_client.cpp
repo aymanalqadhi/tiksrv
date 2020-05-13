@@ -15,16 +15,22 @@
 using boost::asio::placeholders::bytes_transferred;
 using boost::asio::placeholders::error;
 
-#include <spdlog/fmt/bin_to_hex.h>
 namespace ts::net {
 
 void tcp_client::read_next(std::size_t n) {
+    if (!is_open()) {
+        return;
+    }
+
     context().resize(n);
 
     boost::asio::async_read(
         sock_, boost::asio::buffer(context().buffer(), n),
-        [this, self = shared_from_this()](const auto &err, auto nread) {
-            handle_read(err, {context().buffer().c_str(), nread});
+        [self = shared_from_this()](const auto &err, auto nread) {
+            if (self->is_open()) {
+                self->handle_read(err,
+                                  {self->context().buffer().c_str(), nread});
+            }
         });
 }
 
@@ -38,13 +44,12 @@ void tcp_client::start() {
 void tcp_client::close() {
     assert(state() != read_state::closed);
 
-    sock_.shutdown(boost::asio::socket_base::shutdown_both);
     sock_.close();
-
     state(read_state::closed);
 }
 
 void tcp_client::on_reading_header(std::string_view data) {
+    assert(state() == read_state::reading_header);
     assert(data.size() == request_header::size);
 
     context().header().decode(data.data(), data.size());
@@ -66,6 +71,8 @@ void tcp_client::on_reading_header(std::string_view data) {
 }
 
 void tcp_client::on_reading_body(std::string_view data) {
+    assert(state() == read_state::reading_body);
+
     handler_.on_request(shared_from_this(), {std::move(context().header()),
                                              std::move(context().buffer())});
 
@@ -81,23 +88,29 @@ void tcp_client::on_error(const boost::system::error_code &err) {
 void tcp_client::send_next() {
     assert(!send_queue_.empty());
 
-    auto &resp_pair = send_queue_.front();
-    resp_pair.first->update_header_buffer();
+    auto [resp, cb] = send_queue_.front();
+    send_queue_.pop_front();
 
     if (!is_open()) {
-        resp_pair.second(boost::asio::error::not_connected);
-        send_queue_.pop_front();
+        cb(boost::asio::error::not_connected);
         return;
     }
 
+    resp->update_header_buffer();
+
     std::array<boost::asio::const_buffer, 2> send_buffers {
-        boost::asio::buffer(resp_pair.first->header_buffer()),
-        boost::asio::buffer(resp_pair.first->body())};
+        boost::asio::buffer(resp->header_buffer()),
+        boost::asio::buffer(resp->body())};
 
     sock_.async_send(send_buffers,
-                     [self = shared_from_this()](const auto &err, auto sent) {
-                         self->send_queue_.front().second(err);
-                         self->send_queue_.pop_front();
+                     [self = shared_from_this(), resp {std::move(resp)},
+                      cb {std::move(cb)}](const auto &err, auto sent) {
+                         if (!self->is_open()) {
+                             cb(boost::asio::error::not_connected);
+                             return;
+                         }
+
+                         cb(err);
 
                          if (err) {
                              self->on_error(err);
@@ -110,19 +123,12 @@ void tcp_client::send_next() {
                      });
 }
 
-void tcp_client::enqueue_response(std::shared_ptr<response> resp,
-                                  send_handler &&           cb) {
-    send_queue_.push_back(std::make_pair(std::move(resp), std::move(cb)));
-
-    if (!send_queue_.empty()) {
-        send_next();
-    }
-}
-
 void tcp_client::respond(std::shared_ptr<response> resp, send_handler &&cb) {
     io_.post([self = shared_from_this(), resp {std::move(resp)},
-              cb {std::move(cb)}]() mutable {
-        self->enqueue_response(std::move(resp), std::move(cb));
+              cb {std::move(cb)}] {
+        self->send_queue_.push_back(
+            std::make_pair(std::move(resp), std::move(cb)));
+        self->send_next();
     });
 }
 

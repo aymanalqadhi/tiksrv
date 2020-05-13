@@ -42,9 +42,6 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
     void start();
     void close();
 
-    void enqueue_response(std::shared_ptr<response> resp, send_handler &&cb);
-    void send_enqueued();
-
     void respond(std::shared_ptr<response> resp, send_handler &&cb);
     void respond(const std::string &str,
                  std::uint32_t      code,
