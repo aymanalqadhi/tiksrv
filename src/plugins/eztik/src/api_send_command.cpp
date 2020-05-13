@@ -27,9 +27,9 @@ void api_send_command::execute(client_ptr client, ts::net::request &&req) {
     auto body = req.body();
     body.erase(0, 4);
 
-    auto sent = session_->api().make_request(std::move(body));
+    auto sent = session_->api()->make_request(std::move(body));
 
-    session_->api().send(
+    session_->api()->send(
         sent,
         [this](const error_code &err, eztik::routeros::api &api,
                response_sentence &&resp) {

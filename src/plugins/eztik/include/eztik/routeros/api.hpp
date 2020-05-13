@@ -9,6 +9,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <deque>
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -22,11 +23,9 @@ class api_handler {
     virtual void on_error(const boost::system::error_code &err) = 0;
 };
 
-class api_read_callback final {
+struct api_read_callback final {
     using response   = eztik::routeros::response_sentence;
     using error_code = boost::system::error_code;
-
-  public:
     using callback =
         std::function<void(const error_code &, api &, response &&)>;
 
@@ -47,23 +46,17 @@ class api_read_callback final {
     bool     permanent_;
 };
 
-class api final : public api_read_state_machine {
+class api final : public api_read_state_machine,
+                  public std::enable_shared_from_this<api> {
     using connect_handler =
         std::function<void(const boost::system::error_code &)>;
-    using send_handler = std::function<void(const boost::system::error_code &,
-                                            const std::size_t &)>;
+    using send_handler = std::function<void(const boost::system::error_code &)>;
     using login_handler =
         std::function<void(const boost::system::error_code &)>;
 
   public:
-    api(boost::asio::io_context &io, api_handler &handler)
-        : sock_ {io}, handler_ {handler}, logged_in_ {false}, current_tag_ {0} {
-    }
-
-    api(const api &rh) = delete;
-
     ~api() {
-        if(is_open()) {
+        if (is_open()) {
             close();
         }
     }
@@ -73,16 +66,18 @@ class api final : public api_read_state_machine {
 
     void close();
 
-    void send(const eztik::routeros::request_sentence &sen,
-              api_read_callback::callback &&           cb,
-              bool                                     permanent = false);
+    void send(std::shared_ptr<request_sentence> req,
+              api_read_callback::callback &&    cb,
+              bool                              permanent = false);
 
     void login(const std::string &username,
                const std::string &password,
                login_handler &&   cb);
 
-    inline auto make_request(std::string command) -> request_sentence {
-        request_sentence ret {std::move(command), current_tag_++};
+    inline auto make_request(std::string command)
+        -> std::shared_ptr<request_sentence> {
+        auto ret = std::make_shared<request_sentence>(std::move(command),
+                                                      current_tag_++);
         return ret;
     }
 
@@ -98,19 +93,41 @@ class api final : public api_read_state_machine {
     void on_reading_word(std::string_view data) override;
     void on_error(const boost::system::error_code &err) override;
 
+    static auto create(boost::asio::io_context &io, api_handler &h)
+        -> std::shared_ptr<api> {
+        return std::shared_ptr<api>(new api {io, h});
+    }
+
   private:
+    api(boost::asio::io_context &io, api_handler &handler)
+        : io_ {io},
+          sock_ {io},
+          handler_ {handler},
+          logged_in_ {false},
+          current_tag_ {0} {
+    }
+
     void start();
 
     void read_next(std::size_t n);
     void read_next_word();
     void handle_response(const sentence &s);
 
-  private:
-    boost::asio::ip::tcp::socket sock_;
-    api_handler &                handler_;
-    bool                         logged_in_;
-    std::uint32_t                current_tag_;
+    void enqueue_request(std::shared_ptr<request_sentence> req,
+                         send_handler &&                   cb,
+                         bool                              permanent);
+    void send_next();
 
+  private:
+    boost::asio::io_context &    io_;
+    boost::asio::ip::tcp::socket sock_;
+
+    api_handler & handler_;
+    bool          logged_in_;
+    std::uint32_t current_tag_;
+
+    std::deque<std::pair<std::shared_ptr<request_sentence>, api_read_callback>>
+                                                         send_queue_;
     std::unordered_map<std::uint32_t, api_read_callback> read_cbs_;
 };
 
