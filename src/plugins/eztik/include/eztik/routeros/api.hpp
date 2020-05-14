@@ -12,6 +12,7 @@
 #include <deque>
 #include <functional>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 
 namespace eztik::routeros {
@@ -76,9 +77,16 @@ class api final : public api_read_state_machine,
 
     inline auto make_request(std::string command)
         -> std::shared_ptr<request_sentence> {
-        auto ret = std::make_shared<request_sentence>(std::move(command),
-                                                      current_tag_++);
-        return ret;
+        return std::make_shared<request_sentence>(std::move(command),
+                                                  current_tag_++);
+    }
+
+    template <
+        typename T,
+        typename... TArg,
+        typename = std::enable_if_t<std::is_base_of_v<request_sentence, T>>>
+    inline auto make_command(TArg... args) -> std::shared_ptr<T> {
+        return std::make_shared<T>(current_tag_++, std::forward<TArg>(args)...);
     }
 
     inline auto is_open() const noexcept -> bool {
