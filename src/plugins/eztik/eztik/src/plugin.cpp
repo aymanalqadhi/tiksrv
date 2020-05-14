@@ -1,5 +1,5 @@
 #include "eztik/config.hpp"
-#include "eztik/eztik_plugin.hpp"
+#include "eztik/plugin.hpp"
 
 #include "eztik/commands/api_open.hpp"
 #include "eztik/commands/api_send.hpp"

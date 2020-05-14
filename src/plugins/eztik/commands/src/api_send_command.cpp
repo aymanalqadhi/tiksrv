@@ -1,5 +1,6 @@
 #include "eztik/commands/api_send.hpp"
-#include "eztik/response.hpp"
+#include "eztik/commands/response.hpp"
+
 #include "eztik/routeros/api.hpp"
 #include "eztik/routeros/sentence.hpp"
 
@@ -12,7 +13,7 @@
 #include <vector>
 
 using boost::system::error_code;
-using eztik::session;
+using eztik::services::session;
 using eztik::routeros::response_sentence;
 
 namespace eztik::commands {

@@ -1,11 +1,11 @@
 #include "eztik/routeros/sentence.hpp"
-#include "eztik/session.hpp"
+#include "eztik/services/sessions.hpp"
 
 #include <boost/asio/error.hpp>
 
 #include <iostream>
 
-namespace eztik {
+namespace eztik::services {
 
 void session::on_error(const boost::system::error_code &err) {
     if (err == boost::asio::error::eof) {

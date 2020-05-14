@@ -1,5 +1,6 @@
 #include "eztik/commands/session_required.hpp"
-#include "eztik/response.hpp"
+#include "eztik/commands/response.hpp"
+
 #include "eztik/routeros/api.hpp"
 
 namespace eztik::commands {

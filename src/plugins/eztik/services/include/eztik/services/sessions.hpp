@@ -2,7 +2,6 @@
 #define EZTIK_SERVICES_SESSIONS_HPP
 
 #include "eztik/routeros/api.hpp"
-#include "eztik/session.hpp"
 
 #include "config/config.hpp"
 #include "log/logger.hpp"
@@ -18,9 +17,57 @@
 
 namespace eztik::services {
 
+class session;
 class session_handler;
 
-class sessions_service final : public eztik::session_handler {
+class session_handler {
+  public:
+    virtual void on_close(const session &s) = 0;
+};
+
+class session final : public eztik::routeros::api_handler {
+  public:
+    session(std::uint32_t            id,
+            boost::asio::io_context &io,
+            ts::log::logger &        logger,
+            session_handler &        handler)
+        : id_ {id},
+          api_ {eztik::routeros::api::create(io, *this)},
+          logger_ {logger},
+          handler_ {handler} {
+    }
+
+    ~session() {
+        if (api_->is_open()) {
+            api_->close();
+        }
+    }
+
+    inline auto id() const noexcept -> const std::uint32_t & {
+        return id_;
+    }
+
+    inline auto api() const noexcept
+        -> const std::shared_ptr<eztik::routeros::api> & {
+        return api_;
+    }
+
+    inline auto is_ready() const noexcept -> bool {
+        return api_->is_open() && api_->is_logged_in();
+    }
+
+  public:
+    void on_error(const boost::system::error_code &err) override;
+
+  private:
+    std::uint32_t    id_;
+    ts::log::logger &logger_;
+    session_handler &handler_;
+
+    std::shared_ptr<eztik::routeros::api> api_;
+};
+
+class sessions_service final : public session_handler {
     using session_open_cb  = std::function<void(
         const boost::system::error_code &, std::shared_ptr<session>)>;
     using session_close_cb = std::function<void(std::shared_ptr<session>)>;
@@ -57,7 +104,7 @@ class sessions_service final : public eztik::session_handler {
     void close(std::uint32_t id);
 
   public:
-    void on_close(const eztik::session &s) override;
+    void on_close(const session &s) override;
 
   private:
     void setup_hooks();
@@ -69,7 +116,7 @@ class sessions_service final : public eztik::session_handler {
     std::shared_ptr<ts::services::hooks_manager> hooks_manager_;
 
     std::map<std::uint32_t,
-             std::pair<std::shared_ptr<eztik::session>, session_close_cb>>
+             std::pair<std::shared_ptr<session>, session_close_cb>>
         sessions_;
 };
 

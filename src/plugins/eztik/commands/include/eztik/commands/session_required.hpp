@@ -1,7 +1,6 @@
 #ifndef EZTIK_COMMANDS_SESSION_HPP
 #define EZTIK_COMMANDS_SESSION_HPP
 
-#include "eztik/routeros/sentence.hpp"
 #include "eztik/services/sessions.hpp"
 
 #include "interop/command.hpp"
@@ -25,7 +24,7 @@ class session_required_command : public ts::interop::command {
   protected:
     ts::log::logger &                  logger_;
     eztik::services::sessions_service &sessions_svc_;
-    std::shared_ptr<eztik::session>    session_;
+    std::shared_ptr<eztik::services::session>    session_;
 };
 
 } // namespace eztik::commands

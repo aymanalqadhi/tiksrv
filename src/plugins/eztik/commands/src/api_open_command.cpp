@@ -1,7 +1,7 @@
 #include "eztik/commands/api_open.hpp"
-#include "eztik/response.hpp"
+#include "eztik/commands/response.hpp"
+
 #include "eztik/routeros/api.hpp"
-#include "net/message.hpp"
 
 #include "net/message.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef EZTIK_EZTIK_PLUGIN_HPP
-#define EZTIK_EZTIK_PLUGIN_HPP
+#ifndef EZTIK_PLUGIN_HPP
+#define EZTIK_PLUGIN_HPP
 
 #include "eztik/config.hpp"
 #include "eztik/services/sessions.hpp"

@@ -1,5 +1,5 @@
-#ifndef EZTIK_ERROR_HPP
-#define EZTIK_ERROR_HPP
+#ifndef EZTIK_SHARED_CONFIG_HPP
+#define EZTIK_SHARED_CONFIG_HPP
 
 #include <boost/system/error_code.hpp>
 
