@@ -11,8 +11,7 @@
 
 namespace eztik::routeros {
 
-class sentence {
-  public:
+struct sentence {
     inline auto operator[](std::size_t i) const noexcept
         -> const std::string & {
         return words_[i];
@@ -59,8 +58,7 @@ class sentence {
     std::vector<std::string> words_;
 };
 
-class request_sentence final : public sentence {
-  public:
+struct request_sentence : sentence {
     request_sentence(std::string command, std::uint32_t tag) : tag_ {tag} {
         push(command);
         push(".tag={}", tag);
@@ -92,8 +90,7 @@ class request_sentence final : public sentence {
 
 enum response_sentence_type { normal, trap, data };
 
-class response_sentence final {
-  public:
+struct response_sentence {
     response_sentence() = default;
 
     response_sentence(const sentence &s);

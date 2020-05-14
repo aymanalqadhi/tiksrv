@@ -1,5 +1,5 @@
 #include "eztik/routeros/api.hpp"
-#include "eztik/routeros/util.hpp"
+#include "eztik/routeros/commands.hpp"
 
 #include "eztik/error.hpp"
 
@@ -13,7 +13,8 @@
 
 using boost::asio::transfer_exactly;
 
-namespace ip = boost::asio::ip;
+namespace ip       = boost::asio::ip;
+namespace commands = eztik::routeros::commands;
 
 namespace eztik::routeros {
 
@@ -54,7 +55,7 @@ void api::close() {
 void api::login(const std::string &username,
                 const std::string &password,
                 login_handler &&   cb) {
-    auto req = make_request("/login");
+    auto req = make_command<commands::login1>();
 
     send(std::move(req), [this, username, password, cb {std::move(cb)}](
                              const auto &err, auto &api, auto &&resp) {
@@ -63,16 +64,16 @@ void api::login(const std::string &username,
             return;
         }
 
-        if (resp.type() != response_sentence_type::normal || !resp.has("ret") ||
-            resp["ret"].size() != md5_size * 2) {
+        if (resp.type() != response_sentence_type::normal ||
+            !resp.has(commands::login2::challenge_param) ||
+            resp[commands::login2::challenge_param].size() != md5_size * 2) {
             cb(eztik::error_code::invalid_response);
             return;
         }
 
-        auto req = make_request("/login");
-        req->push_param("name", username);
-        req->push_param("response", "00{}",
-                        hash_password(password, resp["ret"]));
+        auto req = make_command<commands::login2>(
+            std::move(username), password,
+            resp[commands::login2::challenge_param]);
 
         send(std::move(req), [this, cb {std::move(cb)}](
                                  const auto &err, auto &api, auto &&resp) {
