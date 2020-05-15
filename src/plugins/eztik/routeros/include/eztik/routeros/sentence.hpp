@@ -14,6 +14,7 @@ namespace eztik::routeros {
 struct sentence {
     inline auto operator[](std::size_t i) const noexcept
         -> const std::string & {
+        assert(i < words_.size());
         return words_[i];
     }
 
@@ -133,6 +134,18 @@ struct response_sentence {
 
     inline auto empty() const noexcept -> bool {
         return size() == 0;
+    }
+
+    inline auto is_normal() const noexcept -> bool {
+        return type_ == response_sentence_type::normal;
+    }
+
+    inline auto is_data() const noexcept -> bool {
+        return type_ == response_sentence_type::data;
+    }
+
+    inline auto is_trap() const noexcept -> bool {
+        return type_ == response_sentence_type::trap;
     }
 
     static auto is_valid_response(const sentence &s) -> bool;
