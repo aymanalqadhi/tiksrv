@@ -9,6 +9,10 @@
 
 namespace {
 
+constexpr auto md5_size           = 16;
+constexpr auto md5_bits           = md5_size * 8;
+constexpr auto challenge_str_size = md5_size * 2;
+
 constexpr std::uint8_t digit_value(std::uint8_t digit) {
     if (digit >= '0' && digit <= '9') {
         return digit - '0';
@@ -58,7 +62,7 @@ namespace eztik::routeros {
 std::string hash_password(const std::string &plain, const std::string &cha) {
     static std::uint8_t empty_byte {0};
 
-    if (cha.size() != md5_size * 2) {
+    if (cha.size() != ::challenge_str_size) {
         throw std::out_of_range {"Invalid challenge size"};
     }
 
