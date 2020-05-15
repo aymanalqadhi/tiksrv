@@ -88,7 +88,7 @@ struct request_sentence : sentence {
     std::uint32_t tag_;
 };
 
-enum response_sentence_type { normal, trap, data };
+enum response_sentence_type { normal = 0, data = 1, trap = 2 };
 
 struct response_sentence {
     response_sentence() = default;
