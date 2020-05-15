@@ -30,9 +30,9 @@ void api::open(const std::string &host,
         return;
     }
 
-    ip::tcp::endpoint ep {std::move(address), port};
     sock_.async_connect(
-        ep, [self = shared_from_this(), cb {std::move(cb)}](const auto &err) {
+        {std::move(address), port},
+        [self = shared_from_this(), cb {std::move(cb)}](const auto &err) {
             if (!err) {
                 self->state(read_state::idle);
                 self->start();
@@ -63,28 +63,29 @@ void api::send(std::shared_ptr<request_sentence> req,
     });
 }
 
-void api::login(const std::string &username,
-                const std::string &password,
-                login_handler &&   cb) {
+void api::login(std::string     username,
+                std::string     password,
+                login_handler &&cb) {
     auto req = make_command<commands::login1>();
 
-    send(std::move(req), [this, username, password,
+    send(std::move(req), [this, username {std::move(username)},
+                          password {std::move(username)},
                           cb {std::move(cb)}](const auto &err, auto &&resp) {
         if (err) {
             cb(err);
             return;
         }
 
-        if (resp.type() != response_sentence_type::normal ||
-            !resp.has(commands::login2::challenge_param) ||
-            resp[commands::login2::challenge_param].size() != md5_size * 2) {
+        if (!resp.is_normal() || !resp.has(commands::login2::challenge_param) ||
+            resp[commands::login2::challenge_param].size() !=
+                commands::login2::challenge_size) {
             cb(eztik::error_code::invalid_response);
             return;
         }
 
         auto req = make_command<commands::login2>(
-            std::move(username), password,
-            resp[commands::login2::challenge_param]);
+            std::move(username), std::move(password),
+            std::move(resp[commands::login2::challenge_param]));
 
         send(std::move(req),
              [this, cb {std::move(cb)}](const auto &err, auto &&resp) {
@@ -93,7 +94,7 @@ void api::login(const std::string &username,
                      return;
                  }
 
-                 if (resp.type() != response_sentence_type::normal) {
+                 if (!resp.is_normal()) {
                      cb(eztik::error_code::invalid_login_credentials);
                      return;
                  }
@@ -177,30 +178,33 @@ void api::on_reading_word(std::string_view data) {
 }
 
 void api::on_error(const boost::system::error_code &err) {
-    handler_.on_error(err);
-
     if (is_open()) {
         close();
     }
+
+    handler_.on_error(err);
 }
 
 void api::start() {
-    assert(sock_.is_open());
+    assert(is_open());
     assert(state() == read_state::idle);
 
     read_next_word();
 }
 
 void api::read_next(std::size_t n) {
+    assert(is_open());
+
     context().buffer().resize(n);
 
     boost::asio::async_read(
         sock_, boost::asio::buffer(context().buffer(), n), transfer_exactly(n),
         [self = shared_from_this()](const auto &err, auto nread) {
-            if (self->is_open()) {
-                self->handle_read(err,
-                                  {self->context().buffer().c_str(), nread});
+            if (!self->is_open()) {
+                return;
             }
+
+            self->handle_read(err, {self->context().buffer().c_str(), nread});
         });
 }
 
@@ -210,6 +214,7 @@ void api::read_next_word() {
     }
 
     assert(state() == read_state::idle);
+
     state(read_state::reading_length);
     read_next(1);
 }

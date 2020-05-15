@@ -68,9 +68,7 @@ class api final : public api_read_state_machine,
               api_read_callback::callback &&    cb,
               bool                              permanent = false);
 
-    void login(const std::string &username,
-               const std::string &password,
-               login_handler &&   cb);
+    void login(std::string username, std::string password, login_handler &&cb);
 
     inline auto is_open() const noexcept -> bool {
         return sock_.is_open() && state() != read_state::closed;
@@ -128,9 +126,9 @@ class api final : public api_read_state_machine,
     bool          logged_in_;
     std::uint32_t current_tag_;
 
-    std::deque<std::pair<std::shared_ptr<request_sentence>, api_read_callback>>
-                                                         send_queue_;
     std::unordered_map<std::uint32_t, api_read_callback> read_cbs_;
+    std::deque<std::pair<std::shared_ptr<request_sentence>, api_read_callback>>
+        send_queue_;
 };
 
 } // namespace eztik::routeros
