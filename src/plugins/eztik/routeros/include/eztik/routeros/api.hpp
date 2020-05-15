@@ -17,8 +17,6 @@
 
 namespace eztik::routeros {
 
-class api;
-
 class api_handler {
   public:
     virtual void on_error(const boost::system::error_code &err) = 0;
@@ -27,15 +25,14 @@ class api_handler {
 struct api_read_callback final {
     using response   = eztik::routeros::response_sentence;
     using error_code = boost::system::error_code;
-    using callback =
-        std::function<void(const error_code &, api &, response &&)>;
+    using callback   = std::function<void(const error_code &, response &&)>;
 
     api_read_callback(callback &&cb, bool permanent = false)
         : cb_ {std::move(cb)}, permanent_ {permanent} {
     }
 
-    inline void operator()(const error_code &err, api &ros, response &&resp) {
-        cb_(err, ros, std::move(resp));
+    inline void operator()(const error_code &err, response &&resp) {
+        cb_(err, std::move(resp));
     }
 
     auto is_permanent() const noexcept {

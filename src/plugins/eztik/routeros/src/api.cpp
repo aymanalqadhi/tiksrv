@@ -68,8 +68,8 @@ void api::login(const std::string &username,
                 login_handler &&   cb) {
     auto req = make_command<commands::login1>();
 
-    send(std::move(req), [this, username, password, cb {std::move(cb)}](
-                             const auto &err, auto &api, auto &&resp) {
+    send(std::move(req), [this, username, password,
+                          cb {std::move(cb)}](const auto &err, auto &&resp) {
         if (err) {
             cb(err);
             return;
@@ -86,21 +86,21 @@ void api::login(const std::string &username,
             std::move(username), password,
             resp[commands::login2::challenge_param]);
 
-        send(std::move(req), [this, cb {std::move(cb)}](
-                                 const auto &err, auto &api, auto &&resp) {
-            if (err) {
-                cb(err);
-                return;
-            }
+        send(std::move(req),
+             [this, cb {std::move(cb)}](const auto &err, auto &&resp) {
+                 if (err) {
+                     cb(err);
+                     return;
+                 }
 
-            if (resp.type() != response_sentence_type::normal) {
-                cb(eztik::error_code::invalid_login_credentials);
-                return;
-            }
+                 if (resp.type() != response_sentence_type::normal) {
+                     cb(eztik::error_code::invalid_login_credentials);
+                     return;
+                 }
 
-            logged_in_ = true;
-            cb(eztik::error_code::success);
-        });
+                 logged_in_ = true;
+                 cb(eztik::error_code::success);
+             });
     });
 }
 
@@ -240,7 +240,7 @@ void api::handle_response(const sentence &s) {
         }
 
         auto cb_itr = read_cbs_.find(resp.tag());
-        cb_itr->second({}, *this, std::move(resp));
+        cb_itr->second({}, std::move(resp));
 
         if (!cb_itr->second.is_permanent()) {
             read_cbs_.erase(cb_itr);
@@ -258,7 +258,7 @@ void api::send_next() {
     send_queue_.pop_front();
 
     if (!is_open()) {
-        cb(boost::asio::error::not_connected, *this, {});
+        cb(boost::asio::error::not_connected, {});
         return;
     }
 
@@ -270,12 +270,12 @@ void api::send_next() {
         [self = shared_from_this(), buf, req {std::move(req)},
          cb(std::move(cb))](const auto &err, const auto &sent) mutable {
             if (!self->is_open()) {
-                cb(boost::asio::error::not_connected, *self, {});
+                cb(boost::asio::error::not_connected, {});
                 return;
             }
 
             if (err) {
-                cb(err, *self, {});
+                cb(err, {});
                 self->close();
             } else {
                 self->read_cbs_.emplace(

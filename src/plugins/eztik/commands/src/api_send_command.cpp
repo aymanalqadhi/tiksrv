@@ -39,8 +39,7 @@ void api_send_command::execute(client_ptr client, ts::net::request &&req) {
     session_->api()->send(
         sentence,
         [this, client {std::move(client)}, tag = req.header().tag](
-            const error_code &err, eztik::routeros::api &api,
-            response_sentence &&resp) {
+            const error_code &err, response_sentence &&resp) {
             if (err) {
                 logger_.error("Could not send API message for client #{}: {}",
                               session_->id(), err.message());
