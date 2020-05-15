@@ -25,23 +25,17 @@ class api_handler {
 struct api_read_callback final {
     using response   = eztik::routeros::response_sentence;
     using error_code = boost::system::error_code;
-    using callback   = std::function<void(const error_code &, response &&)>;
+    using callback   = std::function<bool(const error_code &, response &&)>;
 
-    api_read_callback(callback &&cb, bool permanent = false)
-        : cb_ {std::move(cb)}, permanent_ {permanent} {
+    api_read_callback(callback &&cb) : cb_ {std::move(cb)} {
     }
 
-    inline void operator()(const error_code &err, response &&resp) {
-        cb_(err, std::move(resp));
-    }
-
-    auto is_permanent() const noexcept {
-        return permanent_;
+    inline auto operator()(const error_code &err, response &&resp) -> bool {
+        return cb_(err, std::move(resp));
     }
 
   private:
     callback cb_;
-    bool     permanent_;
 };
 
 class api final : public api_read_state_machine,
@@ -65,8 +59,7 @@ class api final : public api_read_state_machine,
     void close();
 
     void send(std::shared_ptr<request_sentence> req,
-              api_read_callback::callback &&    cb,
-              bool                              permanent = false);
+              api_read_callback::callback &&    cb);
 
     void login(std::string username, std::string password, login_handler &&cb);
 

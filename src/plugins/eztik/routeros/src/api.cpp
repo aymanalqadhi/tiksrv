@@ -53,12 +53,11 @@ void api::close() {
 }
 
 void api::send(std::shared_ptr<request_sentence> req,
-               api_read_callback::callback &&    cb,
-               bool                              permanent) {
+               api_read_callback::callback &&    cb) {
     io_.post([self = shared_from_this(), req {std::move(req)},
-              cb {std::move(cb)}, permanent]() mutable {
-        self->send_queue_.push_back(std::make_pair(
-            std::move(req), api_read_callback {std::move(cb), permanent}));
+              cb {std::move(cb)}]() mutable {
+        self->send_queue_.push_back(
+            std::make_pair(std::move(req), api_read_callback {std::move(cb)}));
         self->send_next();
     });
 }
@@ -68,41 +67,38 @@ void api::login(std::string     username,
                 login_handler &&cb) {
     auto req = make_command<commands::login1>();
 
-    send(std::move(req), [this, username {std::move(username)},
-                          password {std::move(username)},
-                          cb {std::move(cb)}](const auto &err, auto &&resp) {
-        if (err) {
-            cb(err);
-            return;
-        }
+    send(std::move(req),
+         [this, username {std::move(username)}, password {std::move(username)},
+          cb {std::move(cb)}](const auto &err, auto &&resp) {
+             if (err) {
+                 cb(err);
+             } else if (!resp.is_normal() ||
+                        !resp.has(commands::login2::challenge_param) ||
+                        resp[commands::login2::challenge_param].size() !=
+                            commands::login2::challenge_size) {
+                 cb(eztik::error_code::invalid_response);
+             } else {
+                 auto req = make_command<commands::login2>(
+                     std::move(username), std::move(password),
+                     std::move(resp[commands::login2::challenge_param]));
 
-        if (!resp.is_normal() || !resp.has(commands::login2::challenge_param) ||
-            resp[commands::login2::challenge_param].size() !=
-                commands::login2::challenge_size) {
-            cb(eztik::error_code::invalid_response);
-            return;
-        }
+                 send(std::move(req),
+                      [this, cb {std::move(cb)}](const auto &err, auto &&resp) {
+                          if (err) {
+                              cb(err);
+                          } else if (!resp.is_normal()) {
+                              cb(eztik::error_code::invalid_login_credentials);
+                          } else {
+                              logged_in_ = true;
+                              cb(eztik::error_code::success);
+                          }
 
-        auto req = make_command<commands::login2>(
-            std::move(username), std::move(password),
-            std::move(resp[commands::login2::challenge_param]));
+                          return false;
+                      });
+             }
 
-        send(std::move(req),
-             [this, cb {std::move(cb)}](const auto &err, auto &&resp) {
-                 if (err) {
-                     cb(err);
-                     return;
-                 }
-
-                 if (!resp.is_normal()) {
-                     cb(eztik::error_code::invalid_login_credentials);
-                     return;
-                 }
-
-                 logged_in_ = true;
-                 cb(eztik::error_code::success);
-             });
-    });
+             return false;
+         });
 }
 
 void api::on_reading_length(std::string_view data) {
@@ -245,9 +241,8 @@ void api::handle_response(const sentence &s) {
         }
 
         auto cb_itr = read_cbs_.find(resp.tag());
-        cb_itr->second({}, std::move(resp));
 
-        if (!cb_itr->second.is_permanent()) {
+        if (!cb_itr->second({}, std::move(resp))) {
             read_cbs_.erase(cb_itr);
         }
 
