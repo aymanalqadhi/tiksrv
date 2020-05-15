@@ -16,3 +16,6 @@
 [submodule "src/lib/fmt"]
 	path = src/lib/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "src/lib/protobuf"]
+	path = src/lib/protobuf
+	url = https://github.com/protocolbuffers/protobuf
