@@ -52,6 +52,17 @@ void api::close() {
     state(read_state::closed);
 }
 
+void api::send(std::shared_ptr<request_sentence> req,
+               api_read_callback::callback &&    cb,
+               bool                              permanent) {
+    io_.post([self = shared_from_this(), req {std::move(req)},
+              cb {std::move(cb)}, permanent]() mutable {
+        self->send_queue_.push_back(std::make_pair(
+            std::move(req), api_read_callback {std::move(cb), permanent}));
+        self->send_next();
+    });
+}
+
 void api::login(const std::string &username,
                 const std::string &password,
                 login_handler &&   cb) {
@@ -91,36 +102,6 @@ void api::login(const std::string &username,
             cb(eztik::error_code::success);
         });
     });
-}
-
-void api::start() {
-    assert(sock_.is_open());
-    assert(state() == read_state::idle);
-
-    read_next_word();
-}
-
-void api::read_next(std::size_t n) {
-    context().buffer().resize(n);
-
-    boost::asio::async_read(
-        sock_, boost::asio::buffer(context().buffer(), n), transfer_exactly(n),
-        [self = shared_from_this()](const auto &err, auto nread) {
-            if (self->is_open()) {
-                self->handle_read(err,
-                                  {self->context().buffer().c_str(), nread});
-            }
-        });
-}
-
-void api::read_next_word() {
-    if (!is_open()) {
-        return;
-    }
-
-    assert(state() == read_state::idle);
-    state(read_state::reading_length);
-    read_next(1);
 }
 
 void api::on_reading_length(std::string_view data) {
@@ -185,6 +166,7 @@ void api::on_reading_length(std::string_view data) {
         read_next(fbyte);
     }
 }
+
 void api::on_reading_word(std::string_view data) {
     assert(is_open());
     assert(state() == read_state::reading_word);
@@ -200,6 +182,36 @@ void api::on_error(const boost::system::error_code &err) {
     if (is_open()) {
         close();
     }
+}
+
+void api::start() {
+    assert(sock_.is_open());
+    assert(state() == read_state::idle);
+
+    read_next_word();
+}
+
+void api::read_next(std::size_t n) {
+    context().buffer().resize(n);
+
+    boost::asio::async_read(
+        sock_, boost::asio::buffer(context().buffer(), n), transfer_exactly(n),
+        [self = shared_from_this()](const auto &err, auto nread) {
+            if (self->is_open()) {
+                self->handle_read(err,
+                                  {self->context().buffer().c_str(), nread});
+            }
+        });
+}
+
+void api::read_next_word() {
+    if (!is_open()) {
+        return;
+    }
+
+    assert(state() == read_state::idle);
+    state(read_state::reading_length);
+    read_next(1);
 }
 
 void api::handle_response(const sentence &s) {
@@ -274,17 +286,6 @@ void api::send_next() {
                 self->send_next();
             }
         });
-}
-
-void api::send(std::shared_ptr<request_sentence> req,
-               api_read_callback::callback &&    cb,
-               bool                              permanent) {
-    io_.post([self = shared_from_this(), req {std::move(req)},
-              cb {std::move(cb)}, permanent]() mutable {
-        self->send_queue_.push_back(std::make_pair(
-            std::move(req), api_read_callback {std::move(cb), permanent}));
-        self->send_next();
-    });
 }
 
 } // namespace eztik::routeros

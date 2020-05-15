@@ -75,6 +75,14 @@ class api final : public api_read_state_machine,
                const std::string &password,
                login_handler &&   cb);
 
+    inline auto is_open() const noexcept -> bool {
+        return sock_.is_open() && state() != read_state::closed;
+    }
+
+    inline auto is_logged_in() const noexcept -> bool {
+        return logged_in_;
+    }
+
     inline auto make_request(std::string command)
         -> std::shared_ptr<request_sentence> {
         return std::make_shared<request_sentence>(std::move(command),
@@ -87,14 +95,6 @@ class api final : public api_read_state_machine,
         typename = std::enable_if_t<std::is_base_of_v<request_sentence, T>>>
     inline auto make_command(TArg... args) -> std::shared_ptr<T> {
         return std::make_shared<T>(current_tag_++, std::forward<TArg>(args)...);
-    }
-
-    inline auto is_open() const noexcept -> bool {
-        return sock_.is_open() && state() != read_state::closed;
-    }
-
-    inline auto is_logged_in() const noexcept -> bool {
-        return logged_in_;
     }
 
     void on_reading_length(std::string_view data) override;
@@ -121,9 +121,6 @@ class api final : public api_read_state_machine,
     void read_next_word();
     void handle_response(const sentence &s);
 
-    void enqueue_request(std::shared_ptr<request_sentence> req,
-                         send_handler &&                   cb,
-                         bool                              permanent);
     void send_next();
 
   private:
