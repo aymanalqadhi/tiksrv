@@ -44,7 +44,7 @@ void api_send_command::execute(client_ptr client, ts::net::request &&req) {
                 logger_.error("Could not send API message for client #{}: {}",
                               session_->id(), err.message());
                 client->respond(ts::net::response_code::unknown_error, tag);
-                return;
+                return false;
             }
 
             eztik::commands::messages::ApiResponse msg {};
@@ -58,8 +58,9 @@ void api_send_command::execute(client_ptr client, ts::net::request &&req) {
             }
 
             client->respond(msg.SerializeAsString(), tag);
-        },
-        true);
+
+            return !resp.empty();
+        });
 }
 
 } // namespace eztik::commands
