@@ -240,10 +240,8 @@ void api::handle_response(const sentence &s) {
             return;
         }
 
-        auto cb_itr = read_cbs_.find(resp.tag());
-
-        if (!cb_itr->second({}, std::move(resp))) {
-            read_cbs_.erase(cb_itr);
+        if (!read_cbs_.at(resp.tag())({}, std::move(resp))) {
+            read_cbs_.erase(resp.tag());
         }
 
     } catch (const std::exception &ex) {
@@ -254,7 +252,7 @@ void api::handle_response(const sentence &s) {
 void api::send_next() {
     assert(!send_queue_.empty());
 
-    auto [req, cb] = send_queue_.front();
+    auto [req, cb] = std::move(send_queue_.front());
     send_queue_.pop_front();
 
     if (!is_open()) {
@@ -268,7 +266,7 @@ void api::send_next() {
     sock_.async_send(
         boost::asio::buffer(*buf),
         [self = shared_from_this(), buf, req {std::move(req)},
-         cb(std::move(cb))](const auto &err, const auto &sent) mutable {
+         cb {std::move(cb)}](const auto &err, const auto &sent) mutable {
             if (!self->is_open()) {
                 cb(boost::asio::error::not_connected, {});
                 return;
