@@ -14,8 +14,9 @@ namespace ts::interop {
 
 constexpr auto plugin_factory_sym = "create_plugin";
 
-typedef std::unique_ptr<plugin>(plugin_create_t)(
-    ts::services::services_manager &);
+using plugin_create_t =
+    std::unique_ptr<plugin>(ts::services::services_manager &);
+
 using plugin_factory = std::function<plugin_create_t>;
 
 struct plugin_wrapper final {
