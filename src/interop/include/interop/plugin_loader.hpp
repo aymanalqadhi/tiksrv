@@ -29,8 +29,8 @@ struct plugin_wrapper final {
     }
 
   private:
-    boost::dll::shared_library handle_;
     std::unique_ptr<plugin>    plugin_;
+    boost::dll::shared_library handle_;
 };
 
 class plugin_loader final {

@@ -65,7 +65,6 @@ inline void extract_param(const std::string &str, std::smatch &matches) {
 inline auto extract_tag(const std::string &str) -> std::uint32_t {
     assert(is_valid_tag(str));
 
-    std::uint32_t tag {};
     std::smatch   matches {};
 
     std::regex_match(str, matches, tag_pattern);

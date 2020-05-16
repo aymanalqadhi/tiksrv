@@ -36,8 +36,8 @@ class tcp_server final {
           current_client_id_ {0},
           backlog_ {backlog},
           running_ {false},
-          clients_handler_ {clients_handler},
           server_handler_ {server_handler},
+          clients_handler_ {clients_handler},
           logger_ {"tcp_server"} {
     }
 

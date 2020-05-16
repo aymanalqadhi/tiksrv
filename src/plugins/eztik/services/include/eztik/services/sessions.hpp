@@ -32,9 +32,9 @@ class session final : public eztik::routeros::api_handler {
             ts::log::logger &        logger,
             session_handler &        handler)
         : id_ {id},
-          api_ {eztik::routeros::api::create(io, *this)},
           logger_ {logger},
-          handler_ {handler} {
+          handler_ {handler},
+          api_ {eztik::routeros::api::create(io, *this)} {
     }
 
     ~session() {

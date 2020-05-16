@@ -20,6 +20,6 @@ constexpr std::uint32_t make_response_code(response_code code) {
            (static_cast<std::uint16_t>(code) & 0xFFFF);
 }
 
-}; // namespace eztik
+} // namespace eztik
 
 #endif
