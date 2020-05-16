@@ -1,5 +1,5 @@
-#ifndef TIKSRV_NET_TCP_SERVER_H
-#define TIKSRV_NET_TCP_SERVER_H
+#ifndef TIKSRV_NET_TCP_LISTENER_H
+#define TIKSRV_NET_TCP_LISTENER_H
 
 #include "net/tcp_client.hpp"
 
@@ -15,19 +15,19 @@
 
 namespace ts::net {
 
-class tcp_server_handler {
+class tcp_listener_handler {
   public:
     virtual void on_accept(std::shared_ptr<tcp_client> client) = 0;
 };
 
-class tcp_server final {
+class tcp_listener final {
   public:
-    tcp_server(boost::asio::io_context &io,
-               std::uint16_t            port,
-               std::uint32_t            backlog,
-               tcp_server_handler &     server_handler,
-               tcp_client_handler &     clients_handler,
-               bool                     ipv6 = false)
+    tcp_listener(boost::asio::io_context &io,
+                 std::uint16_t            port,
+                 std::uint32_t            backlog,
+                 tcp_listener_handler &   listener_handler,
+                 tcp_client_handler &     clients_handler,
+                 bool                     ipv6 = false)
         : io_ {io},
           acceptor_ {
               io,
@@ -36,12 +36,12 @@ class tcp_server final {
           current_client_id_ {0},
           backlog_ {backlog},
           running_ {false},
-          server_handler_ {server_handler},
+          listener_handler_ {listener_handler},
           clients_handler_ {clients_handler},
-          logger_ {"tcp_server"} {
+          logger_ {"tcp_listener"} {
     }
 
-    ~tcp_server() {
+    inline ~tcp_listener() {
         stop();
     }
 
@@ -58,8 +58,8 @@ class tcp_server final {
     std::uint32_t        backlog_;
     std::atomic_bool     running_;
 
-    tcp_server_handler &server_handler_;
-    tcp_client_handler &clients_handler_;
+    tcp_listener_handler &listener_handler_;
+    tcp_client_handler &  clients_handler_;
 
     ts::log::logger logger_;
 }; // namespace ts::net

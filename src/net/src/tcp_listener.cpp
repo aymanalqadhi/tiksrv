@@ -1,4 +1,4 @@
-#include "net/tcp_server.hpp"
+#include "net/tcp_listener.hpp"
 
 #include "spdlog/fmt/ostr.h"
 
@@ -16,10 +16,10 @@ using boost::system::error_code;
 
 namespace ts::net {
 
-void tcp_server::start() {
+void tcp_listener::start() {
     assert(!running_.load());
 
-    logger_.debug("Starting server on {} with {} backlog",
+    logger_.debug("Starting listner on {} with {} backlog",
                   acceptor_.local_endpoint(), backlog_);
 
     acceptor_.listen(backlog_);
@@ -29,7 +29,7 @@ void tcp_server::start() {
     io_.run();
 }
 
-void tcp_server::stop() {
+void tcp_listener::stop() {
     assert(running_.load());
 
     acceptor_.cancel();
@@ -39,20 +39,20 @@ void tcp_server::stop() {
     running_.store(false);
 }
 
-void tcp_server::accept_next() {
+void tcp_listener::accept_next() {
     if (!running_.load()) {
-        logger_.debug("Server is not running");
+        logger_.debug("listner is not running");
         return;
     }
 
     auto client_ptr = std::make_shared<tcp_client>(
         current_client_id_.fetch_add(1), io_, clients_handler_);
     acceptor_.async_accept(
-        client_ptr->socket(), [this, client_ptr](const auto &err) {
+        client_ptr->socket(), [this, client_ptr](const auto &err) mutable {
             if (err) {
-                logger_.error("Server error: {}", err.message());
+                logger_.error("listner error: {}", err.message());
             } else {
-                server_handler_.on_accept(std::move(client_ptr));
+                listener_handler_.on_accept(std::move(client_ptr));
             }
 
             accept_next();
