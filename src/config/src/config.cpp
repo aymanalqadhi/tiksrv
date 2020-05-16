@@ -1,10 +1,7 @@
 #include "config/config.hpp"
 
-#include <boost/program_options.hpp>
-
 #include <array>
-#include <stdexcept>
-#include <string_view>
+#include <string>
 
 namespace po = boost::program_options;
 
@@ -38,15 +35,6 @@ config::config() : desc_ {"Allowed Options"} {
     desc_.add_options()("version,V", "Show app version");
 }
 
-void config::parse_argv(int argc, const char *const argv[]) {
-    po::store(po::parse_command_line(argc, argv, desc_), values_);
-    po::notify(values_);
-}
-
-void config::parse_config_file(
-    std::string_view path, boost::program_options::options_description &desc) {
-    po::store(po::parse_config_file(path.data(), desc, true), values_);
-}
 
 auto config::has(config_key key) const -> bool {
     return has(::config_string_keys[static_cast<std::uint32_t>(key)]);
@@ -54,12 +42,6 @@ auto config::has(config_key key) const -> bool {
 
 auto config::operator[](config_key key) const -> const po::variable_value & {
     return operator[](::config_string_keys[static_cast<std::uint32_t>(key)]);
-}
-
-auto config::from_argv(int argc, const char *const argv[]) -> config {
-    config ret {};
-    ret.parse_argv(argc, argv);
-    return ret;
 }
 
 } // namespace ts::config

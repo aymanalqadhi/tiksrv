@@ -12,19 +12,19 @@ namespace detail {
 
 class eztik_error_category : public boost::system::error_category {
   public:
-    auto name() const noexcept -> const char * override final {
+    [[nodiscard]] inline auto name() const noexcept -> const char * override {
         return "eztik";
     }
 
-    auto message(int c) const -> std::string override final;
+    [[nodiscard]] inline auto message(int c) const -> std::string override;
 
-    auto default_error_condition(int c) const noexcept
-        -> boost::system::error_condition override final;
+    [[nodiscard]] inline auto default_error_condition(int c) const noexcept
+        -> boost::system::error_condition override;
 };
 
 } // namespace detail
 
-enum class error_code {
+enum class [[nodiscard]] error_code {
     success                   = 0,
     invalid_response          = 2,
     fatal_response            = 3,

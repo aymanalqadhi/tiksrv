@@ -12,9 +12,6 @@
 #include <sstream>
 #include <string_view>
 
-using boost::asio::placeholders::bytes_transferred;
-using boost::asio::placeholders::error;
-
 namespace ts::net {
 
 void tcp_client::read_next(std::size_t n) {
@@ -70,7 +67,7 @@ void tcp_client::on_reading_header(std::string_view data) {
     }
 }
 
-void tcp_client::on_reading_body(std::string_view data) {
+void tcp_client::on_reading_body(std::string_view  /* data */) {
     assert(state() == read_state::reading_body);
 
     handler_.on_request(shared_from_this(), {std::move(context().header()),
@@ -104,7 +101,7 @@ void tcp_client::send_next() {
 
     sock_.async_send(send_buffers,
                      [self = shared_from_this(), resp {std::move(resp)},
-                      cb {std::move(cb)}](const auto &err, auto sent) {
+                      cb {std::move(cb)}](const auto &err, auto /* sent */) {
                          if (!self->is_open()) {
                              cb(boost::asio::error::not_connected);
                              return;
@@ -126,8 +123,8 @@ void tcp_client::send_next() {
 void tcp_client::respond(std::shared_ptr<response> resp, send_handler &&cb) {
     io_.post([self = shared_from_this(), resp {std::move(resp)},
               cb {std::move(cb)}] {
-        self->send_queue_.push_back(
-            std::make_pair(std::move(resp), std::move(cb)));
+        self->send_queue_.emplace_back(
+            std::make_pair(resp, cb));
         self->send_next();
     });
 }
@@ -149,7 +146,7 @@ void tcp_client::respond(const std::string &str,
 void tcp_client::respond(const std::string &str,
                          std::uint32_t      tag,
                          send_handler &&    cb) {
-    respond(str, 0x00u, tag, std::move(cb));
+    respond(str, 0, tag, std::move(cb));
 }
 
 void tcp_client::respond(std::uint32_t  code,

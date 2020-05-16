@@ -18,12 +18,15 @@ class plugin {
     using export_func = std::function<void(
         std::uint16_t, std::uint16_t, std::unique_ptr<command>)>;
 
-    virtual ~plugin() {
-    }
+    virtual ~plugin() = 0;
 
-    virtual auto name() const noexcept -> const std::string &    = 0;
-    virtual auto author() const noexcept -> const std::string &  = 0;
-    virtual auto version() const noexcept -> const std::string & = 0;
+    [[nodiscard]] virtual auto name() const noexcept -> const std::string & = 0;
+
+    [[nodiscard]] virtual auto author() const noexcept
+        -> const std::string & = 0;
+
+    [[nodiscard]] virtual auto version() const noexcept
+        -> const std::string & = 0;
 
     virtual void export_commands(export_func export_cb) noexcept = 0;
 };

@@ -43,20 +43,22 @@ class session final : public eztik::routeros::api_handler {
         }
     }
 
+    [[nodiscard]]
     inline auto id() const noexcept -> const std::uint32_t & {
         return id_;
     }
 
+    [[nodiscard]]
     inline auto api() const noexcept
         -> const std::shared_ptr<eztik::routeros::api> & {
         return api_;
     }
 
+    [[nodiscard]]
     inline auto is_ready() const noexcept -> bool {
         return api_->is_open() && api_->is_logged_in();
     }
 
-  public:
     void on_error(const boost::system::error_code &err) override;
 
   private:
@@ -89,11 +91,12 @@ class sessions_service final : public session_handler {
         return sessions_[id].first;
     }
 
-    inline auto has(std::uint32_t id) const noexcept -> bool {
+    [[nodiscard]] inline auto has(std::uint32_t id) const noexcept -> bool {
         return sessions_.contains(id);
     }
 
-    inline auto has_ready(std::uint32_t id) const noexcept -> bool {
+    [[nodiscard]] inline auto has_ready(std::uint32_t id) const noexcept
+        -> bool {
         return has(id) && sessions_.at(id).first->is_ready();
     }
 
@@ -103,13 +106,11 @@ class sessions_service final : public session_handler {
 
     void close(std::uint32_t id);
 
-  public:
     void on_close(const session &s) override;
 
   private:
     void setup_hooks();
 
-  private:
     const ts::config::config &                   conf_;
     boost::asio::io_context &                    io_;
     ts::log::logger &                            logger_;

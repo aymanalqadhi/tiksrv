@@ -42,10 +42,10 @@ class tiksrv_app final : public ts::net::tcp_server_handler,
 
     void run();
 
-    void on_accept(std::shared_ptr<ts::net::tcp_client> client) final override;
+    void on_accept(std::shared_ptr<ts::net::tcp_client> client) override;
     void on_error(client_ptr                       client,
-                  const boost::system::error_code &err) final override;
-    void on_request(client_ptr client, ts::net::request &&req) final override;
+                  const boost::system::error_code &err) override;
+    void on_request(client_ptr client, ts::net::request &&req) override;
 
   private:
     void load_plugins();

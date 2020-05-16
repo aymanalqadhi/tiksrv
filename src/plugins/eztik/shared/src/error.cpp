@@ -5,7 +5,8 @@
 #include <string>
 
 namespace {
-static eztik::detail::eztik_error_category category {};
+
+eztik::detail::eztik_error_category category {};
 
 }
 namespace eztik {
@@ -33,8 +34,8 @@ auto eztik_error_category::message(int c) const -> std::string {
 
 } // namespace detail
 
-boost::system::error_condition
-detail::eztik_error_category::default_error_condition(int c) const noexcept {
+auto detail::eztik_error_category::default_error_condition(int c) const noexcept
+    -> boost::system::error_condition {
     switch (static_cast<eztik::error_code>(c)) {
     case eztik::error_code::success:
         return make_error_condition(boost::system::errc::success);

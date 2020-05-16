@@ -15,7 +15,8 @@ enum class response_code : std::uint16_t {
     ros_session_closed       = 0x0004
 };
 
-constexpr std::uint32_t make_response_code(response_code code) {
+[[nodiscard]] constexpr auto make_response_code(response_code code)
+    -> std::uint32_t {
     return (response_category << 16) |
            (static_cast<std::uint16_t>(code) & 0xFFFF);
 }

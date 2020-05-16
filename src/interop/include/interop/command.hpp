@@ -11,10 +11,10 @@ class command {
     using client_ptr = std::shared_ptr<ts::net::tcp_client>;
 
   public:
-    virtual ~command() {
-    }
+    virtual ~command() = default;
 
-    virtual auto name() const noexcept -> const std::string &       = 0;
+    [[nodiscard]] virtual auto name() const noexcept -> const std::string & = 0;
+
     virtual void execute(client_ptr client, ts::net::request &&req) = 0;
 
     virtual void operator()(client_ptr client, ts::net::request &&req) {

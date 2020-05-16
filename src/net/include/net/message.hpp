@@ -29,11 +29,12 @@ struct request final {
         : header_ {header}, body_ {std::move(body)} {
     }
 
-    const request_header &header() const noexcept {
+    [[nodiscard]] inline auto header() const noexcept
+        -> const request_header & {
         return header_;
     }
 
-    const std::string &body() noexcept {
+    [[nodiscard]] inline auto body() noexcept -> const std::string & {
         return body_;
     }
 
@@ -51,7 +52,7 @@ struct response_header final {
     std::uint32_t body_size;
 
   private:
-    friend class response;
+    friend struct response;
 
     void encode(std::array<std::uint8_t, size> &buf);
 };

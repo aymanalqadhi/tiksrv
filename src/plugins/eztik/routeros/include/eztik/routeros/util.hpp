@@ -5,7 +5,8 @@
 
 namespace eztik::routeros {
 
-std::string hash_password(const std::string &plain, const std::string &cha);
+auto hash_password(const std::string &plain, const std::string &cha)
+    -> std::string;
 
 } // namespace eztik::routeros
 

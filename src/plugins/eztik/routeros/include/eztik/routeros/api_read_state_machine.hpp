@@ -16,31 +16,27 @@
 
 namespace eztik::routeros {
 
-enum class read_state {
-    idle,
-    reading_length,
-    reading_word,
-    closed
-};
+enum class read_state { idle, reading_length, reading_word, closed };
 
 class read_context final {
   public:
     read_context() : sentence_ {} {
     }
 
-    inline auto length_buffer() noexcept -> std::array<std::uint8_t, 5> & {
+    [[nodiscard]] inline auto length_buffer() noexcept
+        -> std::array<std::uint8_t, 5> & {
         return length_buffer_;
     }
 
-    inline auto buffer() noexcept -> std::string & {
+    [[nodiscard]] inline auto buffer() noexcept -> std::string & {
         return buffer_;
     }
 
-    inline auto size() const noexcept -> std::size_t {
+    [[nodiscard]] inline auto size() const noexcept -> std::size_t {
         return buffer_.size();
     }
 
-    inline auto current_sentence() noexcept -> sentence & {
+    [[nodiscard]] inline auto current_sentence() noexcept -> sentence & {
         return sentence_;
     }
 
@@ -57,19 +53,16 @@ class read_context final {
 
 class api_read_state_machine {
   public:
-    api_read_state_machine() : state_ {read_state::closed} {
-    }
-
-    inline const read_state &state() const noexcept {
+    [[nodiscard]] inline auto state() const noexcept -> const read_state & {
         return state_;
     }
 
-    inline read_context &context() noexcept {
+    [[nodiscard]] inline auto context() noexcept -> read_context &{
         return ctx_;
     }
 
     inline void state(read_state new_state) {
-        state_ = std::move(new_state);
+        state_ = new_state;
     }
 
   protected:
@@ -81,9 +74,7 @@ class api_read_state_machine {
     virtual void on_error(const boost::system::error_code &err) = 0;
 
   private:
-    void read_next_word();
-
-    read_state   state_;
+    read_state   state_{read_state::closed};
     read_context ctx_;
 };
 

@@ -6,14 +6,15 @@
 
 #include <filesystem>
 #include <iostream>
+#include <vector>
 
 using ts::app::tiksrv_app;
 using ts::config::config;
 using ts::config::config_key;
 
-auto main(int argc, char *argv[]) -> int {
+auto main(const int argc, char *argv[]) -> int {
     try {
-        auto conf = config::from_argv(argc, argv);
+        auto conf = config::from_argv({argv, argv + argc});
 
         if (conf.has(config_key::help)) {
             conf >> std::cout;

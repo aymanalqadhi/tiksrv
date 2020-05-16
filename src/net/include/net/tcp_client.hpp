@@ -40,15 +40,19 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
     }
 
     void start();
+
     void close();
 
     void respond(std::shared_ptr<response> resp, send_handler &&cb);
+
     void respond(const std::string &str,
                  std::uint32_t      code,
                  std::uint32_t      tag,
                  send_handler &&    cb);
     void respond(const std::string &str, std::uint32_t tag, send_handler &&cb);
+
     void respond(std::uint32_t code, std::uint32_t tag, send_handler &&cb);
+
     void respond(response_code code, std::uint32_t tag, send_handler &&cb);
 
     inline void respond(std::shared_ptr<response> resp) {
@@ -72,29 +76,32 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
         respond(code, tag, [](const auto &err) {});
     }
 
-    inline const std::uint32_t &id() const noexcept {
+    [[nodiscard]] inline auto id() const noexcept -> const std::uint32_t & {
         return id_;
     }
 
-    inline auto &socket() noexcept {
+    [[nodiscard]] inline auto socket() noexcept
+        -> boost::asio::ip::tcp::socket & {
         return sock_;
     }
 
-    inline auto endpoint() const {
+    [[nodiscard]] inline auto endpoint() const
+        -> boost::asio::ip::tcp::endpoint {
         return sock_.remote_endpoint();
     }
 
-    inline auto is_open() const noexcept {
+    [[nodiscard]] inline auto is_open() const noexcept {
         return sock_.is_open() && state() != read_state::closed;
     }
 
   protected:
-    void on_reading_header(std::string_view data) final override;
-    void on_reading_body(std::string_view data) final override;
-    void on_error(const boost::system::error_code &err) final override;
+    void on_reading_header(std::string_view data) override;
+    void on_reading_body(std::string_view data) override;
+    void on_error(const boost::system::error_code &err) override;
 
   private:
     void read_next(std::size_t n);
+
     void send_next();
 
   private:

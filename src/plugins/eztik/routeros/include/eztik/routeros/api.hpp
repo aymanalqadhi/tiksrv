@@ -86,7 +86,9 @@ class api final : public api_read_state_machine,
     }
 
     void on_reading_length(std::string_view data) override;
+
     void on_reading_word(std::string_view data) override;
+
     void on_error(const boost::system::error_code &err) override;
 
     static auto create(boost::asio::io_context &io, api_handler &h)
@@ -106,12 +108,13 @@ class api final : public api_read_state_machine,
     void start();
 
     void read_next(std::size_t n);
+
     void read_next_word();
+
     void handle_response(const sentence &s);
 
     void send_next();
 
-  private:
     boost::asio::io_context &    io_;
     boost::asio::ip::tcp::socket sock_;
 

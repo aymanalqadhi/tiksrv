@@ -10,10 +10,9 @@
 namespace {
 
 constexpr auto md5_size           = 16;
-constexpr auto md5_bits           = md5_size * 8;
 constexpr auto challenge_str_size = md5_size * 2;
 
-constexpr std::uint8_t digit_value(std::uint8_t digit) {
+constexpr auto digit_value(std::uint8_t digit) -> std::uint8_t {
     if (digit >= '0' && digit <= '9') {
         return digit - '0';
     }
@@ -59,7 +58,8 @@ inline void encode_hex_string(const std::array<std::uint8_t, size> &buf,
 
 namespace eztik::routeros {
 
-std::string hash_password(const std::string &plain, const std::string &cha) {
+auto hash_password(const std::string &plain, const std::string &cha)
+    -> std::string {
     static std::uint8_t empty_byte {0};
 
     if (cha.size() != ::challenge_str_size) {

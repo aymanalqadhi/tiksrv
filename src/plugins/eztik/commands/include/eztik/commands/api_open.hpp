@@ -21,7 +21,8 @@ class api_open_command final : public ts::interop::command {
           sessions_svc_ {sessions_svc} {
     }
 
-    auto name() const noexcept -> const std::string & override {
+    [[nodiscard]]
+    inline auto name() const noexcept -> const std::string & override {
         return name_;
     }
 

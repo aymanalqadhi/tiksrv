@@ -30,16 +30,15 @@ void api::open(const std::string &host,
         return;
     }
 
-    sock_.async_connect(
-        {std::move(address), port},
-        [self = shared_from_this(), cb {std::move(cb)}](const auto &err) {
-            if (!err) {
-                self->state(read_state::idle);
-                self->start();
-            }
+    sock_.async_connect({address, port}, [self = shared_from_this(),
+                                          cb {std::move(cb)}](const auto &err) {
+        if (!err) {
+            self->state(read_state::idle);
+            self->start();
+        }
 
-            cb(err);
-        });
+        cb(err);
+    });
 }
 
 void api::close() {
@@ -56,7 +55,7 @@ void api::send(std::shared_ptr<request_sentence> req,
                api_read_callback::callback &&    cb) {
     io_.post([self = shared_from_this(), req {std::move(req)},
               cb {std::move(cb)}]() mutable {
-        self->send_queue_.push_back(
+        self->send_queue_.emplace_back(
             std::make_pair(std::move(req), api_read_callback {std::move(cb)}));
         self->send_next();
     });
@@ -68,8 +67,8 @@ void api::login(std::string     username,
     auto req = make_command<commands::login1>();
 
     send(std::move(req),
-         [this, username {std::move(username)}, password {std::move(username)},
-          cb {std::move(cb)}](const auto &err, auto &&resp) {
+         [this, username {std::move(username)}, password {std::move(password)},
+          cb {std::move(cb)}](const auto &err, auto &&resp) mutable {
              if (err) {
                  cb(err);
              } else if (!resp.is_normal() ||
@@ -79,8 +78,8 @@ void api::login(std::string     username,
                  cb(eztik::error_code::invalid_response);
              } else {
                  auto req = make_command<commands::login2>(
-                     std::move(username), std::move(password),
-                     std::move(resp[commands::login2::challenge_param]));
+                     std::move(username), password,
+                     resp[commands::login2::challenge_param]);
 
                  send(std::move(req),
                       [this, cb {std::move(cb)}](const auto &err, auto &&resp) {
@@ -263,27 +262,26 @@ void api::send_next() {
     auto buf = std::make_shared<std::vector<std::uint8_t>>();
     req->encode(*buf);
 
-    sock_.async_send(
-        boost::asio::buffer(*buf),
-        [self = shared_from_this(), buf, req {std::move(req)},
-         cb {std::move(cb)}](const auto &err, const auto &sent) mutable {
-            if (!self->is_open()) {
-                cb(boost::asio::error::not_connected, {});
-                return;
-            }
+    sock_.async_send(boost::asio::buffer(*buf),
+                     [self = shared_from_this(), buf, req {std::move(req)},
+                      cb {cb}](const auto &err, const auto &sent) mutable {
+                         if (!self->is_open()) {
+                             cb(boost::asio::error::not_connected, {});
+                             return;
+                         }
 
-            if (err) {
-                cb(err, {});
-                self->close();
-            } else {
-                self->read_cbs_.emplace(
-                    std::make_pair(req->tag(), std::move(cb)));
-            }
+                         if (err) {
+                             cb(err, {});
+                             self->close();
+                         } else {
+                             self->read_cbs_.emplace(
+                                 std::make_pair(req->tag(), std::move(cb)));
+                         }
 
-            if (!self->send_queue_.empty()) {
-                self->send_next();
-            }
-        });
+                         if (!self->send_queue_.empty()) {
+                             self->send_next();
+                         }
+                     });
 }
 
 } // namespace eztik::routeros

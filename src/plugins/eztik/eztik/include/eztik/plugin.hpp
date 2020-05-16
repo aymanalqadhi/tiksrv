@@ -19,9 +19,9 @@
 namespace eztik {
 
 enum class eztik_command : std::uint16_t {
-    api_open  = 0x0000u,
-    api_close = 0x0001u,
-    api_send  = 0x0002u
+    api_open  = 0x0000U,
+    api_close = 0x0001U,
+    api_send  = 0x0002U
 };
 
 class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
@@ -41,15 +41,18 @@ class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
         setup_config(std::move(config_manager));
     }
 
-    auto name() const noexcept -> const std::string & override {
+    [[nodiscard]] inline auto name() const noexcept
+        -> const std::string & override {
         return name_;
     }
 
-    auto author() const noexcept -> const std::string & override {
+    [[nodiscard]] inline auto author() const noexcept
+        -> const std::string & override {
         return author_;
     }
 
-    auto version() const noexcept -> const std::string & override {
+    [[nodiscard]] inline auto version() const noexcept
+        -> const std::string & override {
         return version_;
     }
 
@@ -58,8 +61,8 @@ class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
     void
     setup_config(std::shared_ptr<ts::services::config_manager> config_manager);
 
-    static std::unique_ptr<plugin>
-    create(ts::services::services_manager &svcs) {
+    [[nodiscard]] static auto create(ts::services::services_manager &svcs)
+        -> std::unique_ptr<plugin> {
         if (!svcs.has<ts::services::hooks_manager>()) {
             throw std::runtime_error {
                 "Hooks manager service is required for this plugin"};

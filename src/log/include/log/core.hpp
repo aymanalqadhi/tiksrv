@@ -28,7 +28,7 @@ inline void add_sink(log_level level, TArgs... args) {
     add_sink(std::move(ptr));
 }
 
-std::shared_ptr<spdlog::sinks::dist_sink_st> &main_sink();
+auto main_sink() -> std::shared_ptr<spdlog::sinks::dist_sink_st> &;
 
 auto global_level() -> log_level;
 void global_level(log_level level);

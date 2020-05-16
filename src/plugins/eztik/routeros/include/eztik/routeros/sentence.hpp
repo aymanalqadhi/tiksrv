@@ -18,12 +18,12 @@ struct sentence {
         return words_[i];
     }
 
-    inline auto begin() const noexcept
+    [[nodiscard]] inline auto begin() const noexcept
         -> std::vector<std::string>::const_iterator {
         return words_.cbegin();
     }
 
-    inline auto end() const noexcept
+    [[nodiscard]] inline auto end() const noexcept
         -> std::vector<std::string>::const_iterator {
         return words_.end();
     }
@@ -40,11 +40,11 @@ struct sentence {
         words_.clear();
     }
 
-    inline auto size() const noexcept -> std::size_t {
+    [[nodiscard]] inline auto size() const noexcept -> std::size_t {
         return words_.size();
     }
 
-    inline auto empty() const noexcept -> bool {
+    [[nodiscard]] inline auto empty() const noexcept -> bool {
         return size() == 0;
     }
 
@@ -60,17 +60,19 @@ struct sentence {
 };
 
 struct request_sentence : sentence {
-    request_sentence(std::string command, std::uint32_t tag) : tag_ {tag} {
+    request_sentence(const std::string &command, std::uint32_t tag)
+        : tag_ {tag} {
         push(command);
         push(".tag={}", tag);
     }
 
-    inline auto tag() const noexcept -> std::uint32_t {
+    [[nodiscard]] inline auto tag() const noexcept -> std::uint32_t {
         return tag_;
     }
 
-    inline void push_param(std::string key, std::string value) noexcept {
-        sentence::push("={}={}", std::move(key), std::move(value));
+    inline void push_param(const std::string &key,
+                           const std::string &value) noexcept {
+        sentence::push("={}={}", key, value);
     }
 
     template <typename T>

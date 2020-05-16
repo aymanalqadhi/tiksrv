@@ -16,14 +16,13 @@ struct login1 : request_sentence {
 };
 
 struct login2 : login1 {
-    login2(std::uint32_t tag,
-           std::string   name,
-           std::string   password,
-           std::string   cha)
+    login2(std::uint32_t      tag,
+           std::string        name,
+           const std::string &password,
+           const std::string &cha)
         : login1 {tag} {
         push_param(name_param, std::move(name));
-        push_param(password_param, "00{}",
-                   hash_password(std::move(password), std::move(cha)));
+        push_param(password_param, "00{}", hash_password(password, cha));
     }
 
     static constexpr auto name_param      = "name";

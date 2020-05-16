@@ -7,6 +7,7 @@
 #include "log/logger.hpp"
 
 #include <memory>
+#include <utility>
 
 namespace eztik::commands {
 
@@ -14,16 +15,17 @@ class session_required_command : public ts::interop::command {
     using client_ptr = std::shared_ptr<ts::net::tcp_client>;
 
   public:
-    session_required_command(const std::string &                name,
+    session_required_command(std::string                        name,
                              ts::log::logger &                  logger,
                              eztik::services::sessions_service &sessions_svc)
-        : name_ {name},
+        : name_ {std::move(name)},
           logger_ {logger},
           sessions_svc_ {sessions_svc},
           session_ {nullptr} {
     }
 
-    auto name() const noexcept -> const std::string & final {
+    [[nodiscard]] inline auto name() const noexcept
+        -> const std::string & final {
         return name_;
     }
 

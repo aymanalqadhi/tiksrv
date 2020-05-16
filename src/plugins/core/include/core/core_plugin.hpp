@@ -22,22 +22,23 @@ class BOOST_SYMBOL_VISIBLE core_plugin final : public ts::interop::plugin {
           version_ {"0.1 ALPHA"} {
     }
 
-    auto name() const noexcept -> const std::string & override {
+    [[nodiscard]] auto name() const noexcept -> const std::string & override {
         return name_;
     }
 
-    auto author() const noexcept -> const std::string & override {
+    [[nodiscard]] auto author() const noexcept -> const std::string & override {
         return author_;
     }
 
-    auto version() const noexcept -> const std::string & override {
+    [[nodiscard]] auto version() const noexcept
+        -> const std::string & override {
         return version_;
     }
 
     void export_commands(export_func export_cb) noexcept override;
 
-    static std::unique_ptr<plugin>
-    create(ts::services::services_manager &svcs) {
+    [[nodiscard]] static auto create(ts::services::services_manager &svcs)
+        -> std::unique_ptr<plugin> {
         return std::make_unique<ts::plugins::core::core_plugin>();
     }
 

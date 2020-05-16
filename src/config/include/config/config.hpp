@@ -2,6 +2,7 @@
 #define TIKSRV_CONFIG_CONFIG_HPP
 
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 
 #include <cstdint>
@@ -21,10 +22,14 @@ enum class config_key : std::uint32_t {
 };
 
 class config final {
+    using options_description = boost::program_options::options_description;
+    using variables_map       = boost::program_options::variables_map;
+
   public:
     config();
 
-    inline bool has(const std::string &key) const {
+    [[nodiscard]] inline auto has(const std::string &key) const noexcept
+        -> bool {
         return values_.count(key) > 0;
     }
 
@@ -37,26 +42,46 @@ class config final {
         os << desc_ << std::endl;
     }
 
-    inline auto begin() const noexcept {
+    [[nodiscard]] inline auto begin() const noexcept
+        -> variables_map::const_iterator {
         return values_.begin();
     }
 
-    inline auto end() const noexcept {
+    [[nodiscard]] inline auto end() const noexcept
+        -> variables_map::const_iterator {
         return values_.end();
     }
 
-    auto has(config_key key) const -> bool;
-    const boost::program_options::variable_value &
-         operator[](config_key key) const;
-    void parse_argv(int argc, const char *const argv[]);
-    void parse_config_file(std::string_view                             path,
-                           boost::program_options::options_description &desc);
+    [[nodiscard]] auto has(config_key key) const -> bool;
+
+    [[nodiscard]] auto operator[](config_key key) const
+        -> const boost::program_options::variable_value &;
+
+    inline void parse_argv(const std::vector<const char *> &args) {
+        boost::program_options::store(
+            boost::program_options::parse_command_line(args.size(), args.data(),
+                                                       desc_),
+            values_);
+        boost::program_options::notify(values_);
+    }
+
+    inline void parse_config_file(std::string_view     path,
+                                  options_description &desc) {
+        boost::program_options::store(
+            boost::program_options::parse_config_file(path.data(), desc, true),
+            values_);
+    }
 
     inline void parse_config_file(std::string_view path) {
         parse_config_file(path, desc_);
     }
 
-    static auto from_argv(int argc, const char *const argv[]) -> config;
+    [[nodiscard]] inline static auto
+    from_argv(const std::vector<const char *> &args) -> config {
+        config ret {};
+        ret.parse_argv(args);
+        return ret;
+    }
 
     struct defaults {
         static constexpr auto listen_port   = 3434u;
@@ -71,8 +96,8 @@ class config final {
     };
 
   private:
-    boost::program_options::variables_map       values_;
-    boost::program_options::options_description desc_;
+    variables_map       values_;
+    options_description desc_;
 };
 
 } // namespace ts::config
