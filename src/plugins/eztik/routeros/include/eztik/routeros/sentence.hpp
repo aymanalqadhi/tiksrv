@@ -102,6 +102,10 @@ struct response_sentence {
         return params_.contains(key);
     }
 
+    inline auto contains(const std::string& key) const noexcept -> bool {
+        return has(key);
+    }
+
     inline auto operator[](const std::string &key) const noexcept
         -> const std::string & {
         return params_.at(key);
