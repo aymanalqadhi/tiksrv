@@ -19,9 +19,10 @@
 namespace eztik {
 
 enum class eztik_command : std::uint16_t {
-    api_open  = 0x0000U,
-    api_close = 0x0001U,
-    api_send  = 0x0002U
+    api_open               = 0x0000U,
+    api_close              = 0x0001U,
+    api_send               = 0x0002U,
+    api_load_hotspot_users = 0x0003U,
 };
 
 class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
@@ -58,8 +59,8 @@ class BOOST_SYMBOL_VISIBLE eztik_plugin final : public ts::interop::plugin {
 
     void export_commands(export_func export_cb) noexcept override;
 
-    void
-    setup_config(std::shared_ptr<ts::services::config_manager> config_manager);
+    static void setup_config(
+        std::shared_ptr<ts::services::config_manager> &&config_manager);
 
     [[nodiscard]] static auto create(ts::services::services_manager &svcs)
         -> std::unique_ptr<plugin> {

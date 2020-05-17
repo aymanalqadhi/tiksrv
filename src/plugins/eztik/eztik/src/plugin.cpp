@@ -1,8 +1,10 @@
 #include "eztik/config.hpp"
 #include "eztik/plugin.hpp"
 
+#include "eztik/commands/api_load_hotspot_users.hpp"
 #include "eztik/commands/api_open.hpp"
 #include "eztik/commands/api_send.hpp"
+
 #include "services/config_manager.hpp"
 
 #include <functional>
@@ -25,12 +27,15 @@ void eztik_plugin::export_commands(export_func export_cb) noexcept {
                    sessions_service_);
     EXPORT_COMMAND(commands::api_send_command, eztik_command::api_send, logger_,
                    sessions_service_);
+    EXPORT_COMMAND(commands::api_load_hotspot_users_command,
+                   eztik_command::api_load_hotspot_users, logger_,
+                   sessions_service_);
 
 #undef EXPORT_COMMAND
 }
 
 void eztik_plugin::setup_config(
-    std::shared_ptr<ts::services::config_manager> config_manager) {
+    std::shared_ptr<ts::services::config_manager> &&config_manager) {
     config_manager->add_option<std::string>(config_keys::ros_ip,
                                             config_defaults::ros_ip);
     config_manager->add_option<std::uint16_t>(config_keys::ros_api_port,
