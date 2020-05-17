@@ -1,12 +1,12 @@
-#include "eztik/commands/session_required.hpp"
 #include "eztik/commands/response.hpp"
+#include "eztik/commands/session_required.hpp"
 
 #include "eztik/routeros/api.hpp"
 
 namespace eztik::commands {
 
-void session_required_command::operator()(client_ptr         client,
-                                          ts::net::request &&req) {
+void session_required_command::operator()(
+    std::shared_ptr<ts::net::tcp_client> client, ts::net::request &&req) {
     if (!sessions_svc_.has_ready(client->id())) {
         logger_.warn(
             "Client #{} with no open sessions tried to send an API message",
