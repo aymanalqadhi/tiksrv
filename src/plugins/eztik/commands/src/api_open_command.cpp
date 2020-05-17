@@ -1,15 +1,19 @@
-#include "eztik/commands/api_open.hpp"
+#include "eztik/commands/api/open.hpp"
 #include "eztik/commands/response.hpp"
 
 #include "eztik/routeros/api.hpp"
 
 #include "net/message.hpp"
+#include "net/tcp_client.hpp"
+
+#include <memory>
 
 using rc = eztik::response_code;
 
-namespace eztik::commands {
+namespace eztik::commands::api {
 
-void api_open_command::execute(client_ptr client, ts::net::request &&req) {
+void open_command::execute(std::shared_ptr<ts::net::tcp_client> client,
+                           ts::net::request &&                  req) {
     if (sessions_svc_.has_ready(client->id())) {
         logger_.warn(
             "Client #{} with an already open session has requested a new one",
@@ -48,4 +52,4 @@ void api_open_command::execute(client_ptr client, ts::net::request &&req) {
     }
 }
 
-} // namespace eztik::commands
+} // namespace eztik::commands::api

@@ -1,9 +1,9 @@
 #include "eztik/config.hpp"
 #include "eztik/plugin.hpp"
 
-#include "eztik/commands/api_load_hotspot_users.hpp"
-#include "eztik/commands/api_open.hpp"
-#include "eztik/commands/api_send.hpp"
+#include "eztik/commands/api/hotspot_user.hpp"
+#include "eztik/commands/api/open.hpp"
+#include "eztik/commands/api/send.hpp"
 
 #include "services/config_manager.hpp"
 
@@ -23,11 +23,11 @@ void eztik_plugin::export_commands(export_func export_cb) noexcept {
                   std::move(cmd));                                             \
     } while (0)
 
-    EXPORT_COMMAND(commands::api_open_command, eztik_command::api_open, logger_,
-                   sessions_service_);
-    EXPORT_COMMAND(commands::api_send_command, eztik_command::api_send, logger_,
-                   sessions_service_);
-    EXPORT_COMMAND(commands::api_load_hotspot_users_command,
+    EXPORT_COMMAND(commands::api::open_command, eztik_command::api_open,
+                   logger_, sessions_service_);
+    EXPORT_COMMAND(commands::api::send_command, eztik_command::api_send,
+                   logger_, sessions_service_);
+    EXPORT_COMMAND(commands::api::hotspot_user_load_command,
                    eztik_command::api_load_hotspot_users, logger_,
                    sessions_service_);
 
