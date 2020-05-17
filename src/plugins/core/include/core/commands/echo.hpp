@@ -12,17 +12,10 @@ class echo_command final : public ts::interop::command {
     using client_ptr = std::shared_ptr<ts::net::tcp_client>;
 
   public:
-    echo_command() : name_ {"Echo"} {
-    }
-
-    auto name() const noexcept -> const std::string & override {
-        return name_;
+    echo_command() : ts::interop::command {"Echo"} {
     }
 
     void execute(client_ptr client, ts::net::request &&req) override;
-
-  private:
-    std::string name_;
 };
 
 } // namespace ts::plugins::core::commands
