@@ -71,10 +71,14 @@ class api final : public api_read_state_machine,
         return logged_in_;
     }
 
+    inline auto aquire_unique_tag() noexcept -> std::uint32_t {
+        return current_tag_++;
+    }
+
     inline auto make_request(std::string command)
         -> std::shared_ptr<request_sentence> {
         return std::make_shared<request_sentence>(std::move(command),
-                                                  current_tag_++);
+                                                  aquire_unique_tag());
     }
 
     template <
@@ -82,7 +86,8 @@ class api final : public api_read_state_machine,
         typename... TArg,
         typename = std::enable_if_t<std::is_base_of_v<request_sentence, T>>>
     inline auto make_command(TArg... args) -> std::shared_ptr<T> {
-        return std::make_shared<T>(current_tag_++, std::forward<TArg>(args)...);
+        return std::make_shared<T>(aquire_unique_tag(),
+                                   std::forward<TArg>(args)...);
     }
 
     void on_reading_length(std::string_view data) override;
