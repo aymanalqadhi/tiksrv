@@ -18,6 +18,7 @@ include_directories(src/impl/proto/)
 set(SOURCE_FILES src/session_required_command.cpp
                  src/api_open_command.cpp
                  src/api_send_command.cpp
+                 src/api_load_hotspot_users_command.cpp
                  ${PROTO_FILES})
 
 # Targets
@@ -26,6 +27,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 # Dependencies
 target_link_libraries(${PROJECT_NAME} eztik_routeros
+                                      eztik_data
                                       eztik_services
                                       tiksrv_net
                                       tiksrv_interop
