@@ -9,6 +9,7 @@ add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 # Sub directories inclusion
 add_subdirectory(shared)
 add_subdirectory(routeros)
+add_subdirectory(data)
 add_subdirectory(services)
 add_subdirectory(commands)
 add_subdirectory(eztik)
