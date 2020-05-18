@@ -50,8 +50,9 @@ void sessions_service::create(std::uint32_t    id,
         std::make_pair(id, std::make_pair(s, std::move(close_cb))));
 
     s->api()->open(
-        std::move(ip), port,
-        [this, s {std::move(s)}, cb {std::move(open_cb)}](const auto &err) {
+        ip, port,
+        [this, s {std::move(s)},
+         cb {std::move(open_cb)}](const auto &err) mutable {
             assert(!s->is_ready());
 
             if (!has(s->id())) {
@@ -67,16 +68,16 @@ void sessions_service::create(std::uint32_t    id,
 
                 s->api()->login(std::move(user), std::move(password),
                                 [this, s {std::move(s)},
-                                 cb {std::move(cb)}](const auto &err) {
-                                    if (!has(s->id())) {
-                                        return;
-                                    }
-
+                                 cb {std::move(cb)}](const auto &err) mutable {
                                     if (err) {
                                         assert(!s->is_ready());
-                                        close(s->id());
+
+                                        if (has(s->id())) {
+                                            close(s->id());
+                                        }
+
                                         cb(err, nullptr);
-                                    } else {
+                                    } else if (has(s->id())) {
                                         assert(s->is_ready());
                                         cb(eztik::error_code::success,
                                            std::move(s));
