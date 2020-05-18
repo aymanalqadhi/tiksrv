@@ -1,6 +1,8 @@
 #ifndef EZTIK_DATA_API_REPOSITORY_HPP
 #define EZTIK_DATA_API_REPOSITORY_HPP
 
+#include "eztik/data/type_traits.hpp"
+
 #include "eztik/routeros/api.hpp"
 #include "eztik/routeros/commands.hpp"
 
@@ -11,11 +13,13 @@
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 namespace eztik::data {
 
-template <typename TModel>
+template <typename TModel,
+          typename = std::enable_if_t<is_api_model<TModel>::value>>
 class api_repository {
     using load_handler = std::function<void(
         const boost::system::error_code &err, TModel &&, bool)>;
@@ -31,8 +35,8 @@ class api_repository {
     void load_stream(load_handler &&cb) {
         assert(api_->is_open());
 
-        auto req = std::make_shared<eztik::routeros::commands::getall>(
-            api_->aquire_unique_tag(), TModel::api_path);
+        auto req = api_->make_command<eztik::routeros::commands::getall>(
+            TModel::api_path);
 
         api_->send(std::move(req),
                    [cb {std::move(cb)}](const auto &err, auto &&resp) {
@@ -54,8 +58,8 @@ class api_repository {
     void load_all(load_all_handler &&cb) {
         assert(api_->is_open());
 
-        auto req = std::make_shared<eztik::routeros::commands::getall>(
-            api_->aquire_unique_tag(), TModel::api_path);
+        auto req = api_->make_command<eztik::routeros::commands::getall>(
+            TModel::api_path);
 
         api_->send(std::move(req),
                    [ret = std::make_shared<std::vector<TModel>>(),
