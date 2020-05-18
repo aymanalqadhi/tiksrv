@@ -13,7 +13,7 @@
 
 namespace eztik::commands::api {
 
-template <typename TModel>
+template <typename D, typename TModel>
 class load_command : public session_required_command {
     using client_ptr = std::shared_ptr<ts::net::tcp_client>;
 
@@ -24,11 +24,16 @@ class load_command : public session_required_command {
         : session_required_command {std::move(name), logger, sessions_svc} {
     }
 
+    auto create_response(TModel &&model) -> decltype(auto) {
+        return D::create_response(std::move(model));
+    }
+
     void execute(client_ptr client, ts::net::request &&req) override {
         eztik::data::api_repository<TModel> repo {current_session()->api()};
 
-        repo.load_stream([this, client {std::move(client)}](
-                             const auto &err, auto &&user, auto is_last) {
+        repo.load_stream([this, client {std::move(client)},
+                          req {std::move(req)}](const auto &err, auto &&model,
+                                                auto is_last) {
             if (err) {
                 logger().error("Could not load `{}': {}", TModel::api_path,
                                err.message());
@@ -36,11 +41,14 @@ class load_command : public session_required_command {
             }
 
             if (is_last) {
+                client->respond(ts::net::response_code::success,
+                                req.header().tag);
                 return;
             }
 
-            logger().error("[+] Name: {}, Password: {}", user.name,
-                           user.password);
+            client->respond(
+                create_response(std::move(model)).SerializeAsString(),
+                req.header().tag);
         });
     }
 };
