@@ -4,7 +4,7 @@
 #include "eztik/routeros/api.hpp"
 #include "eztik/routeros/sentence.hpp"
 
-#include "impl/proto/api_send.pb.h"
+#include "proto/api_send.pb.h"
 
 #include "net/message.hpp"
 
