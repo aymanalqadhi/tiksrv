@@ -1,19 +1,19 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package eztik.commands.messages;
 
 message ApiRequest {
-    required string command = 1;
-    repeated string params = 2;
+    string          command = 1;
+    repeated string params  = 2;
 }
 
 message ApiResponse {
     enum ResponseType {
-        normal = 0;
-        data = 1;
-        trap = 2;
+        NORMAL = 0;
+        DATA = 1;
+        TRAP = 2;
     }
 
-    required ResponseType type = 1;
+    ResponseType        type   = 1;
     map<string, string> params = 2;
 }
