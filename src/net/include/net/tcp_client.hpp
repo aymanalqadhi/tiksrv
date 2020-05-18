@@ -45,10 +45,10 @@ class tcp_client final : public std::enable_shared_from_this<tcp_client>,
 
     void respond(std::shared_ptr<response> resp, send_handler &&cb);
 
-    void respond(const std::string &str,
-                 std::uint32_t      code,
-                 std::uint32_t      tag,
-                 send_handler &&    cb);
+    void respond(std::string    str,
+                 std::uint32_t  code,
+                 std::uint32_t  tag,
+                 send_handler &&cb);
     void respond(const std::string &str, std::uint32_t tag, send_handler &&cb);
 
     void respond(std::uint32_t code, std::uint32_t tag, send_handler &&cb);

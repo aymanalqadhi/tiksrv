@@ -67,7 +67,7 @@ void tcp_client::on_reading_header(std::string_view data) {
     }
 }
 
-void tcp_client::on_reading_body(std::string_view  /* data */) {
+void tcp_client::on_reading_body(std::string_view /* data */) {
     assert(state() == read_state::reading_body);
 
     handler_.on_request(shared_from_this(), {std::move(context().header()),
@@ -123,22 +123,21 @@ void tcp_client::send_next() {
 void tcp_client::respond(std::shared_ptr<response> resp, send_handler &&cb) {
     io_.post([self = shared_from_this(), resp {std::move(resp)},
               cb {std::move(cb)}] {
-        self->send_queue_.emplace_back(
-            std::make_pair(resp, cb));
+        self->send_queue_.emplace_back(std::make_pair(resp, cb));
         self->send_next();
     });
 }
 
-void tcp_client::respond(const std::string &str,
-                         std::uint32_t      code,
-                         std::uint32_t      tag,
-                         send_handler &&    cb) {
+void tcp_client::respond(std::string    str,
+                         std::uint32_t  code,
+                         std::uint32_t  tag,
+                         send_handler &&cb) {
     auto resp_ptr = std::make_shared<ts::net::response>();
 
     resp_ptr->code(code);
     resp_ptr->flags(0x00U);
     resp_ptr->tag(tag);
-    resp_ptr->body(str);
+    resp_ptr->body(std::move(str));
 
     respond(std::move(resp_ptr), std::move(cb));
 }
