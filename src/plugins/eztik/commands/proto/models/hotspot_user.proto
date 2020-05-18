@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package eztik.commands.messages.models;
+
+message HotspotUser {
+    string name            = 1;
+    string profile         = 2;
+    string comment         = 3;
+    uint32 limit_bytes_in  = 4;
+    uint32 limit_bytes_out = 5;
+    uint32 bytes_in        = 6;
+    uint32 bytes_out       = 7;
+}
