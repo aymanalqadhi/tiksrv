@@ -24,7 +24,7 @@ class load_command : public session_required_command {
         : session_required_command {std::move(name), logger, sessions_svc} {
     }
 
-    auto create_response(TModel &&model) -> decltype(auto) {
+    inline auto create_response(TModel &&model) -> decltype(auto) {
         return D::create_response(std::move(model));
     }
 
