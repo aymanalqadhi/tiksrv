@@ -37,6 +37,8 @@ add_subdirectory(config)
 
 add_subdirectory(plugins)
 add_subdirectory(lib)
+add_subdirectory(html)
+
 
 # Final executable
 add_executable(${PROJECT_NAME} $<TARGET_OBJECTS:tiksrv_main>)
